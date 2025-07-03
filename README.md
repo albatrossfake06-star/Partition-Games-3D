@@ -1,3 +1,11 @@
+Partition Game Web Application
+
+Under Rhodes Colleger Summer Fellowship '25, this web application is being built by Soumitro (dwiso-28@rhodes.edu) and Aayan (debaa-28@rhodes.edu). The project is supervised by Prof. Gottlieb (https://www.rhodes.edu/bio/eric-gottlieb) and aimed to support his team's research on combinatorial game theory.
+
+If you find any bug, or just want to talk more about it - please reach out to us. 
+
+
+
 # LCTR - The Left Column Top Row Game
 
 A polished, web-based implementation of the classic impartial game "Left Column, Top Row" (LCTR), built with pure JavaScript, HTML, and CSS. This project features a challenging AI, customizable themes, and a retro 8-bit aesthetic.
