@@ -1,113 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCTR Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div id="stars-small"></div>
-<div id="stars-medium"></div>
-<div id="stars-large"></div>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8">  
+  <title>Partition Games Web Application</title>  
+  <style>  
+    body {font-family: sans-serif; margin: 2rem;}  
+  </style>  
+</head>  
+<body>  
+  <h1>Partition Games Web Application</h1>
+  <a href="LCTR.html">LCTR</a>
+  <a href="developer.html">Developers</a>
 
+  
+</body>  
+</html> 
 
-
-<main id="app-container">
-    <a href="developer.html">Developer</a>
-    <header>
-        <div class="header-left"></div>
-        <div class="header-center">
-            <h1>LCTR</h1>
-        </div>
-        <div class="header-right">
-            <button id="help-btn" aria-label="Help">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-                    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 18a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
-                </svg>
-            </button>
-            <div class="theme-switcher">
-                <label class="switch">
-                    <input type="checkbox" id="theme-toggle">
-                    <span class="slider round"></span>
-                </label>
-            </div>
-        </div>
-    </header>
-
-    <div id="game-card">
-        <div class="status-container">
-            <p id="status-label">Loading...</p>
-            <div id="ai-thinking-indicator">
-                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-            </div>
-        </div>
-        <canvas id="game-canvas"></canvas>
-    </div>
-
-    <footer>
-        <button id="new-game-btn">New Game</button>
-    </footer>
-</main>
-
-<div id="setup-modal-backdrop" class="modal-backdrop">
-    <div class="modal">
-        <h2>Game Setup</h2>
-        <p>Enter the starting board configuration.</p>
-        <label for="rows-input">Row Lengths (e.g., 5 4 4 2)</label>
-        <input type="text" id="rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
-
-        <label for="ai-select">Computer Player</label>
-        <select id="ai-select">
-            <option value="B">Player B (Starts Second)</option>
-            <option value="A">Player A (Starts First)</option>
-            <option value="None">None (Two Human Players)</option>
-        </select>
-
-        <label for="difficulty-select">AI Difficulty</label>
-        <select id="difficulty-select">
-            <option value="Hard">Hard (Perfect Play)</option>
-            <option value="Medium" selected>Medium (Makes Mistakes)</option>
-            <option value="Easy">Easy (Very Random)</option>
-        </select>
-
-        <label for="theme-select">Tile Theme</label>
-        <select id="theme-select">
-            <option value="grass">Grass</option>
-            <option value="stone">Stone</option>
-            <option value="ice">Ice</option>
-        </select>
-
-        <button id="start-game-btn" class="modal-btn">Start Game</button>
-    </div>
-</div>
-
-<div id="game-over-modal-backdrop" class="modal-backdrop">
-    <div class="modal">
-        <h2 id="game-over-title">Game Over</h2>
-        <p id="game-over-message">Player X wins!</p>
-        <button id="play-again-btn" class="modal-btn">Play Again</button>
-    </div>
-</div>
-
-<div id="help-popover">
-    <h3>How to Play</h3>
-    <p>On your turn, you can choose one of two moves:</p>
-    <ul>
-        <li>Remove the <strong>entire top row</strong> of squares.</li>
-        <li>Remove the <strong>entire leftmost column</strong> of squares.</li>
-    </ul>
-    <p>The player who takes the very last square wins the game.</p>
-</div>
-
-<audio id="sound-hover" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/ui_sound_button_pop_click_026.mp3" preload="auto"></audio>
-<audio id="sound-remove" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/boulder_break_apart_and_fall_001.mp3" preload="auto"></audio>
-<audio id="sound-win" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/multimedia_game_sound_harp_gliss_001.mp3" preload="auto"></audio>
-<audio id="sound-click" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/ui_sound_button_pop_click_025.mp3" preload="auto"></audio>
-
-<script src="script.js"></script>
-</body>
-</html>
