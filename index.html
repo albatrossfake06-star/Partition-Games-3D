@@ -1,18 +1,359 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <title>Partition Games Web Application</title>  
-  <style>  
-    body {font-family: sans-serif; margin: 2rem;}  
-  </style>  
-</head>  
-<body>  
-  <h1>Partition Games Web Application</h1>
-  <a href="LCTR.html">LCTR</a>
-  <a href="developer.html">Developers</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCTR - A Game of Strategy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           1. Theming & Variables
+           ========================================================================== */
+        :root {
+            --bg-color: #111827; /* Dark background for landing page */
+            --card-bg-color: #1f2937;
+            --text-color: #f9fafb;
+            --text-muted-color: #9ca3af;
+            --border-color: #374151;
+            --star-color: #4b5563;
+            --accent-color: #60a5fa; /* Sky Blue */
+            --accent-hover-color: #3b82f6;
+        }
 
-  
-</body>  
-</html> 
+        /* ==========================================================================
+           2. Keyframe Animations
+           ========================================================================== */
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes anim-star-flow {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2000px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px -5px var(--accent-color); }
+            50% { box-shadow: 0 0 30px 0px var(--accent-color); }
+        }
 
+        /* ==========================================================================
+           3. Global & Body Styles
+           ========================================================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            position: relative;
+            z-index: 1;
+            overflow-x: hidden;
+        }
+
+        /* ==========================================================================
+           4. Animated Background
+           ========================================================================== */
+        #stars-small, #stars-medium, #stars-large {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background-repeat: repeat;
+            background-position: 0 0;
+            animation: anim-star-flow linear infinite;
+        }
+        #stars-small { background: radial-gradient(1px 1px at 50px 100px, var(--star-color), transparent), radial-gradient(1px 1px at 100px 20px, var(--star-color), transparent), radial-gradient(1px 1px at 220px 340px, var(--star-color), transparent), radial-gradient(1px 1px at 300px 480px, var(--star-color), transparent), radial-gradient(1px 1px at 450px 150px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 120s; }
+        #stars-medium { background: radial-gradient(2px 2px at 150px 200px, var(--star-color), transparent), radial-gradient(2px 2px at 350px 420px, var(--star-color), transparent), radial-gradient(2px 2px at 50px 480px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 80s; }
+        #stars-large { background: radial-gradient(3px 3px at 250px 300px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 50s; }
+        
+        /* ==========================================================================
+           5. Layout & Containers
+           ========================================================================== */
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        /* ==========================================================================
+           6. Header & Hero Section
+           ========================================================================== */
+        .main-header {
+            padding: 20px 0;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .header-nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .dev-button {
+            display: inline-block;
+            padding: 8px 18px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted-color);
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .dev-button:hover {
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            background-color: rgba(96, 165, 250, 0.1);
+        }
+
+        #hero {
+            padding: 100px 0;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 4rem;
+            color: var(--text-color);
+            text-shadow: 4px 4px var(--accent-color);
+            margin: 0;
+            animation: fadeInSlideUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted-color);
+            margin: 20px 0 40px;
+            max-width: 600px;
+            line-height: 1.6;
+            animation: fadeInSlideUp 1s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 40px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            animation: fadeInSlideUp 1s ease-out 0.4s, pulse-glow 2.5s infinite ease-in-out;
+            animation-fill-mode: backwards;
+        }
+
+        .cta-button:hover {
+            background-color: var(--accent-hover-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* ==========================================================================
+           7. Features Section
+           ========================================================================== */
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg-color);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted-color);
+            line-height: 1.6;
+        }
+
+        /* ==========================================================================
+           8. Gameplay Showcase Section
+           ========================================================================== */
+        #gameplay {
+            background-color: var(--card-bg-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .gameplay-image {
+            max-width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* ==========================================================================
+           9. Final CTA & Footer
+           ========================================================================== */
+        #final-cta .section-title {
+            font-size: 2rem;
+        }
+        
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ==========================================================================
+           10. Media Queries
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            .main-header .container {
+                padding: 0 10px;
+            }
+            .logo {
+                font-size: 1.2rem;
+            }
+            .dev-button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Animated Background Layers -->
+    <div id="stars-small"></div>
+    <div id="stars-medium"></div>
+    <div id="stars-large"></div>
+
+    <header class="main-header">
+        <div class="container">
+            <a href="#" class="logo">LCTR</a>
+            <div class="header-nav">
+                <a href="developers.html" class="dev-button">Developers</a>
+                <a href="https://github.com/your-username/lctr-game" target="_blank" rel="noopener noreferrer" class="dev-button">
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="container">
+                <h1 class="hero-title">LCTR</h1>
+                <p class="hero-subtitle">A deceptively simple game of pure strategy. Easy to learn, difficult to master. Challenge the perfect AI and test your wits!</p>
+                <a href="LCTR.html" class="cta-button">Play Now</a>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="container">
+                <h2 class="section-title">Game Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>Challenging AI</h3>
+                        <p>Face off against an AI with multiple difficulty levels, from a forgiving beginner to a perfect, unbeatable opponent.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3>Customizable Themes</h3>
+                        <p>Choose your favorite 8-bit aesthetic. Play with classic Grass, dungeon Stone, or cool Ice tile themes.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Fully Responsive</h3>
+                        <p>Enjoy a seamless experience on any device. Play on your desktop, tablet, or mobile phone.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gameplay">
+            <div class="container">
+                <h2 class="section-title">Pure Retro Strategy</h2>
+                <img src="https://placehold.co/1000x600/1f2937/f9fafb?text=Gameplay%20Screenshot" alt="Gameplay screenshot of LCTR" class="gameplay-image">
+            </div>
+        </section>
+
+        <section id="final-cta">
+            <div class="container">
+                <h2 class="section-title">Ready to Play?</h2>
+                <a href="LCTR.html" class="cta-button">Launch Game</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LCTR Game. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
