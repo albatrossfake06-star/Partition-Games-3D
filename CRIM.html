@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCTR Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="crimstyle.css">
+</head>
+<body>
+    <!-- Animated Background Layers -->
+    <div id="stars-small"></div>
+    <div id="stars-medium"></div>
+    <div id="stars-large"></div>
+
+    <main id="app-container">
+        <header>
+            <div class="header-left"></div>
+            <div class="header-center">
+                <h1>LCTR</h1>
+            </div>
+            <div class="header-right">
+                <button id="help-btn" class="icon-button" aria-label="Help">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="24" height="24">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.44a.75.75 0 00-1.38 0L6.25 9.75a.75.75 0 001.38 0L8.94 6.44zM10 15a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>                               
+                </button>
+                <div class="theme-switcher">
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <div id="game-card">
+            <div class="status-container">
+                <p id="status-label">Loading...</p>
+                <div id="ai-thinking-indicator">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+            </div>
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <footer>
+            <button id="new-game-btn">New Game</button>
+        </footer>
+    </main>
+
+    <!-- Modals -->
+    <div id="setup-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Game Setup</h2>
+                <button id="help-btn-modal" class="icon-button" aria-label="Help">
+                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.44a.75.75 0 00-1.38 0L6.25 9.75a.75.75 0 001.38 0L8.94 6.44zM10 15a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            <p>Enter a board configuration manually, or generate one randomly.</p>
+            
+            <label for="rows-input">Row Lengths</label>
+            <input type="text" id="rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
+            <button id="randomize-btn-general" class="secondary-button">Unsure? Generate a random board</button>
+            
+            <hr>
+
+            <label for="specific-number-input">Or, generate from a specific total:</label>
+            <div class="input-group">
+                <input type="number" id="specific-number-input" placeholder="e.g., 25">
+                <button id="randomize-btn-specific">Generate Partition</button>
+            </div>
+
+            <hr>
+
+            <label for="ai-select">Computer Player</label>
+            <select id="ai-select">
+                <option value="B">Player B (Starts Second)</option>
+                <option value="A">Player A (Starts First)</option>
+                <option value="None">None (Two Human Players)</option>
+            </select>
+
+            <label for="difficulty-select">AI Difficulty</label>
+            <select id="difficulty-select">
+                <option value="Hard">Hard (Perfect Play)</option>
+                <option value="Medium" selected>Medium (Makes Mistakes)</option>
+                <option value="Easy">Easy (Very Random)</option>
+            </select>
+            
+            <label for="theme-select">Tile Theme</label>
+            <select id="theme-select">
+                <option value="grass">Grass</option>
+                <option value="stone">Stone</option>
+                <option value="ice">Ice</option>
+            </select>
+
+            <button id="start-game-btn" class="modal-btn">Start Game</button>
+        </div>
+    </div>
+    
+    <div id="game-over-modal-backdrop" class="modal-backdrop"><div class="modal"><h2 id="game-over-title">Game Over</h2><p id="game-over-message">Player X wins!</p><button id="play-again-btn" class="modal-btn">Play Again</button></div></div>
+    <div id="help-popover"><h3>How to Play</h3><p>On your turn, you can choose one of two moves:</p><ul><li>Remove any <strong>single row</strong> of squares.</li><li>Remove the <strong>entire leftmost column</strong> of squares.</li></ul><p><strong>Right-click</strong> on the board to toggle between selecting rows or the column.</p></div>
+    
+    <!-- Audio Elements -->
+    <audio id="sound-hover" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/ui_sound_button_pop_click_026.mp3" preload="auto"></audio>
+    <audio id="sound-remove" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/boulder_break_apart_and_fall_001.mp3" preload="auto"></audio>
+    <audio id="sound-win" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/multimedia_game_sound_harp_gliss_001.mp3" preload="auto"></audio>
+    <audio id="sound-click" src="https://www.zapsplat.com/wp-content/uploads/2015/sound-design/ui_sound_button_pop_click_025.mp3" preload="auto"></audio>
+
+    <script src="crimscript.js"></script>
+</body>
+</html>
