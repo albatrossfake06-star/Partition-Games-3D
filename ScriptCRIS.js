@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* =================================================================  
    Utility  
    ================================================================= */  
@@ -26,6 +27,30 @@ function randomPartitionDescending () {
    Game-theoretic helpers  
    ================================================================= */  
 function xorAllFragments (state) {  
+=======
+/* Random partition utility functions */
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomPartition(n) {
+  let parts = [];
+  let remaining = n;
+  let maxPart = n;
+  
+  while (remaining > 0) {
+    let part = randomInt(1, Math.min(remaining, maxPart));
+    parts.push(part);
+    remaining -= part;
+    maxPart = part;
+  }
+  
+  return parts.sort((a, b) => b - a); // Sort descending like other games
+}
+
+/* ────────────────────  XOR calculations for perfect AI  ──────────────────── */  
+function xorAllFragments(state) {  
+>>>>>>> cf9e5b4272ab0ddaa8b5a693776eabb9537091a9
   let x = 0;  
   for (const f of state.fragments) x ^= gRect(f.rows, f.cols);  
   return x;  
@@ -225,7 +250,33 @@ class CRIM_GUI {
     document.getElementById('new-game-btn')  
       .addEventListener('click', () => { SoundManager.play('click'); this.showSetup(); });  
     document.getElementById('play-again-btn')  
+<<<<<<< HEAD
       .addEventListener('click', () => { SoundManager.play('click'); this.showSetup(); });  
+=======
+        .addEventListener('click',()=>{SoundManager.play('click');this.showSetup();});
+    
+    /* random partition buttons */
+    document.getElementById('randomize-btn-general')
+        .addEventListener('click', () => {
+          SoundManager.play('click');
+          const n = randomInt(15, 40);
+          const partition = randomPartition(n);
+          this.rowsInput.value = partition.join(' ');
+        });
+    
+    document.getElementById('randomize-btn-specific')
+        .addEventListener('click', () => {
+          SoundManager.play('click');
+          const specificInput = document.getElementById('specific-number-input');
+          const n = parseInt(specificInput.value, 10);
+          if (isNaN(n) || n <= 0 || n > 200) {
+            alert("Please enter a positive number less than or equal to 200.");
+            return;
+          }
+          const partition = randomPartition(n);
+          this.rowsInput.value = partition.join(' ');
+        });  
+>>>>>>> cf9e5b4272ab0ddaa8b5a693776eabb9537091a9
   
     /* theme switch */  
     const themeTgl = document.getElementById('theme-toggle');  

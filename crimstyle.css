@@ -136,6 +136,25 @@ button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
 
 /* Theme Switcher */
 .theme-switcher { display: flex; align-items: center; gap: 8px; }
+
+.theme-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.theme-icon.sun {
+    opacity: 1;
+}
+
+[data-theme="dark"] .theme-icon.sun {
+    opacity: 0.4;
+}
+
+[data-theme="dark"] .theme-icon.moon {
+    opacity: 1;
+}
+
 .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .switch input { width: 0; height: 0; opacity: 0; }
 .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; cursor: pointer; transition: .4s; }
