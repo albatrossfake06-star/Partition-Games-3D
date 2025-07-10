@@ -26,15 +26,19 @@
       <div class="header-center"><h1>CRIS</h1></div>  
       <div class="header-right">  
         <button id="help-btn" aria-label="Help">  
-          <!-- hero-icons “question-mark-circle” -->  
+          <!-- hero-icons "question-mark-circle" -->  
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">  
             <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
           </svg>  
         </button>  
-        <label class="switch">  
-          <input type="checkbox" id="theme-toggle">  
-          <span class="slider round"></span>  
-        </label>  
+        <div class="theme-switcher">
+          <span class="theme-icon sun">☀️</span>
+          <label class="switch">  
+            <input type="checkbox" id="theme-toggle">  
+            <span class="slider round"></span>  
+          </label>
+          <span class="theme-icon moon">🌙</span>
+        </div>
       </div>  
     </header>  
 
@@ -58,19 +62,30 @@
   <div id="setup-modal-backdrop" class="modal-backdrop">  
     <div class="modal">  
       <h2>Game Setup</h2>  
-      <p>Enter the starting board configuration.</p>  
+      <p>Enter a board configuration manually, or generate one randomly.</p>
+      
       <label for="rows-input">Row lengths (e.g. 6 5 5 4)</label>  
-      <input id="rows-input" type="text" value="6 5 5 4" placeholder="e.g. 6 5 5 4">  
-      <button id="start-game-btn" class="modal-btn">Start game</button>  
+      <input id="rows-input" type="text" value="6 5 5 4" placeholder="e.g. 6 5 5 4">
+      <button id="randomize-btn-general" class="secondary-button">Unsure? Generate a random board</button>
+      
+      <hr>
 
+      <label for="specific-number-input">Or, generate from a specific total:</label>
+      <div class="input-group">
+        <input type="number" id="specific-number-input" placeholder="e.g., 25">
+        <button id="randomize-btn-specific">Generate Partition</button>
+      </div>
+
+      <hr>
 
       <label for="cpu-side">Computer side</label>  
-<select id="cpu-side">  
-  <option value="None">None</option>  
-  <option value="Red">Red (moves first)</option>  
-  <option value="Blue">Blue (moves second)</option>  
-</select>  
+      <select id="cpu-side">  
+        <option value="None">None</option>  
+        <option value="Red">Red (moves first)</option>  
+        <option value="Blue">Blue (moves second)</option>  
+      </select>  
 
+      <button id="start-game-btn" class="modal-btn">Start game</button>  
     </div>  
   </div>  
   

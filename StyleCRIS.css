@@ -226,12 +226,75 @@ button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
 #new-game-btn { color: var(--accent-color); background-color: transparent; border-color: var(--accent-color); }
 #new-game-btn:hover { color: white; background-color: var(--accent-color); }
 .theme-switcher { display: flex; align-items: center; gap: 8px; }
+
+.theme-icon {
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.theme-icon.sun {
+    opacity: 1;
+}
+
+[data-theme="dark"] .theme-icon.sun {
+    opacity: 0.4;
+}
+
+[data-theme="dark"] .theme-icon.moon {
+    opacity: 1;
+}
+
 .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .switch input { width: 0; height: 0; opacity: 0; }
 .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; cursor: pointer; transition: .4s; }
 .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.input-group input {
+    flex: 1;
+}
+
+.input-group button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.input-group button:hover {
+    background-color: var(--accent-hover-color);
+}
+
+.secondary-button {
+    background-color: transparent !important;
+    color: var(--accent-color) !important;
+    border: 2px solid var(--accent-color) !important;
+    font-size: 0.9rem !important;
+    padding: 10px 16px !important;
+}
+
+.secondary-button:hover {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+}
+
+.modal hr {
+    border: none;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 16px 0;
+}
 
 /* ==========================================================================
    8. Media Queries
