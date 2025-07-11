@@ -1,129 +1,363 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Partition Games | Rhodes College</title>  
-  
-    <!-- Google Fonts -->  
-    <link rel="preconnect" href="https://fonts.googleapis.com">  
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">  
-  
-    <!-- External stylesheet (keep whatever rules you already have) -->  
-    <link rel="stylesheet" href="style.css">  
-  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Application on Integer Partition Games | Rhodes College</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================================
+           1. Theming & Variables
+           ========================================================================== */
+        :root {
+            --bg-color: #111827; /* Dark background for landing page */
+            --card-bg-color: #1f2937;
+            --text-color: #f9fafb;
+            --text-muted-color: #9ca3af;
+            --border-color: #374151;
+            --star-color: #4b5563;
+            --accent-color: #60a5fa; /* Sky Blue */
+            --accent-hover-color: #3b82f6;
+        }
 
-</head>  
-  
-<body>  
-  
-    <!-- Animated Background Layers -->  
-    <div id="stars-small"></div>  
-    <div id="stars-medium"></div>  
-    <div id="stars-large"></div>  
-  
-    <header class="main-header">  
-        <div class="container">  
-            <a href="index.html" class="logo">Partition Games</a>  
-            <div class="header-nav">  
-                <div class="about-container">  
-                    <button class="nav-button">About</button>  
-                    <div class="about-description">  
-                        <strong>Rhodes College Summer Fellowship Program '25</strong><br><br>  
-                        This project is being developed under the supervision of   
-                        <a href="https://www.rhodes.edu/bio/eric-gottlieb" style="color:#60a5fa;">Professor Gottlieb</a>.   
-                        Soumtiro and Aayan are crafting this web application to aid Prof. Gottlieb and his team's research   
-                        on combinatorial games, making these mathematical concepts approachable to everyone.  
-                        <br><br>  
-                        Explore integer partition games through interactive gameplay with AI opponents and customizable themes.  
-                    </div>  
-                </div>  
-                <a href="developers.html" class="nav-button">Developers</a>  
-                <a href="https://github.com/ScarletrRaptor8/Partition-Games" target="_blank" rel="noopener noreferrer" class="nav-button">GitHub</a>  
-            </div>  
-        </div>  
-    </header>  
-  
-    <main>  
-  
-        <!-- Hero -->  
-        <section id="hero">  
-            <div class="container">  
-                <h1 class="hero-title">Partition Games</h1>  
-                <p class="hero-subtitle">  
-                    Explore the fascinating world of integer partition games through interactive gameplay  
-                </p>  
-            </div>  
-        </section>  
-  
-        <!-- =======================  GAMES SECTION  ======================= -->  
-        <section id="games">  
-            <div class="container">  
-                <h2 class="section-title">Choose Your Game</h2>  
-  
-                <div class="games-grid">  
-  
-                    <!-- ---------- LCTR ---------- -->  
-                    <div class="game-card">  
-                        <span class="game-icon">🎯</span>  
-                        <h3>LCTR</h3>  
-                        <p>A strategic partition game where players take turns choosing numbers to reach target sums.   
-                           Test your mathematical intuition against challenging AI opponents.</p>  
-  
-                        <div class="button-row">  
-                            <a href="LCTR.html"      class="play-button">Play&nbsp;Now</a>  
-                            <a href="document.pdf"  class="play-button"  target="_blank">Documentation</a>  
-                        </div>  
-                    </div>  
-  
-                    <!-- ---------- CRIM ---------- -->  
-                    <div class="game-card">  
-                        <span class="game-icon">🔥</span>  
-                        <h3>CRIM</h3>  
-                        <p>Navigate complex partition strategies in this challenging combinatorial game.   
-                           Master the art of number partitioning with multiple difficulty levels.</p>  
-  
-                        <div class="button-row">  
-                            <a href="CRIM.html"     class="play-button">Play&nbsp;Now</a>  
-                            <a href="CRIM.pdf" class="play-button"  target="_blank" rel="noopener">Documentation</a>  
-                        </div>  
-                    </div>  
-  
-                    <!-- ---------- CRIS ---------- -->  
-                    <div class="game-card">  
-                        <span class="game-icon">⚡</span>  
-                        <h3>CRIS</h3>  
-                        <p>Experience fast-paced partition gameplay with dynamic rules. Perfect your strategy and compete against sophisticated AI algorithms.</p>  
-  
-                        <div class="button-row">  
-                            <a href="CRIS.html"     class="play-button">Play&nbsp;Now</a>  
-                            <a href="CRIS.pdf" class="play-button"  target="_blank" rel="noopener">Documentation</a>  
-                        </div>  
-                    </div>  
-  
-                </div>  
-            </div>  
-        </section>  
-  
-        <!-- Optional overall documentation section -->  
-        <section id="documentation">  
-            <div class="container">  
-                <h2 class="section-title">Learn More</h2>  
-                <p style="color:var(--text-muted-color); margin-bottom:30px; font-size:1.1rem;">  
-                    Dive deeper into the mathematical foundations and strategies behind these partition games.  
-                </p>  
-                <a href="document.pdf" class="doc-link">View Full Project Documentation</a>  
-            </div>  
-        </section>  
-  
-    </main>  
-  
-    <footer>  
-        <div class="container">  
-            <p>&copy; 2024 Partition Games&nbsp;&mdash;&nbsp;Rhodes College. All Rights Reserved.</p>  
-        </div>  
-    </footer>  
-  
-</body>  
-</html>  
+        /* ==========================================================================
+           2. Keyframe Animations
+           ========================================================================== */
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes anim-star-flow {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2000px); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px -5px var(--accent-color); }
+            50% { box-shadow: 0 0 30px 0px var(--accent-color); }
+        }
+
+        /* ==========================================================================
+           3. Global & Body Styles
+           ========================================================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            position: relative;
+            z-index: 1;
+            overflow-x: hidden;
+        }
+
+        /* ==========================================================================
+           4. Animated Background
+           ========================================================================== */
+        #stars-small, #stars-medium, #stars-large {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background-repeat: repeat;
+            background-position: 0 0;
+            animation: anim-star-flow linear infinite;
+        }
+        #stars-small { background: radial-gradient(1px 1px at 50px 100px, var(--star-color), transparent), radial-gradient(1px 1px at 100px 20px, var(--star-color), transparent), radial-gradient(1px 1px at 220px 340px, var(--star-color), transparent), radial-gradient(1px 1px at 300px 480px, var(--star-color), transparent), radial-gradient(1px 1px at 450px 150px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 120s; }
+        #stars-medium { background: radial-gradient(2px 2px at 150px 200px, var(--star-color), transparent), radial-gradient(2px 2px at 350px 420px, var(--star-color), transparent), radial-gradient(2px 2px at 50px 480px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 80s; }
+        #stars-large { background: radial-gradient(3px 3px at 250px 300px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 50s; }
+        
+        /* ==========================================================================
+           5. Layout & Containers
+           ========================================================================== */
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        section {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        /* ==========================================================================
+           6. Header & Hero Section
+           ========================================================================== */
+        .main-header {
+            padding: 20px 0;
+        }
+
+        .main-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .header-nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .dev-button {
+            display: inline-block;
+            padding: 8px 18px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted-color);
+            background-color: transparent;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .dev-button:hover {
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            background-color: rgba(96, 165, 250, 0.1);
+        }
+
+        #hero {
+            padding: 100px 0;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 4rem;
+            color: var(--text-color);
+            text-shadow: 4px 4px var(--accent-color);
+            margin: 0;
+            animation: fadeInSlideUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted-color);
+            margin: 20px 0 40px;
+            max-width: 600px;
+            line-height: 1.6;
+            animation: fadeInSlideUp 1s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 40px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 12px;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            animation: fadeInSlideUp 1s ease-out 0.4s, pulse-glow 2.5s infinite ease-in-out;
+            animation-fill-mode: backwards;
+        }
+
+        .cta-button:hover {
+            background-color: var(--accent-hover-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* ==========================================================================
+           7. Features Section
+           ========================================================================== */
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg-color);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted-color);
+            line-height: 1.6;
+        }
+
+        /* ==========================================================================
+           8. Gameplay Showcase Section
+           ========================================================================== */
+        #gameplay {
+            background-color: var(--card-bg-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .gameplay-image {
+            max-width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* ==========================================================================
+           9. Final CTA & Footer
+           ========================================================================== */
+        #final-cta .section-title {
+            font-size: 2rem;
+        }
+        
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ==========================================================================
+           10. Media Queries
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            .main-header .container {
+                padding: 0 10px;
+            }
+            .logo {
+                font-size: 1.2rem;
+            }
+            .dev-button {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Animated Background Layers -->
+    <div id="stars-small"></div>
+    <div id="stars-medium"></div>
+    <div id="stars-large"></div>
+
+    <header class="main-header">
+        <div class="container">
+            <a href="index.html". style="color:#FFFFFF;"><h3>Home Page</h3></a>
+            <div class="header-nav">
+                <a href="developers.html" class="dev-button">Developers</a>
+                <a href="https://github.com/ScarletrRaptor8/Partition-Games" target="_blank" rel="noopener noreferrer" class="dev-button">
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="container">
+                <h1>Web Application on Integer Partition Games</h1>
+                <p style="text-align: center;">This project is being written under Rhodes College Summer Fellowship Program '25. Under supervision of <a href="https://www.rhodes.edu/bio/eric-gottlieb" style="color:#FFFFFF;">Professor Gottlieb</a>, Soumtiro and Aayan (see developer's section for more info) are crafting this web application. The project aims to aid Prof. Gottlieb and his team's research on combinatorial game, and make the games approachable to the folklore.</p>
+                <p>Game 1. <a href="LCTR.html" style="color : #FFFFFF;">LCTR</a> | <a href="document.pdf" style="color : #FFFFFF;">Documentation</a></p>
+                <p>Game 2. <a href="CRIS.html" style="color : #FFFFFF;">CRIS</a> | <a href="document.pdf" style="color : #FFFFFF;">Documentation</a></p>
+                <p>Game 3. <a href="CRIM.html" style="color : #FFFFFF;">CRIM</a> | <a href="document.pdf" style="color : #FFFFFF;">Documentation</a></p>
+
+
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="container">
+                <h2 class="section-title">Game Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>Challenging AI</h3>
+                        <p>Face off against an AI with multiple difficulty levels, from a forgiving beginner to a perfect, unbeatable opponent.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3>Customizable Themes</h3>
+                        <p>Choose your favorite 8-bit aesthetic. Play with classic Grass, dungeon Stone, or cool Ice tile themes.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Fully Responsive</h3>
+                        <p>Enjoy a seamless experience on any device. Play on your desktop, tablet, or mobile phone.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gameplay">
+            <div class="container">
+                <h2 class="section-title">Pure Retro Strategy</h2>
+                <img src="https://placehold.co/1000x600/1f2937/f9fafb?text=Gameplay%20Screenshot" alt="Gameplay screenshot of LCTR" class="gameplay-image">
+            </div>
+        </section>
+
+        <section id="final-cta">
+            <div class="container">
+                <h2 class="section-title">Ready to Play?</h2>
+                <a href="LCTR.html" class="cta-button">Launch Game</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WAIPG. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
