@@ -1,0 +1,130 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+<meta charset="utf-8">  
+<title>Game Documentation Hub</title>  
+  
+<style>  
+    :root{  
+        --bg:#f5f8fa;  
+        --card-bg:#ffffff;  
+        --accent:#1e88e5;  
+        --accent-dark:#1669b2;  
+        --text:#222;  
+        --radius:12px;  
+        --shadow:0 4px 14px rgba(0,0,0,.08);  
+    }  
+  
+    *{  
+        box-sizing:border-box;  
+        font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;  
+        margin:0;  
+        padding:0;  
+    }  
+  
+    body{  
+        background:var(--bg);  
+        color:var(--text);  
+        padding:2rem 1rem 4rem;  
+    }  
+  
+    h1{  
+        text-align:center;  
+        margin-bottom:2rem;  
+        font-weight:600;  
+        letter-spacing:.4px;  
+    }  
+  
+    /* Grid for cards */  
+    .grid{  
+        display:grid;  
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));  
+        gap:1.5rem;  
+        max-width:1100px;  
+        margin:0 auto;  
+    }  
+  
+    .card{  
+        background:var(--card-bg);  
+        border-radius:var(--radius);  
+        box-shadow:var(--shadow);  
+        padding:1.25rem 1.5rem 1.75rem;  
+        display:flex;  
+        flex-direction:column;  
+        transition:transform .18s;  
+    }  
+  
+    .card:hover{  
+        transform:translateY(-6px);  
+    }  
+  
+    .card h2{  
+        font-size:1.25rem;  
+        margin-bottom:.6rem;  
+    }  
+  
+    .card p{  
+        flex:1;  
+        font-size:.94rem;  
+        line-height:1.5;  
+        margin-bottom:1rem;  
+    }  
+  
+    .btn{  
+        align-self:flex-start;  
+        padding:.55rem 1rem;  
+        background:var(--accent);  
+        color:#fff;  
+        text-decoration:none;  
+        font-weight:600;  
+        border-radius:6px;  
+        transition:background .2s;  
+    }  
+  
+    .btn:hover{  
+        background:var(--accent-dark);  
+    }  
+  
+    @media(max-width:400px){  
+        .card h2{font-size:1.15rem;}  
+    }  
+</style>  
+</head>  
+  
+<body>  
+<h1>Game Documentation Library</h1>  
+  
+<div class="grid">  
+    <!-- 1. Chess -->  
+    <div class="card">  
+        <h2>LCTR</h2>  
+        <p>When it's their turn, the user can remove either the left column, or the top row.</p>  
+        <a class="btn" href="wikidocus/lctr/lctrdocu.html">Read Docs</a>  
+    </div>  
+  
+    <!-- 2. Checkers -->  
+    <div class="card">  
+        <h2>CRIM</h2>  
+        <p>The user may remove any row or column - but the two divided parts would get merged after each move.</p>  
+        <a class="btn" href="docs/checkers.html">Read Docs</a>  
+    </div>  
+  
+    <!-- 3. Sudoku -->  
+    <div class="card">  
+        <h2>CRIS</h2>  
+        <p>Moves are same as CRIM, but no merging in this case. Fragments parts will be independent, meaning a move in one dividend wouldn't impact others.</p>  
+        <a class="btn" href="docs/sudoku.html">Read Docs</a>  
+    </div>  
+  
+    <!-- 4. Minesweeper -->  
+    <div class="card">  
+        <h2>IRT</h2>  
+        <p>Only rows can be removed, and there would be merging afterwards.</p>  
+        <a class="btn" href="docs/minesweeper.html">Read Docs</a>  
+    </div>  
+  
+      
+</div>  
+  
+</body>  
+</html>
