@@ -188,7 +188,30 @@ class ProLCTRGui {
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         let detectedMove = null;
-        if (this.game.board.height() > 0 && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.CELL && mouseX >= this.MARGIN && mouseX <= this.MARGIN + this.game.board.rows[0] * this.CELL) {
+        
+        // Special handling for top-left cell - edge-based hover
+        const topLeftCellLeft = this.MARGIN;
+        const topLeftCellTop = this.MARGIN;
+        const topLeftCellRight = this.MARGIN + this.CELL;
+        const topLeftCellBottom = this.MARGIN + this.CELL;
+        
+        if (this.game.board.height() > 0 && this.game.board.width() > 0 && 
+            mouseX >= topLeftCellLeft && mouseX <= topLeftCellRight && 
+            mouseY >= topLeftCellTop && mouseY <= topLeftCellBottom) {
+            
+            // Calculate distances to bottom and right edges
+            const distToBottom = topLeftCellBottom - mouseY;
+            const distToRight = topLeftCellRight - mouseX;
+            
+            // Determine which edge is closer
+            if (distToBottom < distToRight) {
+                detectedMove = 'col'; // Bottom edge → illuminate column
+            } else {
+                detectedMove = 'row'; // Right edge → illuminate row
+            }
+        }
+        // Original logic for other areas
+        else if (this.game.board.height() > 0 && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.CELL && mouseX >= this.MARGIN && mouseX <= this.MARGIN + this.game.board.rows[0] * this.CELL) {
             detectedMove = 'row';
         } else if (this.game.board.width() > 0 && mouseX >= this.MARGIN && mouseX <= this.MARGIN + this.CELL && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.game.board.height() * this.CELL) {
             detectedMove = 'col';
