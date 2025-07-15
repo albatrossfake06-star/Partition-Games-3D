@@ -58,9 +58,21 @@
 <div id="setup-modal-backdrop" class="modal-backdrop">
     <div class="modal">
         <h2>Game Setup</h2>
-        <p>Enter the starting board configuration.</p>
+        <p>Enter a board configuration manually, or generate one randomly.</p>
+        
         <label for="rows-input">Row Lengths (e.g., 5 4 4 2)</label>
         <input type="text" id="rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
+        <button id="randomize-btn-general" class="secondary-button">Unsure? Generate a random board</button>
+        
+        <hr>
+
+        <label for="specific-number-input">Or, generate from a specific total:</label>
+        <div class="input-group">
+            <input type="number" id="specific-number-input" placeholder="e.g., 25">
+            <button id="randomize-btn-specific">Generate Partition</button>
+        </div>
+
+        <hr>
 
         <label for="ai-select">Computer Player</label>
         <select id="ai-select">

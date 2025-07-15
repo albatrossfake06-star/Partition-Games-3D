@@ -59,6 +59,26 @@ class Game {
     }
 }
 
+// --- RANDOM PARTITION UTILITIES ---
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomPartition(n) {
+    let parts = [];
+    let remaining = n;
+    let maxPart = n;
+    
+    while (remaining > 0) {
+        let part = randomInt(1, Math.min(remaining, maxPart));
+        parts.push(part);
+        remaining -= part;
+        maxPart = part;
+    }
+    
+    return parts.sort((a, b) => b - a); // Sort descending like other games
+}
+
 // --- SOUND MANAGER ---
 const SoundManager = {
     sounds: {},
@@ -99,6 +119,9 @@ class ProLCTRGui {
         this.setupModal = document.getElementById('setup-modal-backdrop');
         this.gameOverModal = document.getElementById('game-over-modal-backdrop');
         this.rowsInput = document.getElementById('rows-input');
+        this.randomizeBtnGeneral = document.getElementById('randomize-btn-general');
+        this.specificNumberInput = document.getElementById('specific-number-input');
+        this.randomizeBtnSpecific = document.getElementById('randomize-btn-specific');
         this.aiSelect = document.getElementById('ai-select');
         this.difficultySelect = document.getElementById('difficulty-select');
         this.themeSelect = document.getElementById('theme-select');
@@ -119,6 +142,12 @@ class ProLCTRGui {
         this.themeToggle.addEventListener('change', () => { SoundManager.play('click'); this.toggleTheme(); });
         this.helpBtn.addEventListener('mouseenter', () => this.showHelp());
         this.helpBtn.addEventListener('mouseleave', () => this.hideHelp());
+        if (this.randomizeBtnGeneral) {
+            this.randomizeBtnGeneral.addEventListener('click', () => this.generateGeneralRandomBoard());
+        }
+        if (this.randomizeBtnSpecific) {
+            this.randomizeBtnSpecific.addEventListener('click', () => this.generateSpecificRandomBoard());
+        }
     }
     
     processSetup() {
@@ -136,6 +165,24 @@ class ProLCTRGui {
         } catch (e) {
             alert("Invalid input. Please enter positive integers only.");
         }
+    }
+
+    generateGeneralRandomBoard() {
+        SoundManager.play('click');
+        const n = randomInt(15, 40);
+        const partition = randomPartition(n);
+        this.rowsInput.value = partition.join(' ');
+    }
+
+    generateSpecificRandomBoard() {
+        SoundManager.play('click');
+        const n = parseInt(this.specificNumberInput.value, 10);
+        if (isNaN(n) || n <= 0 || n > 200) {
+            alert("Please enter a positive number less than or equal to 200.");
+            return;
+        }
+        const partition = randomPartition(n);
+        this.rowsInput.value = partition.join(' ');
     }
 
     startGame(rows, aiSide) {
