@@ -328,14 +328,44 @@ class CRIM_GUI{
   
   redraw(){  
     this.clearBoard();  
-    if(!this.state) return;  
+    if(!this.state) return;
+    
+    // Calculate required dimensions and update board area
+    this.updateBoardDimensions();
+    
     let x0=this.GAP, y0=this.GAP;  
-  
+
     this.state.fragments.forEach((frag,fIdx)=>{  
       this.drawFragment(frag,fIdx,x0,y0);  
       x0 += frag.cols*this.CELL + this.GAP*2; // move right for next fragment  
     });  
-  }  
+  }
+  
+  updateBoardDimensions() {
+    if (!this.state || this.state.fragments.length === 0) return;
+    
+    // Calculate total width needed for all fragments
+    let totalWidth = this.GAP; // Start with initial gap
+    let maxHeight = 0;
+    
+    this.state.fragments.forEach(frag => {
+      totalWidth += frag.cols * this.CELL + this.GAP * 2; // fragment width + gaps
+      maxHeight = Math.max(maxHeight, frag.rows * this.CELL);
+    });
+    
+    // Add margins for labels
+    const requiredWidth = totalWidth + this.LABEL;
+    const requiredHeight = this.GAP + maxHeight + this.LABEL;
+    
+    // Set minimum dimensions
+    const minDimension = 480;
+    const finalWidth = Math.max(requiredWidth, minDimension);
+    const finalHeight = Math.max(requiredHeight, minDimension);
+    
+    // Apply the calculated dimensions to the board area
+    this.boardArea.style.width = `${finalWidth}px`;
+    this.boardArea.style.height = `${finalHeight}px`;
+  }
   
   drawFragment(frag,fIdx,x0,y0){  
     /* row labels */  

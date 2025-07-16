@@ -200,6 +200,8 @@ header {
     box-sizing: border-box; 
     min-height: 100vh; 
     padding: 80px 20px 20px; /* Top padding to account for fixed header */
+    width: max-content; 
+    min-width: 100vw; 
 }
 .header-center { text-align: center; }
 .header-right { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
@@ -219,7 +221,7 @@ header {
     transform: scale(1.1);
 }
 
-#game-card { position: relative; width: 100%; max-width: 480px; padding: 28px; box-sizing: border-box; background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 30px -10px var(--shadow-color); text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
+#game-card { position: relative; width: fit-content; min-width: 480px; padding: 28px; box-sizing: border-box; background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 30px -10px var(--shadow-color); text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
 footer { margin-top: 24px; }
 
 /* ==========================================================================
@@ -357,7 +359,8 @@ input:checked + .slider:before { transform: translateX(24px); }
     .header-right { grid-column: 2 / 3; }
     .modal { padding: 20px; }
     #help-popover { right: 5px; top: 65px; }
-    #app-container { padding: 70px 20px 20px; /* Adjusted for smaller fixed header */ }
+    #game-card { padding: 16px; min-width: unset; }
+    #app-container { padding: 70px 10px 10px; /* Adjusted for smaller fixed header */ }
 }
 
 
@@ -387,4 +390,4 @@ input:checked + .slider:before { transform: translateX(24px); }
 .label-cell.row-win{background:#ff6b6b!important;color:#fff;}  
 .label-cell.col-win{background:#4dabf7!important;color:#fff;}  
 /* ensure board area keeps tiles on top of card shadows */  
-#board-area{position:relative;min-height:480px;min-width:480px;}  
+#board-area{position:relative;min-height:480px;min-width:480px;width:fit-content;height:fit-content;}  
