@@ -117,8 +117,13 @@
    3. Global & Body Styles
    ========================================================================== */
 
-body {
+html, body {
     margin: 0;
+    padding: 0;
+    overflow-x: auto;
+}
+
+body {
     font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
@@ -199,7 +204,9 @@ header {
     justify-content: flex-start; 
     box-sizing: border-box; 
     min-height: 100vh; 
-    padding: 80px 20px 20px; /* Top padding to account for fixed header */
+    padding: 80px 40px 20px; /* Increased horizontal padding to prevent off-screen issues */
+    width: max-content; 
+    min-width: 100vw; 
 }
 .header-center { text-align: center; }
 .header-right { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
@@ -221,8 +228,8 @@ header {
 
 #game-card { 
     position: relative; 
-    /* width: 100%;  */
-    /* max-width: 480px;  */
+    width: fit-content;
+    min-width: 480px;
     padding: 28px; 
     box-sizing: border-box; 
     background-color: var(--card-bg-color); 
@@ -331,5 +338,6 @@ input:checked + .slider:before { transform: translateX(24px); }
     .header-right { grid-column: 2 / 3; }
     .modal { padding: 20px; }
     #help-popover { right: 5px; top: 65px; }
-    #app-container { padding: 70px 20px 20px; /* Adjusted for smaller fixed header */ }
+    #app-container { padding: 70px 20px 20px; /* Smaller padding on mobile */ }
+    #game-card { padding: 16px; min-width: unset; }
 }

@@ -169,7 +169,12 @@ class ProLCTRGui {
             this.staircaseBtnSpecific  
             .addEventListener('click',  
                 () => this.generateSpecificRandomBoardStairCase());  
-        } 
+        }
+        
+        // Add board interaction event listeners
+        this.boardArea.addEventListener('mousemove', (event) => this.handleMouseMove(event));
+        this.boardArea.addEventListener('mouseleave', () => this.handleMouseLeave());
+        this.boardArea.addEventListener('click', () => this.handleMouseClick());
     }
     
     processSetup() {
@@ -257,10 +262,13 @@ class ProLCTRGui {
         const mouseY = event.clientY - rect.top;
         let detectedMove = null;
         
+        // Calculate extra left margin for wide boards
+        const extraLeftMargin = this.game.board.width() > 30 ? 20 : 0;
+        
         // Special handling for top-left cell - edge-based hover
-        const topLeftCellLeft = this.MARGIN;
+        const topLeftCellLeft = this.MARGIN + extraLeftMargin;
         const topLeftCellTop = this.MARGIN;
-        const topLeftCellRight = this.MARGIN + this.CELL;
+        const topLeftCellRight = this.MARGIN + extraLeftMargin + this.CELL;
         const topLeftCellBottom = this.MARGIN + this.CELL;
         
         if (this.game.board.height() > 0 && this.game.board.width() > 0 && 
@@ -279,16 +287,16 @@ class ProLCTRGui {
             }
         }
         // Original logic for other areas
-        else if (this.game.board.height() > 0 && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.CELL && mouseX >= this.MARGIN && mouseX <= this.MARGIN + this.game.board.rows[0] * this.CELL) {
+        else if (this.game.board.height() > 0 && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.CELL && mouseX >= this.MARGIN + extraLeftMargin && mouseX <= this.MARGIN + extraLeftMargin + this.game.board.rows[0] * this.CELL) {
             detectedMove = 'row';
-        } else if (this.game.board.width() > 0 && mouseX >= this.MARGIN && mouseX <= this.MARGIN + this.CELL && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.game.board.height() * this.CELL) {
+        } else if (this.game.board.width() > 0 && mouseX >= this.MARGIN + extraLeftMargin && mouseX <= this.MARGIN + extraLeftMargin + this.CELL && mouseY >= this.MARGIN && mouseY <= this.MARGIN + this.game.board.height() * this.CELL) {
             detectedMove = 'col';
         }
 
         if (detectedMove !== this.hoveredMove) {
             if (detectedMove) SoundManager.play('hover');
             this.hoveredMove = detectedMove;
-            this.boardArea.querySelectorAll('.tile.highlighted').forEach(t => t.classList.remove('highlighted'));
+            this.gameCard.querySelectorAll('.tile.highlighted').forEach(t => t.classList.remove('highlighted'));
             if (this.hoveredMove === 'row') {
                 for (let c = 0; c < this.game.board.rows[0]; c++) { document.getElementById(`tile-0-${c}`)?.classList.add('highlighted'); }
             } else if (this.hoveredMove === 'col') {
@@ -300,7 +308,7 @@ class ProLCTRGui {
 
     handleMouseLeave() {
         this.hoveredMove = null;
-        this.boardArea.querySelectorAll('.tile.highlighted').forEach(t => t.classList.remove('highlighted'));
+        this.gameCard.querySelectorAll('.tile.highlighted').forEach(t => t.classList.remove('highlighted'));
         this.boardArea.classList.remove('clickable');
     }
 
@@ -342,16 +350,34 @@ class ProLCTRGui {
         this.boardArea.querySelectorAll('.tile').forEach(tile => tile.remove());
         if (!this.game) return;
         
+        // Add small left margin for very wide boards (CSS handles main off-screen prevention)
+        const extraLeftMargin = this.game.board.width() > 30 ? 20 : 0;
+        
         this.game.board.squares().forEach(({ r, c }) => {
             const tile = document.createElement('div');
             tile.className = 'tile';
             tile.id = `tile-${r}-${c}`;
             tile.style.width = `${this.CELL}px`;
             tile.style.height = `${this.CELL}px`;
-            tile.style.left = `${this.MARGIN + c * this.CELL}px`;
+            tile.style.left = `${this.MARGIN + extraLeftMargin + c * this.CELL}px`;
             tile.style.top = `${this.MARGIN + r * this.CELL}px`;
             this.boardArea.appendChild(tile);
         });
+        
+        // Set board area size explicitly with extra left margin for wide boards
+        const boardDataWidth = this.game.board.width() * this.CELL;
+        const boardDataHeight = this.game.board.height() * this.CELL;
+        
+        let boardWidth = this.MARGIN * 2 + boardDataWidth + extraLeftMargin;
+        let boardHeight = this.MARGIN * 2 + boardDataHeight;
+        
+        // Set minimum dimensions (like CRIM)
+        const minDimension = 480;
+        boardWidth = Math.max(boardWidth, minDimension);
+        boardHeight = Math.max(boardHeight, minDimension);
+        
+        this.boardArea.style.width = `${boardWidth}px`;
+        this.boardArea.style.height = `${boardHeight}px`;
     }
 
     updateStatus() {
