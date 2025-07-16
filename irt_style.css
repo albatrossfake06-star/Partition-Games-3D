@@ -173,8 +173,8 @@ button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
 
 .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
 .switch input { width: 0; height: 0; opacity: 0; }
-.slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 34px; cursor: pointer; transition: .4s; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; border-radius: 50%; transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+.slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); border-radius: 34px; cursor: pointer; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: var(--card-bg-color); border-radius: 50%; transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
 
