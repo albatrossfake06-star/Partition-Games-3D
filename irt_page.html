@@ -16,11 +16,13 @@
 </head>
 <body>
     <!-- Animated Background Layers -->
+    
     <div id="stars-small"></div>
     <div id="stars-medium"></div>
     <div id="stars-large"></div>
-
+              
     <main id="app-container">
+        
         <header>
             <div class="header-left">
                 <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
@@ -54,6 +56,10 @@
             </div>
             <div id="board-area"></div>
         </div>
+
+
+
+
 
         <footer>
             <button id="new-game-btn">New Game</button>
@@ -94,6 +100,39 @@
             </div>
     
         <hr>
+    
+
+     <div class="form-row">  
+            <label for="partition-size-slider">  
+            Quick size:&nbsp;  
+        <span id="partition-size-value">10</span>  
+        </label>  
+        <input  id="partition-size-slider"  
+            type="range"  
+            min="1"  max="200"  step="1"  
+            value="10">  
+        </div>
+        
+
+    <label for="rect-width-input">Rectangle W × H:</label>  
+  
+    <input  id="rect-width-input"  
+            type="number"  
+            min="1"  max="200"  
+            placeholder="width">  
+  
+    <input  id="rect-height-input"  
+            type="number"  
+            min="1"  max="200"  
+            placeholder="height">  
+  
+    <button id="rectangle-btn-specific" type="button">  
+        Generate Rectangle. 
+    </button>
+    
+    <hr> 
+
+    
 
             <label for="ai-select">Computer Player</label>
             <select id="ai-select">

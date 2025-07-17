@@ -54,6 +54,20 @@ function staircase(n) {
   return parts; // Sort descending like other games
 }
 
+function rectangle(a, b)
+{
+    let parts = [] 
+
+    while (b >= 1)
+    {
+        parts.push(a);
+        b = b - 1;  
+    }
+
+    return parts; 
+
+}
+
 function grundy(position) {
     if (position === '[]') return 0;
     if (grundyMemo.has(position)) return grundyMemo.get(position);
@@ -161,6 +175,17 @@ class ProLCTRGui {
         this.helpBtn = document.getElementById('help-btn');
         this.helpBtnModal = document.getElementById('help-btn-modal');
         this.helpPopover = document.getElementById('help-popover'); 
+
+        this.randomizeBtnSpecific   = document.getElementById('randomize-btn-specific');  
+        this.staircaseBtnSpecific   = document.getElementById('staircase-btn-specific');  
+  
+        this.rectWidthInput  = document.getElementById('rect-width-input');  
+        this.rectHeightInput = document.getElementById('rect-height-input');  
+        this.rectangleBtn    = document.getElementById('rectangle-btn-specific');
+
+        this.partitionSizeSlider = document.getElementById('partition-size-slider');  
+        this.partitionSizeValue  = document.getElementById('partition-size-value');  
+
     }
 
     bindEventListeners() {
@@ -184,12 +209,7 @@ class ProLCTRGui {
             this.staircaseBtnSpecific  
             .addEventListener('click',  
                 () => this.generateSpecificRandomBoardStairCase());  
-        }
-        
-        // Add board interaction event listeners (FIXED: This was missing!)
-        this.boardArea.addEventListener('mousemove', (event) => this.handleMouseMove(event));
-        this.boardArea.addEventListener('mouseleave', () => this.handleMouseLeave());
-        this.boardArea.addEventListener('click', () => this.handleMouseClick());
+        } 
     }
 
     redrawBoard() {
@@ -319,7 +339,26 @@ class ProLCTRGui {
     this.rowsInput.value = partition.join(' ');  
     } 
 
-    
+    generateSpecificRectangleBoard() {  
+    SoundManager.play('click');  
+  
+    const w = parseInt(this.rectWidthInput.value,  10);  
+    const h = parseInt(this.rectHeightInput.value, 10);  
+  
+    if (  
+        isNaN(w) || isNaN(h) ||  
+        w <= 0  || h <= 0  ||  
+        w > 200 || h > 200  
+    ) {  
+        alert("Enter positive integers (≤ 200) for both width and height.");  
+        return;  
+    }  
+  
+    const partition = rectangle(w, h);   // [w, w, …]  (h times)  
+    this.rowsInput.value = partition.join(' ');  
+    }  
+
+
     processSetup() { try { SoundManager.play('click'); const nums = this.rowsInput.value.trim().split(/\s+/).map(Number).filter(n => n > 0).sort((a,b) => b-a); if (nums.length === 0 && this.rowsInput.value.trim() !== '0') { this.startGame([], null); this.setupModal.classList.remove('visible'); return; } const aiSide = this.aiSelect.value === "None" ? null : this.aiSelect.value; this.aiDifficulty = this.difficultySelect.value; this.gameCard.setAttribute('data-tile-theme', this.themeSelect.value); this.setupModal.classList.remove('visible'); this.startGame(nums, aiSide); } catch (e) { alert("Invalid input. Please enter positive integers only."); } }
     startGame(rows, aiSide) { this.game = new Game(new Board(rows), aiSide); this.hoveredMove = null; this.isAnimating = false; this.redrawBoard(); this.updateStatus(); if (this.game.isAiTurn()) { this.aiTurn(); } }
     aiTurn() { if (!this.game || !this.game.isAiTurn() || this.isAnimating) return; this.aiThinkingIndicator.classList.add('thinking'); setTimeout(() => { this.aiThinkingIndicator.classList.remove('thinking'); let move; const rand = Math.random(); const legalMoves = []; if (this.game.board.height() > 0) { for(let i=0; i<this.game.board.height(); i++) legalMoves.push({type: 'row', index: i}); } if ((this.aiDifficulty === 'Easy' && rand < 0.75) || (this.aiDifficulty === 'Medium' && rand < 0.30)) { move = legalMoves[Math.floor(Math.random() * legalMoves.length)]; } else { move = perfectMove(this.game.board.asTuple()); } this.executeWithAnimation(move); }, this.AI_THINK_MS); }
