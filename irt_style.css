@@ -1,234 +1,438 @@
-/* ==========================================================================
-   1. Theming & Variables
-   ========================================================================== */
-
-:root {
-    /* -- Polished Light Theme -- */
-    --bg-color: #f8f9fa;
-    --card-bg-color: #ffffff;
-    --text-color: #212529;
-    --text-muted-color: #6c757d;
-    --border-color: #e9ecef;
-    --shadow-color: rgba(67, 56, 202, 0.08);
-    --star-color: #d4d4d8;
-
-    /* Accent Color (Sky Blue) */
-    --accent-color: #3b82f6;
-    --accent-hover-color: #2563eb;
-    --hover-highlight-fill: rgba(59, 130, 246, 0.1);
-}
-
-[data-theme="dark"] {
-    /* -- Polished Dark Theme -- */
-    --bg-color: #111827;
-    --card-bg-color: #1f2937;
-    --text-color: #f9fafb;
-    --text-muted-color: #9ca3af;
-    --border-color: #374151;
-    --shadow-color: rgba(0, 0, 0, 0.2);
-    --star-color: #4b5563;
-
-    /* Accent Color */
-    --accent-color: #60a5fa;
-    --accent-hover-color: #3b82f6;
-    --hover-highlight-fill: rgba(96, 165, 250, 0.15);
-}
-
-/* -- Tile Themes -- */
-[data-tile-theme="grass"] { --tile-bg: #86efac; --tile-border: #22c55e; --tile-shadow: #15803d; }
-[data-tile-theme="stone"] { --tile-bg: #a8a29e; --tile-border: #78716c; --tile-shadow: #57534e; }
-[data-tile-theme="ice"] { --tile-bg: #bae6fd; --tile-border: #38bdf8; --tile-shadow: #0ea5e9; }
-
-/* ==========================================================================
-   2. Keyframe Animations
-   ========================================================================== */
-
-@keyframes fadeInSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes modal-entry { from { opacity: 0; transform: scale(0.95) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-@keyframes anim-star-flow { from { transform: translateY(0); } to { transform: translateY(-2000px); } }
-@keyframes thinking-dot { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
-
-/* ==========================================================================
-   3. Global & Body Styles
-   ========================================================================== */
-
-body { margin: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s ease, color 0.3s ease; position: relative; z-index: 1; }
-
-/* ==========================================================================
-   4. Animated Background
-   ========================================================================== */
-#stars-small, #stars-medium, #stars-large { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; background-repeat: repeat; background-position: 0 0; animation: anim-star-flow linear infinite; }
-#stars-small { background-image: radial-gradient(1px 1px at 50px 100px, var(--star-color), transparent), radial-gradient(1px 1px at 100px 20px, var(--star-color), transparent), radial-gradient(1px 1px at 220px 340px, var(--star-color), transparent), radial-gradient(1px 1px at 300px 480px, var(--star-color), transparent), radial-gradient(1px 1px at 450px 150px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 120s; }
-#stars-medium { background-image: radial-gradient(2px 2px at 150px 200px, var(--star-color), transparent), radial-gradient(2px 2px at 350px 420px, var(--star-color), transparent), radial-gradient(2px 2px at 50px 480px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 80s; }
-#stars-large { background-image: radial-gradient(3px 3px at 250px 300px, var(--star-color), transparent); background-size: 500px 500px; animation-duration: 50s; }
-
-/* ==========================================================================
-   5. Layout & Containers
-   ========================================================================== */
-header { 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    z-index: 100; 
-    display: grid; 
-    grid-template-columns: 1fr auto 1fr; 
-    align-items: center; 
-    width: 100%; 
-    padding: 15px 20px; 
-    background-color: rgba(248, 249, 250, 0.6); /* More transparent light background */
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%); /* Safari support */
-    border-bottom: 1px solid rgba(233, 236, 239, 0.3); 
-    box-shadow: 0 8px 32px rgba(67, 56, 202, 0.1);
-    transition: all 0.3s ease;
-}
-
-[data-theme="dark"] header {
-    background-color: rgba(17, 24, 39, 0.6); /* More transparent dark background */
-    border-bottom: 1px solid rgba(55, 65, 81, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-#app-container { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: flex-start; 
-    box-sizing: border-box; 
-    min-height: 100vh; 
-    padding: 80px 20px 20px; /* Top padding to account for fixed header */
-}
-.header-center { text-align: center; }
-.header-right { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
-
-.home-btn {
-    font-size: 1.5rem;
-    text-decoration: none;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    display: inline-block;
-    margin-left: 80px;
-}
-
-.home-btn:hover {
-    background-color: var(--hover-highlight-fill, rgba(0, 0, 0, 0.1));
-    transform: scale(1.1);
-}
-
-#game-card { position: relative; width: fit-content; min-width: 480px; padding: 28px; box-sizing: border-box; background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 30px -10px var(--shadow-color); text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
-footer { margin-top: 24px; }
-
-/* ==========================================================================
-   6. Typography
-   ========================================================================== */
-h1 { margin: 0; font-family: 'Press Start 2P', cursive; font-size: 2.25rem; color: var(--text-color); text-align: center; animation: fadeInSlideUp 0.5s ease-out; }
-[data-theme="dark"] h1 { text-shadow: 2px 2px var(--accent-color); }
-.status-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 24px; }
-#status-label { min-height: 27px; margin: 0; font-size: 1.1rem; font-weight: 500; color: var(--text-muted-color); animation: fadeInSlideUp 0.4s ease-out; }
-#status-label.exiting { opacity: 0; transform: translateY(-5px); transition: opacity 0.2s ease, transform 0.2s ease; }
-
-/* ==========================================================================
-   7. Components
-   ========================================================================== */
-
-/* Game Area, Tiles, AI Indicator */
-#board-area { position: relative; min-height: 480px; min-width: 480px; margin: 0 auto; }
-#board-area.clickable { cursor: pointer; }
-
-.tile { position: absolute; z-index: 2; box-sizing: border-box; background: var(--tile-bg); border: 3px solid var(--tile-border); border-right-color: var(--tile-shadow); border-bottom-color: var(--tile-shadow); border-radius: 4px; image-rendering: pixelated; pointer-events: none; transition: all 0.3s ease, top 0.4s cubic-bezier(0.5, 1.5, 0.5, 1); }
-.tile.highlighted { transform: scale(1.05); box-shadow: inset 0 0 0 3px var(--accent-color); }
-.tile.removing { opacity: 0; transform: scale(0.2) rotate(45deg); transition-duration: 0.4s; }
-#ai-thinking-indicator { display: none; }
-#ai-thinking-indicator.thinking { display: inline-flex; }
-#ai-thinking-indicator .dot { width: 6px; height: 6px; background-color: var(--text-muted-color); border-radius: 50%; margin: 0 2px; animation: thinking-dot 1.4s infinite ease-in-out both; }
-#ai-thinking-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
-#ai-thinking-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
-
-/* Buttons & Inputs */
-button { padding: 12px 24px; font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; border: 2px solid transparent; border-radius: 12px; cursor: pointer; transition: all 0.2s ease-in-out; }
-button:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
-.icon-button { display: flex; align-items: center; justify-content: center; padding: 4px; background: transparent; border: none; border-radius: 99px; color: var(--text-muted-color); }
-.icon-button:hover { color: var(--accent-color); background-color: var(--hover-highlight-fill); }
-.modal-btn { width: 100%; margin-top: 8px; color: white; background-color: var(--accent-color); }
-.modal-btn:hover { background-color: var(--accent-hover-color); }
-.secondary-button { width: 100%; background-color: transparent; color: var(--accent-color); border-color: var(--border-color); font-size: 0.9rem; padding: 10px; }
-.secondary-button:hover { border-color: var(--accent-color); background-color: var(--hover-highlight-fill); }
-#new-game-btn { color: var(--accent-color); background-color: transparent; border-color: var(--accent-color); }
-#new-game-btn:hover { color: white; background-color: var(--accent-color); }
-.input-group { display: flex; gap: 10px; }
-.input-group input { flex-grow: 1; min-width: 0; }
-.input-group button { flex-shrink: 0; padding: 10px 16px; font-size: 0.9rem; }
-
-/* Modals & Popovers */
-.modal-backdrop { position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
-.modal-backdrop.visible { opacity: 1; visibility: visible; }
-.modal { display: flex; flex-direction: column; width: 90%; max-width: 400px; padding: 24px 28px; gap: 16px; background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color); opacity: 0; }
-.modal-backdrop.visible .modal { animation: modal-entry 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: -10px; }
-.modal-header h2 { margin: 0; }
-.modal hr { width: 100%; border: none; border-top: 1px solid var(--border-color); margin: 0; }
-#help-popover { position: absolute; top: 85px; right: 20px; z-index: 1001; width: 280px; padding: 16px 20px; background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px -10px var(--shadow-color); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: all 0.2s ease-out; }
-#help-popover.visible { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-.modal h2, #help-popover h3 { margin: 0 0 10px 0; font-weight: 600; font-size: 1rem; color: var(--text-color); }
-.modal p, #help-popover p, #help-popover li { font-size: 0.9rem; line-height: 1.5; color: var(--text-muted-color); }
-.modal p { margin: 0; text-align: left; }
-#help-popover p { margin: 0 0 10px 0; }
-#help-popover ul { margin: 0 0 10px 0; padding-left: 20px; }
-#help-popover li { margin-bottom: 5px; }
-.modal label { font-weight: 500; font-size: 0.9rem; color: var(--text-muted-color); text-align: left; }
-.modal input, .modal select { width: 100%; padding: 12px; box-sizing: border-box; font-size: 1rem; color: var(--text-color); background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.2s ease; }
-.modal input:focus, .modal select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--hover-highlight-fill); }
-
-/* Theme Switcher */
-.theme-switcher { display: flex; align-items: center; gap: 8px; }
-
-.theme-icon {
-    font-size: 1.2rem;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-}
-
-.theme-icon.sun {
-    opacity: 1;
-}
-
-[data-theme="dark"] .theme-icon.sun {
-    opacity: 0.4;
-}
-
-[data-theme="dark"] .theme-icon.moon {
-    opacity: 1;
-}
-
-.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-.switch input { width: 0; height: 0; opacity: 0; }
-.slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); border-radius: 34px; cursor: pointer; transition: .4s; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: var(--card-bg-color); border-radius: 50%; transition: .4s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-input:checked + .slider { background-color: var(--accent-color); }
-input:checked + .slider:before { transform: translateX(24px); }
-
-/* ==========================================================================
-   8. Media Queries
-   ========================================================================== */
-@media (max-width: 500px) { 
-    h1 { font-size: 1.75rem; } 
-    header { 
-        grid-template-columns: auto 1fr; 
-        padding: 10px 15px; 
-    } 
-    .header-center { order: -1; text-align: left; } 
-    .header-right { grid-column: 2 / 3; } 
-    .modal { padding: 20px; } 
-    #help-popover { right: 5px; top: 65px; } 
-    #app-container { padding: 70px 20px 20px; /* Adjusted for smaller fixed header */ } 
-} 
-
-@media (max-width: 500px), (max-height: 500px) {  
-    .modal-backdrop.visible .modal {  
-        transform: scale(0.7);          /* shrink the whole window   */  
-        transform-origin: center center; /* keep it centred           */  
-    }  
+/* ========================================================================  
+   1. Theming & Variables  
+   ======================================================================== */  
+  
+/* --- Front-page logo styles ------------------------------------------- */  
+.lctr-logo {  
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  
+  border: 3px solid #fff;  
+  border-radius: 20px;  
+  padding: 60px 80px;  
+  cursor: pointer;  
+  transition: all 0.3s ease;  
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);  
+}  
+.lctr-logo:hover {  
+  transform: translateY(-5px);  
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);  
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);  
+}  
+.lctr-logo h1 {  
+  font-family: "Press Start 2P", cursive;  
+  font-size: 4rem;  
+  color: #fff;  
+  margin: 0;  
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);  
+}  
+.lctr-logo .subtitle {  
+  font-family: "Poppins", sans-serif;  
+  font-size: 1.2rem;  
+  color: #fff;  
+  margin: 20px 0 0 0;  
+  opacity: 0.9;  
+}  
+/* Responsive logo */  
+@media (max-width: 768px) {  
+  .lctr-logo       { padding: 40px 50px; }  
+  .lctr-logo h1    { font-size: 2.5rem; }  
+  .lctr-logo .subtitle { font-size: 1rem; }  
+}  
+  
+/* --- CSS custom-properties ------------------------------------------- */  
+:root {  
+  /* polished light theme */  
+  --bg-color: #f8f9fa;  
+  --card-bg-color: #ffffff;  
+  --text-color: #212529;  
+  --text-muted-color: #6c757d;  
+  --border-color: #e9ecef;  
+  --shadow-color: rgba(67, 56, 202, 0.08);  
+  --star-color: #d4d4d8;  
+  /* accent */  
+  --accent-color: #3b82f6;  
+  --accent-hover-color: #2563eb;  
+  --hover-highlight-fill: rgba(59, 130, 246, 0.1);  
+}  
+  
+[data-theme="dark"] {  
+  /* polished dark theme */  
+  --bg-color: #111827;  
+  --card-bg-color: #1f2937;  
+  --text-color: #f9fafb;  
+  --text-muted-color: #9ca3af;  
+  --border-color: #374151;  
+  --shadow-color: rgba(0, 0, 0, 0.2);  
+  --star-color: #4b5563;  
+  --accent-color: #60a5fa;  
+  --accent-hover-color: #3b82f6;  
+  --hover-highlight-fill: rgba(96, 165, 250, 0.15);  
+}  
+  
+/* --- Board tile colour-schemes --------------------------------------- */  
+[data-tile-theme="grass"] {  
+  --tile-bg: #86efac;  
+  --tile-border: #22c55e;  
+  --tile-shadow: #15803d;  
+}  
+[data-tile-theme="stone"] {  
+  --tile-bg: #a8a29e;  
+  --tile-border: #78716c;  
+  --tile-shadow: #57534e;  
+}  
+[data-tile-theme="ice"] {  
+  --tile-bg: #bae6fd;  
+  --tile-border: #38bdf8;  
+  --tile-shadow: #0ea5e9;  
+}  
+  
+/* ========================================================================  
+   2. Key-frame animations  
+   ======================================================================== */  
+@keyframes fadeInSlideUp   { from { opacity:0; transform: translateY(10px);} to{opacity:1; transform:translateY(0);} }  
+@keyframes modal-entry     { from { opacity:0; transform: scale(0.95) translateY(-10px);} to{opacity:1; transform:scale(1) translateY(0);} }  
+@keyframes anim-star-flow  { from { transform: translateY(0);} to{transform: translateY(-2000px);} }  
+@keyframes thinking-dot    {  
+  0%, 80%, 100% { transform: scale(0); }  
+  40%           { transform: scale(1); }  
+}  
+  
+/* ========================================================================  
+   3. Global / body  
+   ======================================================================== */  
+body{  
+  margin:0;  
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;  
+  background-color: var(--bg-color);  
+  color:var(--text-color);  
+  transition: background-color .3s ease, color .3s ease;  
+  position:relative;  
+  z-index:1;  
+}  
+  
+/* ========================================================================  
+   4. Animated star-field  
+   ======================================================================== */  
+#stars-small, #stars-medium, #stars-large{  
+  position:fixed; inset:0; z-index:-1;  
+  background-repeat:repeat;  
+  background-position:0 0;  
+  animation:anim-star-flow linear infinite;  
+}  
+#stars-small{  
+  background-image:  
+    radial-gradient(1px 1px at 50px 100px ,var(--star-color),transparent),  
+    radial-gradient(1px 1px at 100px 20px ,var(--star-color),transparent),  
+    radial-gradient(1px 1px at 220px 340px,var(--star-color),transparent),  
+    radial-gradient(1px 1px at 300px 480px,var(--star-color),transparent),  
+    radial-gradient(1px 1px at 450px 150px,var(--star-color),transparent);  
+  background-size:500px 500px;  
+  animation-duration:120s;  
+}  
+#stars-medium{  
+  background-image:  
+    radial-gradient(2px 2px at 150px 200px,var(--star-color),transparent),  
+    radial-gradient(2px 2px at 350px 420px,var(--star-color),transparent),  
+    radial-gradient(2px 2px at 50px 480px ,var(--star-color),transparent);  
+  background-size:500px 500px;  
+  animation-duration:80s;  
+}  
+#stars-large{  
+  background-image:radial-gradient(3px 3px at 250px 300px,var(--star-color),transparent);  
+  background-size:500px 500px;  
+  animation-duration:50s;  
+}  
+  
+/* ========================================================================  
+   5. Layout  
+   ======================================================================== */  
+#app-container{  
+  display:flex;  
+  flex-direction:column;  
+  align-items:center;  
+  justify-content:flex-start;  
+  min-height:100vh;  
+  box-sizing:border-box;  
+  padding:20px;  
+}  
+header{  
+  display:grid;  
+  grid-template-columns:1fr auto 1fr;  
+  align-items:center;  
+  width:100%;  
+  max-width:520px;  
+  margin-bottom:24px;  
+  padding:10px 0;  
+}  
+.header-center{text-align:center;}  
+.header-right{  
+  display:flex;  
+  justify-content:flex-end;  
+  align-items:center;  
+  gap:16px;  
+}  
+#game-card{  
+  position:relative;  
+  width:100%;  
+  max-width:480px;  
+  padding:28px;  
+  box-sizing:border-box;  
+  background-color:var(--card-bg-color);  
+  border:1px solid var(--border-color);  
+  border-radius:24px;  
+  box-shadow:0 10px 30px -10px var(--shadow-color);  
+  text-align:center;  
+  transition:background-color .3s ease,border-color .3s ease;  
+}  
+footer{ margin-top:24px; }  
+  
+/* ========================================================================  
+   6. Typography  
+   ======================================================================== */  
+h1{  
+  margin:0;  
+  font-family:"Press Start 2P",cursive;  
+  font-size:2.25rem;  
+  color:var(--text-color);  
+  text-align:center;  
+  animation:fadeInSlideUp .5s ease-out;  
+}  
+[data-theme="dark"] h1{ text-shadow:2px 2px var(--accent-color); }  
+  
+.status-container{  
+  display:flex;  
+  justify-content:center;  
+  align-items:center;  
+  gap:8px;  
+  margin-bottom:24px;  
+}  
+#status-label{  
+  min-height:27px;  
+  margin:0;  
+  font-size:1.1rem;  
+  font-weight:500;  
+  color:var(--text-muted-color);  
+  animation:fadeInSlideUp .4s ease-out;  
+}  
+#status-label.exiting{ opacity:0; transform:translateY(-5px); transition:opacity .2s ease,transform .2s ease; }  
+  
+/* ========================================================================  
+   7. Components  
+   ======================================================================== */  
+  
+/* --- board / tiles ---------------------------------------------------- */  
+#game-canvas{  
+  position:relative;  
+  z-index:1;  
+  display:block;  
+  max-width:100%;  
+  margin:0 auto;  
+  border-radius:12px;  
+}  
+#game-canvas.clickable{ cursor:pointer; }  
+  
+.tile{  
+  position:absolute;  
+  z-index:2;  
+  box-sizing:border-box;  
+  background:var(--tile-bg);  
+  border:3px solid var(--tile-border);  
+  border-right-color:var(--tile-shadow);  
+  border-bottom-color:var(--tile-shadow);  
+  border-radius:4px;  
+  image-rendering:pixelated;  
+  pointer-events:none;  
+  transition:all .3s ease, top .4s cubic-bezier(.5,1.5,.5,1);  
+}  
+.tile.highlighted{  
+  transform:scale(1.05);  
+  box-shadow:inset 0 0 0 3px var(--accent-color);  
+}  
+.tile.removing{  
+  opacity:0;  
+  transform:scale(.2) rotate(45deg);  
+  transition-duration:.4s;  
+}  
+  
+/* --- “AI thinking” dots ---------------------------------------------- */  
+#ai-thinking-indicator{ display:none; }  
+#ai-thinking-indicator.thinking{ display:inline-flex; }  
+#ai-thinking-indicator .dot{  
+  width:6px; height:6px;  
+  background-color:var(--text-muted-color);  
+  border-radius:50%;  
+  margin:0 2px;  
+  animation:thinking-dot 1.4s infinite ease-in-out both;  
+}  
+#ai-thinking-indicator .dot:nth-child(1){ animation-delay:-.32s; }  
+#ai-thinking-indicator .dot:nth-child(2){ animation-delay:-.16s; }  
+  
+/* --- buttons ---------------------------------------------------------- */  
+button{  
+  padding:12px 24px;  
+  font-family:"Poppins",sans-serif;  
+  font-size:1rem;  
+  font-weight:600;  
+  border:2px solid transparent;  
+  border-radius:12px;  
+  cursor:pointer;  
+  transition:all .2s ease-in-out;  
+}  
+button:hover{  
+  transform:translateY(-3px);  
+  box-shadow:0 4px 12px rgba(0,0,0,.1);  
+}  
+button:active{  
+  transform:translateY(-1px) scale(.98);  
+  box-shadow:none;  
+}  
+  
+/* “?” help button */  
+#help-btn{  
+  display:flex;  
+  align-items:center;  
+  justify-content:center;  
+  padding:4px;  
+  background:transparent;  
+  border:none;  
+  border-radius:99px;  
+  color:var(--text-muted-color);  
+}  
+#help-btn:hover{  
+  color:var(--accent-color);  
+  background-color:var(--hover-highlight-fill);  
+}  
+  
+/* --- modal scaffolding ----------------------------------------------- */  
+.modal-backdrop{  
+  position:fixed; inset:0;  
+  z-index:1000;  
+  display:flex; align-items:center; justify-content:center;  
+  width:100%; height:100%;  
+  background-color:rgba(0,0,0,.5);  
+  backdrop-filter:blur(4px);  
+  opacity:0; visibility:hidden;  
+  transition:opacity .3s ease;  
+}  
+.modal-backdrop.visible{ opacity:1; visibility:visible; }  
+.modal{  
+  display:flex; flex-direction:column; gap:16px;  
+  width:90%; max-width:400px;  
+  padding:24px 28px;  
+  background:var(--card-bg-color);  
+  border:1px solid var(--border-color);  
+  border-radius:24px;  
+  box-shadow:0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color);  
+  opacity:0;  
+}  
+.modal-backdrop.visible .modal{ animation:modal-entry .4s cubic-bezier(.25,1,.5,1) forwards; }  
+  
+/* --- floating help popover ------------------------------------------- */  
+#help-popover{  
+  position:absolute;  
+  top:85px; right:20px;  
+  z-index:1001;  
+  width:280px;  
+  padding:16px 20px;  
+  background:var(--card-bg-color);  
+  border:1px solid var(--border-color);  
+  border-radius:16px;  
+  box-shadow:0 10px 30px -10px var(--shadow-color);  
+  opacity:0; visibility:hidden; pointer-events:none;  
+  transform:translateY(-10px) scale(.95);  
+  transition:all .2s ease-out;  
+}  
+#help-popover.visible{ opacity:1; visibility:visible; transform:translateY(0) scale(1); }  
+  
+/* texts inside modal/popover */  
+.modal h2, #help-popover h3{  
+  margin:0 0 10px 0;  
+  font-weight:600;  
+  font-size:1rem;  
+  color:var(--text-color);  
+}  
+.modal p, #help-popover p, #help-popover li{  
+  font-size:.9rem;  
+  line-height:1.5;  
+  color:var(--text-muted-color);  
+}  
+.modal p, #help-popover p{ margin:0 0 10px 0; }  
+#help-popover ul{ margin:0 0 10px 0; padding-left:20px; }  
+#help-popover li{ margin-bottom:5px; }  
+  
+.modal label{  
+  font-weight:500;  
+  font-size:.9rem;  
+  color:var(--text-muted-color);  
+}  
+.modal input, .modal select{  
+  width:100%; padding:12px; box-sizing:border-box;  
+  font-size:1rem;  
+  color:var(--text-color);  
+  background:var(--bg-color);  
+  border:1px solid var(--border-color);  
+  border-radius:12px;  
+  transition:all .2s ease;  
+}  
+.modal input:focus, .modal select:focus{  
+  outline:none;  
+  border-color:var(--accent-color);  
+  box-shadow:0 0 0 3px var(--hover-highlight-fill);  
+}  
+  
+/* primary modal button */  
+.modal-btn{  
+  width:100%; margin-top:8px;  
+  color:#fff;  
+  background-color:var(--accent-color);  
+}  
+.modal-btn:hover{ background-color:var(--accent-hover-color); }  
+  
+/* secondary “New game” button */  
+#new-game-btn{  
+  color:var(--accent-color);  
+  background:transparent;  
+  border-color:var(--accent-color);  
+}  
+#new-game-btn:hover{  
+  color:#fff;  
+  background-color:var(--accent-color);  
+}  
+  
+/* --- theme switcher toggle ------------------------------------------- */  
+.theme-switcher{ display:flex; align-items:center; gap:8px; }  
+  
+.switch{  
+  position:relative;  
+  display:inline-block;  
+  width:50px; height:26px;  
+}  
+.switch input{ width:0; height:0; opacity:0; }  
+.slider{  
+  position:absolute; inset:0;  
+  background-color:#ccc;  
+  border-radius:34px;  
+  cursor:pointer;  
+  transition:.4s;  
+}  
+.slider:before{  
+  position:absolute; content:"";  
+  height:18px; width:18px;  
+  left:4px; bottom:4px;  
+  background-color:#fff;  
+  border-radius:50%;  
+  transition:.4s cubic-bezier(.68,-.55,.27,1.55);  
+}  
+input:checked + .slider{ background-color:var(--accent-color); }  
+input:checked + .slider:before{ transform:translateX(24px); }  
+  
+/* ========================================================================  
+   8. Media-queries  
+   ======================================================================== */  
+@media (max-width:600px){  
+  h1{ font-size:1.75rem; }  
+  header{ grid-template-columns:auto 1fr; }  
+  .header-center{ order:-1; text-align:left; }  
+  .header-right{ grid-column:2/3; }  
+  .modal{ padding:20px; }  
+  #help-popover{ right:5px; }  
 }  
