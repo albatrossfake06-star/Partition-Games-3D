@@ -231,6 +231,15 @@ button:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0, 0, 0,
 button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
 .icon-button { display: flex; align-items: center; justify-content: center; padding: 4px; background: transparent; border: none; border-radius: 99px; color: var(--text-muted-color); }
 .icon-button:hover { color: var(--accent-color); background-color: var(--hover-highlight-fill); }
+.icon-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.icon-button:disabled:hover {
+    color: var(--text-muted-color);
+    background-color: transparent;
+}
 .modal-btn { width: 100%; margin-top: 8px; color: white; background-color: var(--accent-color); }
 .modal-btn:hover { background-color: var(--accent-hover-color); }
 .secondary-button { width: 100%; background-color: transparent; color: var(--accent-color); border-color: var(--border-color); font-size: 0.9rem; padding: 10px; }
