@@ -27,6 +27,12 @@
             </div>
             <div class="header-center">
                 <h1>CRIM</h1>
+                <div class="header-status">
+                    <p id="status-label">Loading...</p>
+                    <div id="ai-thinking-indicator">
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    </div>
+                </div>
             </div>
             <div class="header-right">
                 <label for="theme-select" class="theme-label">Tiles:</label>
@@ -52,18 +58,11 @@
         </header>
 
         <div id="game-card">
-            <div class="status-container">
-                <p id="status-label">Loading...</p>
-                <div id="ai-thinking-indicator">
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                </div>
-            </div>
             <div id="board-area"></div>
         </div>
 
-        <footer>
-            <button id="new-game-btn">New Game</button>
-        </footer>
+        <!-- Fixed New Game Button -->
+        <button id="new-game-btn" class="fixed-new-game-btn">New Game</button>
     </main>
 
     <!-- Modals -->
@@ -81,22 +80,21 @@
             
             <label for="rows-input">Row Lengths</label>
             <input type="text" id="rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
-            <button id="randomize-btn-general" class="secondary-button">Unsure? Generate a random board</button>
             
             <hr>
 
-            <label for="specific-number-input">Or, generate from a specific total:</label>
+            <label for="partition-type-select">Or, generate a partition:</label>
             <div class="input-group">
-                <input type="number" id="specific-number-input" placeholder="e.g., 25">
-                <button id="randomize-btn-specific">Generate Partition</button>
-            </div>
-
-            <hr>
-
-            <label for="staircase-number-input">Or, get a perfect Staircse partition:</label>
-            <div class="input-group">
-                <input type="number" id="staircase-number-input" placeholder="e.g., 25">
-                <button id="staircase-btn-specific">Generate Partition</button>
+                <select id="partition-type-select" class="partition-type-dropdown">
+                    <option value="random">Random</option>
+                    <option value="staircase">Staircase</option>
+                    <option value="rectangle">Rectangle</option>
+                    <option value="square">Square</option>
+                    <option value="hook">Hook</option>
+                    <option value="triangle">Triangle</option>
+                </select>
+                <input type="number" id="partition-number-input" placeholder="e.g., 25">
+                <button id="generate-partition-btn">Generate</button>
             </div>
             
             <hr>

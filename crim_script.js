@@ -222,11 +222,9 @@ class ProLCTRGui {
         this.setupModal = document.getElementById('setup-modal-backdrop');
         this.gameOverModal = document.getElementById('game-over-modal-backdrop');
         this.rowsInput = document.getElementById('rows-input');
-        this.randomizeBtnGeneral = document.getElementById('randomize-btn-general');
-        this.specificNumberInput = document.getElementById('specific-number-input');
-        this.specificNumberInputStairCase = document.getElementById('staircase-number-input');
-        this.randomizeBtnSpecific = document.getElementById('randomize-btn-specific');
-        this.staircaseBtnSpecific = document.getElementById('staircase-btn-specific');
+        this.partitionTypeSelect = document.getElementById('partition-type-select');
+        this.partitionNumberInput = document.getElementById('partition-number-input');
+        this.generatePartitionBtn = document.getElementById('generate-partition-btn');
         this.aiSelect = document.getElementById('ai-select');
         this.difficultySlider = document.getElementById('difficulty-slider');
         this.difficultyLabel = document.getElementById('difficulty-label');
@@ -252,17 +250,7 @@ class ProLCTRGui {
             this.helpBtnModal.addEventListener('mouseenter', () => this.showHelp());
             this.helpBtnModal.addEventListener('mouseleave', () => this.hideHelp());
         }
-        if (this.randomizeBtnGeneral) {
-            this.randomizeBtnGeneral.addEventListener('click', () => this.generateGeneralRandomBoard());
-        }
-        if (this.randomizeBtnSpecific) {
-            this.randomizeBtnSpecific.addEventListener('click', () => this.generateSpecificRandomBoard());
-        }
-        if (this.staircaseBtnSpecific) {  
-            this.staircaseBtnSpecific  
-            .addEventListener('click',  
-                () => this.generateSpecificRandomBoardStairCase());  
-        }  
+        this.generatePartitionBtn.addEventListener('click', () => this.generatePartition());  
 
     }
 
@@ -444,34 +432,48 @@ class ProLCTRGui {
         }, 300);
     }
 
-    generateGeneralRandomBoard() { 
-        SoundManager.play('click'); 
-        const n = randomInt(15, 40); 
-        const partition = randomPartition(n); 
-        this.rowsInput.value = partition.join(' '); 
-    }
-
-    generateSpecificRandomBoard() { 
-        SoundManager.play('click'); 
-        const n = parseInt(this.specificNumberInput.value, 10); 
-        if (isNaN(n) || n <= 0 || n > 200) { 
-            alert("Please enter a positive number less than or equal to 200."); 
-            return; 
-        } 
-        const partition = randomPartition(n); 
-        this.rowsInput.value = partition.join(' '); 
-    }
-
-    generateSpecificRandomBoardStairCase() {  
-        SoundManager.play('click');  
-  
-        const n = parseInt(this.specificNumberInputStairCase.value, 10); // <-- fixed  
-        if (isNaN(n) || n <= 0 || n > 200) {  
-            alert("Please enter a positive number less than or equal to 200.");  
-            return;  
-        }  
-        const partition = staircase(n);          // [n, n-1, … , 1]  
-        this.rowsInput.value = partition.join(' ');  
+    generatePartition() {
+        SoundManager.play('click');
+        
+        const partitionType = this.partitionTypeSelect.value;
+        const n = parseInt(this.partitionNumberInput.value, 10);
+        
+        if (isNaN(n) || n <= 0 || n > 200) {
+            alert("Please enter a positive number less than or equal to 200.");
+            return;
+        }
+        
+        let partition;
+        
+        switch (partitionType) {
+            case 'random':
+                partition = randomPartition(n);
+                break;
+            case 'staircase':
+                partition = staircase(n);
+                break;
+            case 'rectangle':
+                // Placeholder - will be implemented later
+                alert("Rectangle partitions are not yet implemented.");
+                return;
+            case 'square':
+                // Placeholder - will be implemented later
+                alert("Square partitions are not yet implemented.");
+                return;
+            case 'hook':
+                // Placeholder - will be implemented later
+                alert("Hook partitions are not yet implemented.");
+                return;
+            case 'triangle':
+                // Placeholder - will be implemented later
+                alert("Triangle partitions are not yet implemented.");
+                return;
+            default:
+                alert("Unknown partition type selected.");
+                return;
+        }
+        
+        this.rowsInput.value = partition.join(' ');
     }  
 
         
