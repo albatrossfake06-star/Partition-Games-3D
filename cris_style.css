@@ -199,12 +199,63 @@ header {
     justify-content: flex-start; 
     box-sizing: border-box; 
     min-height: 100vh; 
-    padding: 80px 20px 20px; /* Top padding to account for fixed header */
+    padding: 110px 20px 20px; /* Increased top padding for more breathing room */
     width: max-content; 
     min-width: 100vw; 
 }
 .header-center { text-align: center; }
+
+.header-status {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-status #status-label {
+    min-height: auto;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted-color);
+}
+
+.header-status #status-label.exiting {
+    opacity: 0;
+    transform: translateY(-3px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
 .header-right { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+
+.theme-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted-color);
+    white-space: nowrap;
+}
+
+.header-select {
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-width: 90px;
+}
+
+.header-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px var(--hover-highlight-fill);
+}
+
+.header-select:hover {
+    border-color: var(--accent-color);
+}
 
 .home-btn {
     font-size: 1.5rem;
@@ -222,7 +273,6 @@ header {
 }
 
 #game-card { position: relative; width: fit-content; min-width: 480px; padding: 28px; box-sizing: border-box; background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 30px -10px var(--shadow-color); text-align: center; transition: background-color 0.3s ease, border-color 0.3s ease; }
-footer { margin-top: 24px; }
 
 /* ==========================================================================
    6. Typography
@@ -230,10 +280,6 @@ footer { margin-top: 24px; }
 
 h1 { margin: 0; font-family: 'Press Start 2P', cursive; font-size: 2.25rem; color: var(--text-color); text-align: center; animation: fadeInSlideUp 0.5s ease-out; }
 [data-theme="dark"] h1 { text-shadow: 2px 2px var(--accent-color); }
-
-.status-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 24px; }
-#status-label { min-height: 27px; margin: 0; font-size: 1.1rem; font-weight: 500; color: var(--text-muted-color); animation: fadeInSlideUp 0.4s ease-out; }
-#status-label.exiting { opacity: 0; transform: translateY(-5px); transition: opacity 0.2s ease, transform 0.2s ease; }
 
 /* ==========================================================================
    7. Components
@@ -255,26 +301,90 @@ h1 { margin: 0; font-family: 'Press Start 2P', cursive; font-size: 2.25rem; colo
 button { padding: 12px 24px; font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; border: 2px solid transparent; border-radius: 12px; cursor: pointer; transition: all 0.2s ease-in-out; }
 button:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
 button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
-#help-btn { display: flex; align-items: center; justify-content: center; padding: 4px; background: transparent; border: none; border-radius: 99px; color: var(--text-muted-color); }
-#help-btn:hover { color: var(--accent-color); background-color: var(--hover-highlight-fill); }
+.icon-button { display: flex; align-items: center; justify-content: center; padding: 4px; background: transparent; border: none; border-radius: 99px; color: var(--text-muted-color); }
+.icon-button:hover { color: var(--accent-color); background-color: var(--hover-highlight-fill); }
 .modal-backdrop { position: fixed; top: 0; left: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
 .modal-backdrop.visible { opacity: 1; visibility: visible; }
-.modal { display: flex; flex-direction: column; width: 90%; max-width: 400px; padding: 24px 28px; gap: 16px; background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color); opacity: 0; }
+.modal { display: flex; flex-direction: column; width: 90%; max-width: 400px; padding: 20px; gap: 12px; background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -4px var(--shadow-color); opacity: 0; }
 .modal-backdrop.visible .modal { animation: modal-entry 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: -10px; }
+.modal-header h2 { margin: 0; }
+.modal hr { width: 100%; border: none; border-top: 1px solid var(--border-color); margin: 0; }
 #help-popover { position: absolute; top: 85px; right: 20px; z-index: 1001; width: 280px; padding: 16px 20px; background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 10px 30px -10px var(--shadow-color); opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: all 0.2s ease-out; }
 #help-popover.visible { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
 .modal h2, #help-popover h3 { margin: 0 0 10px 0; font-weight: 600; font-size: 1rem; color: var(--text-color); }
-.modal p, #help-popover p, #help-popover li { font-size: 0.9rem; line-height: 1.5; color: var(--text-muted-color); }
-.modal p, #help-popover p { margin: 0 0 10px 0; }
+.modal p, #help-popover p, #help-popover li { font-size: 0.8rem; line-height: 1.4; color: var(--text-muted-color); }
+.modal p { margin: 0; text-align: left; }
+#help-popover p { margin: 0 0 10px 0; }
 #help-popover ul { margin: 0 0 10px 0; padding-left: 20px; }
 #help-popover li { margin-bottom: 5px; }
-.modal label { font-weight: 500; font-size: 0.9rem; color: var(--text-muted-color); }
-.modal input, .modal select { width: 100%; padding: 12px; box-sizing: border-box; font-size: 1rem; color: var(--text-color); background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.2s ease; }
+.modal label { font-weight: 500; font-size: 0.8rem; color: var(--text-muted-color); text-align: left; }
+.modal input, .modal select { width: 100%; padding: 8px; box-sizing: border-box; font-size: 0.9rem; color: var(--text-color); background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.2s ease; }
 .modal input:focus, .modal select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--hover-highlight-fill); }
 .modal-btn { width: 100%; margin-top: 8px; color: white; background-color: var(--accent-color); }
 .modal-btn:hover { background-color: var(--accent-hover-color); }
+.input-group { display: flex; gap: 8px; }
+.input-group input { flex-grow: 1; min-width: 0; }
+.input-group button { flex-shrink: 0; padding: 8px 12px; font-size: 0.9rem; }
+
+.partition-type-dropdown {
+    flex-shrink: 0;
+    padding: 8px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    min-width: 90px;
+    max-width: 120px;
+}
+
+#partition-number-input {
+    flex-grow: 1;
+    flex-shrink: 0;
+    width: 60px;
+    min-width: 60px;
+}
+
+.partition-type-dropdown:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--hover-highlight-fill);
+}
+
 #new-game-btn { color: var(--accent-color); background-color: transparent; border-color: var(--accent-color); }
 #new-game-btn:hover { color: white; background-color: var(--accent-color); }
+
+.fixed-new-game-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 50;
+    padding: 12px 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    background-color: var(--card-bg-color);
+    border: 2px solid var(--accent-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.fixed-new-game-btn:hover {
+    color: white;
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.fixed-new-game-btn:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
 .theme-switcher { display: flex; align-items: center; gap: 8px; }
 
 .theme-icon {
@@ -302,30 +412,6 @@ button:active { transform: translateY(-1px) scale(0.98); box-shadow: none; }
 input:checked + .slider { background-color: var(--accent-color); }
 input:checked + .slider:before { transform: translateX(24px); }
 
-.input-group {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-}
-
-.input-group input {
-    flex: 1;
-}
-
-.input-group button {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-
-.input-group button:hover {
-    background-color: var(--accent-hover-color);
-}
-
 .secondary-button {
     background-color: transparent !important;
     color: var(--accent-color) !important;
@@ -339,13 +425,6 @@ input:checked + .slider:before { transform: translateX(24px); }
     color: white !important;
 }
 
-.modal hr {
-    border: none;
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 16px 0;
-}
-
 /* ==========================================================================
    8. Media Queries
    ========================================================================== */
@@ -356,11 +435,16 @@ input:checked + .slider:before { transform: translateX(24px); }
         padding: 10px 15px; 
     }
     .header-center { order: -1; text-align: left; }
-    .header-right { grid-column: 2 / 3; }
+    .header-status { margin-top: 4px; }
+    .header-status #status-label { font-size: 0.8rem; }
+    .header-right { grid-column: 2 / 3; gap: 8px; }
+    .theme-label { font-size: 0.8rem; }
+    .header-select { min-width: 70px; padding: 4px 6px; font-size: 0.8rem; }
     .modal { padding: 20px; }
-    #help-popover { right: 5px; top: 65px; }
+    #help-popover { right: 5px; top: 85px; }
+    .fixed-new-game-btn { bottom: 15px; left: 15px; padding: 10px 16px; font-size: 0.8rem; }
     #game-card { padding: 16px; min-width: unset; }
-    #app-container { padding: 70px 10px 10px; /* Adjusted for smaller fixed header */ }
+    #app-container { padding: 120px 10px 10px; /* Increased for better spacing on mobile */ }
 }
 
 

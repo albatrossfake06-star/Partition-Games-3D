@@ -258,7 +258,8 @@ class CRIM_GUI{
     this.gameOverBackdrop=document.getElementById('game-over-modal-backdrop');  
     this.gameOverMsg=document.getElementById('game-over-message');  
     this.rowsInput=document.getElementById('rows-input');  
-  
+    this.helpPopover=document.getElementById('help-popover');
+
     /* buttons */  
     document.getElementById('start-game-btn')  
         .addEventListener('click',()=>{SoundManager.play('click');this.startFromInput();});  
@@ -267,42 +268,13 @@ class CRIM_GUI{
     document.getElementById('play-again-btn')  
         .addEventListener('click',()=>{SoundManager.play('click');this.showSetup();});
     
-    /* random partition buttons */
-    document.getElementById('randomize-btn-general')
+    /* partition generation */
+    document.getElementById('generate-partition-btn')
         .addEventListener('click', () => {
           SoundManager.play('click');
-          const n = randomInt(15, 40);
-          const partition = randomPartition(n);
-          this.rowsInput.value = partition.join(' ');
+          this.generatePartition();
         });
-    
-    document.getElementById('randomize-btn-specific')
-        .addEventListener('click', () => {
-          SoundManager.play('click');
-          const specificInput = document.getElementById('specific-number-input');
-          const n = parseInt(specificInput.value, 10);
-          if (isNaN(n) || n <= 0 || n > 200) {
-            alert("Please enter a positive number less than or equal to 200.");
-            return;
-          }
-          const partition = randomPartition(n);
-          this.rowsInput.value = partition.join(' ');
-        });  
 
-    
-    document.getElementById('staircase-btn')
-        .addEventListener('click', () => {
-          SoundManager.play('click');
-          const specificInput = document.getElementById('staircase-number-input');
-          const n = parseInt(specificInput.value, 10);
-          if (isNaN(n) || n <= 0 || n > 200) {
-            alert("Please enter a positive number less than or equal to 200.");
-            return;
-          }
-          const partition = staircase(n);
-          this.rowsInput.value = partition.join(' ');
-        });
-  
     /* theme toggle */  
     const themeTgl=document.getElementById('theme-toggle');  
     const saved=localStorage.getItem('theme')||'light';  
@@ -313,21 +285,33 @@ class CRIM_GUI{
       document.documentElement.setAttribute('data-theme',nt);  
       localStorage.setItem('theme',nt);  
     });  
-  
+
+    /* tile themes */
+    const themeSelect = document.getElementById('theme-select');
+    themeSelect.addEventListener('change', () => {
+      SoundManager.play('click');
+      this.applyTileTheme();
+    });
+
     /* help */  
     const helpBtn=document.getElementById('help-btn');  
-    const helpPop=document.getElementById('help-popover');  
-    helpBtn.addEventListener('mouseenter',()=>helpPop.classList.add('visible'));  
-    helpBtn.addEventListener('mouseleave',()=>helpPop.classList.remove('visible'));  
-  
+    const helpBtnModal=document.getElementById('help-btn-modal');
+    helpBtn.addEventListener('mouseenter',()=>this.helpPopover.classList.add('visible'));  
+    helpBtn.addEventListener('mouseleave',()=>this.helpPopover.classList.remove('visible'));
+    if (helpBtnModal) {
+      helpBtnModal.addEventListener('mouseenter',()=>this.helpPopover.classList.add('visible'));  
+      helpBtnModal.addEventListener('mouseleave',()=>this.helpPopover.classList.remove('visible'));
+    }
+
     /* sound */  
     SoundManager.init();  
-  
+
     /* start */  
     this.state=null;  
     this.idCounter=0;          // for unique element ids  
     this.idToAddress=new Map();/* id -> {frag,kind,index} */  
-    this.showSetup();  
+    this.applyTileTheme(); // Apply initial tile theme
+    this.showSetup();
   }  
   
   showSetup(){  
@@ -348,7 +332,9 @@ class CRIM_GUI{
       this.state=new GameState(nums);  
       this.setupBackdrop.classList.remove('visible');  
       this.redraw();  
-      this.statusLabel.textContent=`${this.state.player} to move`;  
+      const playerLetter = this.state.player === Player.RED ? 'A' : 'B';
+      const playerType = this.vsCPU && this.state.player === this.cpuSide ? 'Computer' : 'Human';
+      this.statusLabel.textContent = `Player ${playerLetter} (${playerType}) to move`;
     }catch{  
       alert('Please enter positive integers separated by spaces.');  
     }
@@ -359,6 +345,59 @@ class CRIM_GUI{
   }  
   
   clearBoard(){this.boardArea.innerHTML='';this.idToAddress.clear();}  
+
+  generatePartition() {
+    const partitionTypeSelect = document.getElementById('partition-type-select');
+    const partitionNumberInput = document.getElementById('partition-number-input');
+    
+    const partitionType = partitionTypeSelect.value;
+    const n = parseInt(partitionNumberInput.value, 10);
+    
+    if (isNaN(n) || n <= 0 || n > 200) {
+      alert("Please enter a positive number less than or equal to 200.");
+      return;
+    }
+    
+    let partition;
+    
+    switch (partitionType) {
+      case 'random':
+        partition = randomPartition(n);
+        break;
+      case 'staircase':
+        partition = staircase(n);
+        break;
+      case 'rectangle':
+        // Placeholder - will be implemented later
+        alert("Rectangle partitions are not yet implemented.");
+        return;
+      case 'square':
+        // Placeholder - will be implemented later
+        alert("Square partitions are not yet implemented.");
+        return;
+      case 'hook':
+        // Placeholder - will be implemented later
+        alert("Hook partitions are not yet implemented.");
+        return;
+      case 'triangle':
+        // Placeholder - will be implemented later
+        alert("Triangle partitions are not yet implemented.");
+        return;
+      default:
+        alert("Unknown partition type selected.");
+        return;
+    }
+    
+    this.rowsInput.value = partition.join(' ');
+  }
+
+  applyTileTheme() {
+    const themeSelect = document.getElementById('theme-select');
+    const gameCard = document.getElementById('game-card');
+    if (themeSelect && gameCard) {
+      gameCard.setAttribute('data-tile-theme', themeSelect.value);
+    }
+  }
   
   redraw(){  
     this.clearBoard();  
@@ -460,8 +499,8 @@ class CRIM_GUI{
     /* 2 ─ check for game-over */  
     if (!this.state.hasMoves()) {  
       SoundManager.play('win');  
-      this.gameOverMsg.textContent =  
-          `${Player.other(this.state.player)} wins!`;  
+      const winnerLetter = Player.other(this.state.player) === Player.RED ? 'A' : 'B';
+      this.gameOverMsg.textContent = `Player ${winnerLetter} wins!`;  
       this.gameOverBackdrop.classList.add('visible');  
       this.state = null;  
       this.clearBoard();  
@@ -470,7 +509,9 @@ class CRIM_GUI{
   
     /* 3 ─ redraw and show whose turn it is now */  
     this.redraw();  
-    this.statusLabel.textContent = `${this.state.player} to move`;  
+    const playerLetter = this.state.player === Player.RED ? 'A' : 'B';
+    const playerType = this.vsCPU && this.state.player === this.cpuSide ? 'Computer' : 'Human';
+    this.statusLabel.textContent = `Player ${playerLetter} (${playerType}) to move`;  
   
     /* 4 ─ if the computer is the one to move, let it think & act */  
     if (this.vsCPU && this.state.player === this.cpuSide) {  

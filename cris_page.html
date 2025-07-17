@@ -25,12 +25,26 @@
       <div class="header-left">
         <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
       </div>  
-      <div class="header-center"><h1>CRIS</h1></div>  
+      <div class="header-center">
+        <h1>CRIS</h1>
+        <div class="header-status">
+          <p id="status-label">Loading…</p>
+          <div id="ai-thinking-indicator">
+            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          </div>
+        </div>
+      </div>  
       <div class="header-right">  
-        <button id="help-btn" aria-label="Help">  
+        <label for="theme-select" class="theme-label">Tiles:</label>
+        <select id="theme-select" class="header-select">
+          <option value="grass">🌱 Grass</option>
+          <option value="stone">🪨 Stone</option>
+          <option value="ice">🧊 Ice</option>
+        </select>
+        <button id="help-btn" class="icon-button" aria-label="Help">  
           <!-- hero-icons "question-mark-circle" -->  
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">  
-            <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
+            <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.937 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
           </svg>  
         </button>  
         <div class="theme-switcher">
@@ -44,58 +58,57 @@
       </div>  
     </header>  
 
-    
-  
-    <div id="game-card">  
-      <div class="status-container">  
-        <p id="status-label">Loading…</p>  
-        <div id="ai-thinking-indicator">  
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>  
-        </div>  
-      </div>  
-  
+    <div id="game-card" data-tile-theme="grass">  
       <!-- board container -->  
       <div id="board-area"></div>  
     </div>      
-    <footer><button id="new-game-btn">New Game</button></footer>  
+
+    <!-- Fixed New Game Button -->
+    <button id="new-game-btn" class="fixed-new-game-btn">New Game</button>
   </main>  
   
   <!-- ────────────────  Setup Modal ──────────────── -->  
   <div id="setup-modal-backdrop" class="modal-backdrop">  
     <div class="modal">  
-      <h2>Game Setup</h2>  
+      <div class="modal-header">
+        <h2>Game Setup</h2>
+        <button id="help-btn-modal" class="icon-button" aria-label="Help">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">  
+            <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
+          </svg> 
+        </button>
+      </div>
       <p>Enter a board configuration manually, or generate one randomly.</p>
       
-      <label for="rows-input">Row lengths (e.g. 6 5 5 4)</label>  
-      <input id="rows-input" type="text" value="6 5 5 4" placeholder="e.g. 6 5 5 4">
-      <button id="randomize-btn-general" class="secondary-button">Unsure? Generate a random board</button>
+      <label for="rows-input">Row Lengths</label>
+      <input id="rows-input" type="text" value="6 5 5 4" placeholder="e.g., 6 5 5 4">
       
       <hr>
 
-      <label for="specific-number-input">Or, generate from a specific total:</label>
+      <label for="partition-type-select">Or, generate a partition:</label>
       <div class="input-group">
-        <input type="number" id="specific-number-input" placeholder="e.g., 25">
-        <button id="randomize-btn-specific">Generate Partition</button>
+        <select id="partition-type-select" class="partition-type-dropdown">
+          <option value="random">Random</option>
+          <option value="staircase">Staircase</option>
+          <option value="rectangle">Rectangle</option>
+          <option value="square">Square</option>
+          <option value="hook">Hook</option>
+          <option value="triangle">Triangle</option>
+        </select>
+        <input type="number" id="partition-number-input" placeholder="e.g., 25">
+        <button id="generate-partition-btn">Generate</button>
       </div>
-
+      
       <hr>
 
-      <label for="staircase-number-input"> Get a perfect Staircase partition:</label>
-      <div class="input-group">
-        <input type="number" id="staircase-number-input" placeholder="e.g., 25">
-        <button id="staircase-btn">Generate Partition</button>
-      </div>
-
-      <hr>
-
-      <label for="cpu-side">Computer side</label>  
+      <label for="cpu-side">Computer Player</label>  
       <select id="cpu-side">  
-        <option value="None">None</option>  
-        <option value="Red">Red (moves first)</option>  
-        <option value="Blue">Blue (moves second)</option>  
+        <option value="Blue">Player B (Starts Second)</option>
+        <option value="Red">Player A (Starts First)</option>
+        <option value="None">None (Two Human Players)</option>  
       </select>  
 
-      <button id="start-game-btn" class="modal-btn">Start game</button>  
+      <button id="start-game-btn" class="modal-btn">Start Game</button>  
     </div>  
   </div>  
   
