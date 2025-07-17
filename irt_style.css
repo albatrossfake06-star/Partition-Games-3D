@@ -213,7 +213,7 @@ input:checked + .slider:before { transform: translateX(24px); }
 /* ==========================================================================
    8. Media Queries
    ========================================================================== */
-@media (max-width: 600px) { 
+@media (max-width: 500px) { 
     h1 { font-size: 1.75rem; } 
     header { 
         grid-template-columns: auto 1fr; 
@@ -225,3 +225,10 @@ input:checked + .slider:before { transform: translateX(24px); }
     #help-popover { right: 5px; top: 65px; } 
     #app-container { padding: 70px 20px 20px; /* Adjusted for smaller fixed header */ } 
 } 
+
+@media (max-width: 500px), (max-height: 500px) {  
+    .modal-backdrop.visible .modal {  
+        transform: scale(0.7);          /* shrink the whole window   */  
+        transform-origin: center center; /* keep it centred           */  
+    }  
+}  
