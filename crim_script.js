@@ -220,6 +220,7 @@ class ProLCTRGui {
         this.aiThinkingIndicator = document.getElementById('ai-thinking-indicator');
         this.newGameBtn = document.getElementById('new-game-btn');
         this.undoBtn = document.getElementById('undo-btn');
+        this.downloadBtn = document.getElementById('download-btn');
         this.themeToggle = document.getElementById('theme-toggle');
         this.setupModal = document.getElementById('setup-modal-backdrop');
         this.gameOverModal = document.getElementById('game-over-modal-backdrop');
@@ -243,6 +244,7 @@ class ProLCTRGui {
         this.startGameBtn.addEventListener('click', () => this.processSetup());
         this.newGameBtn.addEventListener('click', () => { SoundManager.play('click'); this.showSetupModal(); });
         this.undoBtn.addEventListener('click', () => { SoundManager.play('click'); this.undoMove(); });
+        this.downloadBtn.addEventListener('click', () => { SoundManager.play('click'); this.downloadGame(); });
         this.playAgainBtn.addEventListener('click', () => { SoundManager.play('click'); this.showSetupModal(); });
         this.themeToggle.addEventListener('change', () => { SoundManager.play('click'); this.toggleTheme(); });
         this.themeSelect.addEventListener('change', () => { SoundManager.play('click'); this.applyTileTheme(); });
@@ -254,7 +256,10 @@ class ProLCTRGui {
             this.helpBtnModal.addEventListener('mouseleave', () => this.hideHelp());
         }
         this.generatePartitionBtn.addEventListener('click', () => this.generatePartition());  
-
+        const downloadBtnModal = document.getElementById('download-btn-modal');
+        if (downloadBtnModal) {
+            downloadBtnModal.addEventListener('click', () => { SoundManager.play('click'); this.downloadGame(); });
+        }
     }
 
     clearBoard() {
@@ -425,15 +430,17 @@ class ProLCTRGui {
                 SoundManager.play('win');
                 this.gameOverMessage.textContent = `Player ${winner} wins!`;
                 this.gameOverModal.classList.add('visible');
-                this.redrawBoard();
-                this.updateStatus();
-                this.updateUndoButton();
-                return;
+                        this.redrawBoard();
+        this.updateStatus();
+        this.updateUndoButton();
+        this.updateDownloadButton();
+        return;
             }
 
             this.redrawBoard();
             this.updateStatus();
             this.updateUndoButton();
+            this.updateDownloadButton();
             if (this.game.isAiTurn()) {
                 this.aiTurn();
             }
@@ -513,6 +520,8 @@ class ProLCTRGui {
         this.redrawBoard(); 
         this.updateStatus(); 
         this.updateUndoButton();
+        this.updateDownloadButton();
+        this.updateDownloadButton();
         if (this.game.isAiTurn()) { 
             this.aiTurn(); 
         } 
@@ -530,6 +539,7 @@ class ProLCTRGui {
         
         this.aiThinkingIndicator.classList.add('thinking'); 
         this.updateUndoButton(); // Update undo button state during AI turn
+        this.updateDownloadButton();
         setTimeout(() => { 
             this.aiThinkingIndicator.classList.remove('thinking'); 
             let move; 
@@ -569,6 +579,7 @@ class ProLCTRGui {
         if (!this.game || this.game.board.isEmpty()) { 
             this.statusLabel.textContent = 'Game Over'; 
             this.updateUndoButton(); // Update undo button when game is over
+        this.updateDownloadButton();
             return; 
         } 
         const kind = this.game.isAiTurn() ? "Computer" : "Human"; 
@@ -579,6 +590,7 @@ class ProLCTRGui {
             this.statusLabel.textContent = newText; 
             this.statusLabel.classList.remove('exiting'); 
             this.updateUndoButton(); // Update undo button after status change
+            this.updateDownloadButton();
         }, 200); 
     }
 
@@ -637,6 +649,7 @@ class ProLCTRGui {
         
         this.gameHistory.push(gameState);
         this.updateUndoButton();
+        this.updateDownloadButton();
     }
 
     undoMove() {
@@ -657,6 +670,7 @@ class ProLCTRGui {
         this.redrawBoard();
         this.updateStatus();
         this.updateUndoButton();
+        this.updateDownloadButton();
     }
 
     updateUndoButton() {
@@ -675,9 +689,299 @@ class ProLCTRGui {
         }
     }
 
+    updateDownloadButton() {
+        if (!this.downloadBtn) return;
+        
+        // Show download button if there's game history or current game state
+        const hasGameData = this.game && (this.gameHistory.length > 0 || this.game.board);
+        
+        if (hasGameData) {
+            this.downloadBtn.style.display = 'flex';
+            this.downloadBtn.disabled = false;
+        } else {
+            this.downloadBtn.style.display = 'none';
+        }
+    }
+
     clearGameHistory() {
         this.gameHistory = [];
         this.updateUndoButton();
+        this.updateDownloadButton();
+    }
+
+    downloadGame() {
+        if (!this.game) return;
+        
+        // Collect all game states (history + current), ensuring board is a 2D array
+        const allStates = this.gameHistory.map(state => ({
+            ...state,
+            board: (state.board && state.board.grid) ? state.board.grid.map(row => [...row]) : state.board
+        }));
+        
+        // Add current state if it's different from the last saved state
+        const currentState = {
+            board: this.game.board.grid.map(row => [...row]),
+            currentIndex: this.game.currentIndex,
+            timestamp: Date.now()
+        };
+        allStates.push(currentState);
+        
+        // Create the HTML content
+        const htmlContent = this.generateGameReplayHTML(allStates);
+        
+        // Download the file
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `CRIM-Game-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.html`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    generateGameReplayHTML(gameStates) {
+        const title = `CRIM Game Replay - ${new Date().toLocaleDateString()}`;
+        
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #fff;
+            color: #111;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 4px 24px #0001;
+        }
+        h1 { margin-top: 0; color: #111; letter-spacing: 1px; }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background: #eee;
+            color: #111;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button:hover { background: #ddd; transform: translateY(-2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .state-info {
+            font-size: 18px;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #111;
+        }
+        #game-canvas {
+            border: 2px solid #111;
+            border-radius: 12px;
+            margin: 20px auto;
+            display: block;
+            background: #fff;
+            box-shadow: 0 8px 25px #0001;
+        }
+        .instructions {
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.7;
+            line-height: 1.6;
+        }
+        .error {
+            color: #b00020;
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>${title}</h1>
+        <div class="state-info">
+            State <span id="current-state">1</span> of <span id="total-states">${gameStates.length}</span>
+        </div>
+        <div class="controls">
+            <button id="first-btn" onclick="goToState(0)">⏮ First</button>
+            <button id="prev-btn" onclick="previousState()">◀ Previous</button>
+            <button id="play-btn" onclick="toggleAutoplay()">▶ Play</button>
+            <button id="next-btn" onclick="nextState()">Next ▶</button>
+            <button id="last-btn" onclick="goToState(gameStates.length - 1)">Last ⏭</button>
+        </div>
+        <canvas id="game-canvas" width="400" height="400"></canvas>
+        <div id="error-message" class="error" style="display:none"></div>
+        <div class="instructions">
+            <strong>Navigation:</strong> Use the buttons above or arrow keys (←/→) to navigate between game states.<br>
+            <strong>Autoplay:</strong> Click Play to automatically advance through all states.
+        </div>
+    </div>
+
+    <script>
+        const gameStates = ${JSON.stringify(gameStates)};
+        console.log('gameStates:', gameStates);
+        let currentStateIndex = 0;
+        let isPlaying = false;
+        let playInterval;
+        const CELL_SIZE = 40;
+        const MARGIN = 20;
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const errorDiv = document.getElementById('error-message');
+
+        function drawBoard(boardGrid) {
+            if (!Array.isArray(boardGrid) || boardGrid.length === 0 || !Array.isArray(boardGrid[0])) {
+                errorDiv.textContent = 'Error: Board data is missing or invalid.';
+                errorDiv.style.display = 'block';
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            } else {
+                errorDiv.style.display = 'none';
+            }
+            const boardHeight = boardGrid.length;
+            const boardWidth = boardHeight > 0 ? boardGrid[0].length : 0;
+            
+            const canvasWidth = MARGIN * 2 + boardWidth * CELL_SIZE;
+            const canvasHeight = MARGIN * 2 + boardHeight * CELL_SIZE;
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Draw only black and white tiles
+            for (let r = 0; r < boardHeight; r++) {
+                for (let c = 0; c < boardWidth; c++) {
+                    const x = MARGIN + c * CELL_SIZE;
+                    const y = MARGIN + r * CELL_SIZE;
+                    if (boardGrid[r][c] === 1) {
+                        ctx.fillStyle = '#111';
+                        ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    } else {
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                    }
+                }
+            }
+            // Draw white gridlines
+            ctx.save();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            for (let r = 0; r <= boardHeight; r++) {
+                const y = MARGIN + r * CELL_SIZE;
+                ctx.beginPath();
+                ctx.moveTo(MARGIN, y);
+                ctx.lineTo(MARGIN + boardWidth * CELL_SIZE, y);
+                ctx.stroke();
+            }
+            for (let c = 0; c <= boardWidth; c++) {
+                const x = MARGIN + c * CELL_SIZE;
+                ctx.beginPath();
+                ctx.moveTo(x, MARGIN);
+                ctx.lineTo(x, MARGIN + boardHeight * CELL_SIZE);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function updateDisplay() {
+            const state = gameStates[currentStateIndex];
+            drawBoard(state.board);
+            document.getElementById('current-state').textContent = currentStateIndex + 1;
+            
+            // Update button states
+            document.getElementById('first-btn').disabled = currentStateIndex === 0;
+            document.getElementById('prev-btn').disabled = currentStateIndex === 0;
+            document.getElementById('next-btn').disabled = currentStateIndex === gameStates.length - 1;
+            document.getElementById('last-btn').disabled = currentStateIndex === gameStates.length - 1;
+        }
+
+        function goToState(index) {
+            if (index >= 0 && index < gameStates.length) {
+                currentStateIndex = index;
+                updateDisplay();
+            }
+        }
+
+        function nextState() {
+            if (currentStateIndex < gameStates.length - 1) {
+                currentStateIndex++;
+                updateDisplay();
+            }
+        }
+
+        function previousState() {
+            if (currentStateIndex > 0) {
+                currentStateIndex--;
+                updateDisplay();
+            }
+        }
+
+        function toggleAutoplay() {
+            const playBtn = document.getElementById('play-btn');
+            if (isPlaying) {
+                clearInterval(playInterval);
+                isPlaying = false;
+                playBtn.textContent = '▶ Play';
+            } else {
+                isPlaying = true;
+                playBtn.textContent = '⏸ Pause';
+                playInterval = setInterval(() => {
+                    if (currentStateIndex < gameStates.length - 1) {
+                        nextState();
+                    } else {
+                        toggleAutoplay(); // Stop at the end
+                    }
+                }, 1000);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousState();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextState();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                toggleAutoplay();
+            }
+        });
+
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>`;
     }
 }
 
