@@ -90,6 +90,36 @@ function staircase(n) {
   return parts; // Sort descending like other games
 }
 
+function square(n)
+{
+    let parts = []; 
+    let t = n; 
+
+    while (t >= 1)
+    {
+        parts.push(n); 
+        t = t - 1; 
+    }
+
+    return parts; 
+}
+
+function hook(n)
+{
+    let parts = []; 
+    let t = n; 
+
+    parts.push(t); 
+
+    while (t >= 2)
+    {
+        parts.push(1); 
+        t = t - 1; 
+    }
+
+    return parts; 
+}
+
 function grundy(position) {
     if (position === '[]') return 0;
     if (grundyMemo.has(position)) return grundyMemo.get(position);
@@ -472,17 +502,11 @@ class ProLCTRGui {
                 alert("Rectangle partitions are not yet implemented.");
                 return;
             case 'square':
-                // Placeholder - will be implemented later
-                alert("Square partitions are not yet implemented.");
-                return;
+                partition = square(n);
+                break;
             case 'hook':
-                // Placeholder - will be implemented later
-                alert("Hook partitions are not yet implemented.");
-                return;
-            case 'triangle':
-                // Placeholder - will be implemented later
-                alert("Triangle partitions are not yet implemented.");
-                return;
+                partition = hook(n); 
+                break; 
             default:
                 alert("Unknown partition type selected.");
                 return;
