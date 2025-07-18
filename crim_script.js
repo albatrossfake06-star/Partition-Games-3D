@@ -882,7 +882,7 @@ class ProLCTRGui {
 
         function drawBoard(boardGrid) {
             if (!Array.isArray(boardGrid) || boardGrid.length === 0 || !Array.isArray(boardGrid[0])) {
-                errorDiv.textContent = 'Error: Board data is missing or invalid.';
+                errorDiv.textContent = 'Game Ended.';
                 errorDiv.style.display = 'block';
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 return;
