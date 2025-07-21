@@ -29,6 +29,12 @@
                   <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
                 </svg>  
             </button>  
+            <label for="theme-select" class="theme-label">Tiles:</label>
+            <select id="theme-select" class="header-select">
+                <option value="grass">🌱 Grass</option>
+                <option value="stone">🪨 Stone</option>
+                <option value="ice">🧊 Ice</option>
+            </select>
             <div class="theme-switcher">
                 <span class="theme-icon sun">☀️</span>
                 <label class="switch">
@@ -50,8 +56,10 @@
         <div id="board-area"></div>
     </div>
 
+    <button id="new-game-btn" class="fixed-new-game-btn"><a href="lctr_page.html">New Game</a></button>
+
     <footer>
-        <button id="new-game-btn">New Game</button>
+        <!-- The New Game button is now inside the main -->
     </footer>
 </main>
 

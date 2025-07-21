@@ -54,6 +54,27 @@ function staircase(n) {
   return parts; // Sort descending like other games
 }
 
+function square(n) {
+    let parts = [];
+    let t = n;
+    while (t >= 1) {
+        parts.push(n);
+        t = t - 1;
+    }
+    return parts;
+}
+
+function hook(n) {
+    let parts = [];
+    let t = n;
+    parts.push(t);
+    while (t >= 2) {
+        parts.push(1);
+        t = t - 1;
+    }
+    return parts;
+}
+
 class Game {
     static PLAYERS = ["A", "B"];
     constructor(board, aiPlayer) {
@@ -129,6 +150,7 @@ class ProLCTRGui {
         this.aiThinkingIndicator = document.getElementById('ai-thinking-indicator');
         this.newGameBtn = document.getElementById('new-game-btn');
         this.themeToggle = document.getElementById('theme-toggle');
+        this.themeSelect = document.getElementById('theme-select'); // Add theme select
         this.setupModal = document.getElementById('setup-modal-backdrop');
         this.gameOverModal = document.getElementById('game-over-modal-backdrop');
         this.rowsInput = document.getElementById('rows-input');
@@ -165,12 +187,21 @@ class ProLCTRGui {
         if (this.downloadBtnModal) {
             this.downloadBtnModal.addEventListener('click', () => { SoundManager.play('click'); this.downloadGame(); });
         }
+        if (this.themeSelect) {
+            this.themeSelect.addEventListener('change', () => this.applyTileTheme());
+        }
         // Add board interaction event listeners
         this.boardArea.addEventListener('mousemove', (event) => this.handleMouseMove(event));
         this.boardArea.addEventListener('mouseleave', () => this.handleMouseLeave());
         this.boardArea.addEventListener('click', () => this.handleMouseClick());
     }
-    
+
+    applyTileTheme() {
+        if (this.themeSelect && this.gameCard) {
+            this.gameCard.setAttribute('data-tile-theme', this.themeSelect.value);
+        }
+    }
+
     processSetup() {
         try {
             SoundManager.play('click');
@@ -179,9 +210,13 @@ class ProLCTRGui {
             
             const aiSide = this.aiSelect.value === "None" ? null : this.aiSelect.value;
             this.aiDifficulty = this.difficultySlider.value; // Changed to slider value
-            this.gameCard.setAttribute('data-tile-theme', this.themeSelect.value);
-
+            // Set tile theme
+            this.applyTileTheme();
+            // Hide modal fully
             this.setupModal.classList.remove('visible');
+            this.setupModal.style.opacity = '0';
+            this.setupModal.style.visibility = 'hidden';
+
             this.startGame(nums, aiSide);
         } catch (e) {
             alert("Invalid input. Please enter positive integers only.");
@@ -405,9 +440,14 @@ class ProLCTRGui {
             partition = randomPartition(n);
         } else if (partitionType === 'staircase') {
             partition = staircase(n);
-        } else {
-            alert("Please select a partition type.");
-            return;
+        }
+        
+        else if (partitionType === 'square') {
+            partition = square(n);
+        }
+
+        else if (partitionType === 'hook') {
+            partition = hook(n);
         }
         this.rowsInput.value = partition.join(' ');
     }

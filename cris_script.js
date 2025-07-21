@@ -34,6 +34,27 @@ function staircase(n) {
   return parts; // Sort descending like other games
 }
 
+function square(n) {
+  let parts = [];
+  let t = n;
+  while (t >= 1) {
+    parts.push(n);
+    t = t - 1;
+  }
+  return parts;
+}
+
+function hook(n) {
+  let parts = [];
+  let t = n;
+  parts.push(t);
+  while (t >= 2) {
+    parts.push(1);
+    t = t - 1;
+  }
+  return parts;
+}
+
 /* ────────────────────  XOR calculations for perfect AI  ──────────────────── */  
 function xorAllFragments(state) {  
   let x = 0;  

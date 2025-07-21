@@ -392,3 +392,29 @@ input:checked + .slider:before { transform: translateX(24px); }
     #app-container { padding: 70px 20px 20px; /* Smaller padding on mobile */ }
     #game-card { padding: 16px; min-width: unset; }
 }
+
+.fixed-new-game-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1100;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 12px;
+    background: var(--card-bg-color);
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: background 0.2s, color 0.2s;
+}
+.fixed-new-game-btn:hover {
+    background: var(--accent-color);
+    color: #fff;
+}
+.fixed-new-game-btn a {
+    color: #fff;
+    text-decoration: none;
+}
+.fixed-new-game-btn:hover a {
+    color: #fff;
+}
