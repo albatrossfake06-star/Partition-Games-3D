@@ -437,6 +437,8 @@ class IRTGui {
       const done=this.game.move(m);  
       this.anim=false; this.draw();  
       if(done){  
+        // --- FIX: Save empty board state for replay ---
+        this.gameHistory.push([]); // Add empty board after last move
         Sound.play("win");  
         this.msg.textContent=`Player ${this.game.player()} wins!`;  
         this.overB.classList.add("visible");  
@@ -721,10 +723,10 @@ function downloadGameHTML_IRT() {
   }
   let history = window.irtApp.gameHistory.slice();
   const initialPartition = window.irtApp.initialPartition || history[0] || [];
-  // Remove the last state if it is empty (all rows are zero or array is empty)
+  // --- REWRITE: Always ensure the last state is an empty board ---
   const isEmpty = arr => Array.isArray(arr) && (arr.length === 0 || arr.every(x => x === 0));
-  if (history.length > 1 && isEmpty(history[history.length - 1])) {
-    history.pop();
+  if (!isEmpty(history[history.length - 1])) {
+    history.push([]); // Always add empty board as last state
   }
   const title = `IRT Game Replay - ${new Date().toLocaleDateString()}`;
   let html = `<!DOCTYPE html>
