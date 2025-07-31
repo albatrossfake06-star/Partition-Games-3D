@@ -6,6 +6,7 @@
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeAboutPopover();
+    initializeThemeToggle();
     // Space for future functionality initialization
 });
 
@@ -68,6 +69,74 @@ function initializeAboutPopover() {
             aboutPopover.classList.add('hidden');
             aboutBtn.setAttribute('aria-expanded', 'false');
         }
+    }
+}
+
+/**
+ * Theme Toggle Functionality
+ * Handles switching between light and dark modes
+ */
+function initializeThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    if (!themeToggle) {
+        console.warn('Theme toggle button not found');
+        return;
+    }
+
+    // Get saved theme preference or default to light
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+
+    // Add click event listener
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+    });
+
+    /**
+     * Set the theme and update UI
+     * @param {string} theme - Theme to set ('light' or 'dark')
+     */
+    function setTheme(theme) {
+        // Define SVG icons
+        const sunIcon = `
+            <svg class="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+        `;
+        
+        const moonIcon = `
+            <svg class="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+        `;
+
+        // Update document attribute and button content
+        if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.innerHTML = sunIcon + '[light]';
+            themeToggle.setAttribute('aria-label', 'Switch to light mode');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            themeToggle.innerHTML = moonIcon + '[dark]';
+            themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+        }
+
+        // Save preference
+        localStorage.setItem('theme', theme);
+
+        // Emit theme change event for other components
+        window.gameEvents.emit('themeChanged', { theme });
     }
 }
 

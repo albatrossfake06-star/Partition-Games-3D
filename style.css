@@ -10,6 +10,19 @@
     --black: #000000;
 }
 
+/* Dark mode color scheme */
+[data-theme="dark"] {
+    --orange: #FF7A47;
+    --orange-light: #FF9166;
+    --orange-dark: #FF5722;
+    --white: #1a1a1a;
+    --off-white: #222222;
+    --gray-light: #2a2a2a;
+    --gray: #a0a0a0;
+    --gray-dark: #e5e5e5;
+    --black: #ffffff;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -85,6 +98,33 @@ nav a:hover {
 
 .nav-button:hover {
     color: var(--orange);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    font-family: 'JetBrains Mono', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.theme-icon {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    transition: stroke 0.3s ease;
+}
+
+/* Smooth transitions for theme switching */
+body, 
+.container,
+header,
+.game-card,
+.about-popover,
+.about-popover-content,
+footer {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Main Content */
@@ -384,6 +424,15 @@ footer {
     
     nav {
         gap: 20px;
+    }
+    
+    .theme-toggle {
+        gap: 4px;
+    }
+    
+    .theme-icon {
+        width: 12px;
+        height: 12px;
     }
     
     .hero h1 {
