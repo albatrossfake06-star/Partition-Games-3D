@@ -181,6 +181,36 @@
             content: "$ ";
         }
         
+        .rules-link {
+            display: inline-block;
+            background-color: var(--white);
+            color: var(--gray-dark);
+            text-decoration: none;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid var(--gray-light);
+            transition: all 0.2s ease;
+            margin-left: 10px;
+        }
+        
+        .rules-link:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+            background-color: var(--off-white);
+        }
+        
+        .rules-link::before {
+            content: "? ";
+        }
+
+        .game-buttons {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        
         /* Multiplayer Section */
         .multiplayer-section {
             background-color: var(--gray-light);
@@ -364,43 +394,64 @@
                 <div class="game-card">
                     <h3>LCTR</h3>
                     <p>A strategic partition game where players take turns choosing numbers to reach target sums. Test your mathematical intuition against challenging AI opponents.</p>
-                    <a href="lctr_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="lctr_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/lctr/lctrdocu.html" class="rules-link">rules</a>
+                    </div>
                 </div>
 
                 <div class="game-card">
                     <h3>CRIM</h3>
                     <p>Navigate complex partition strategies in this challenging combinatorial game. Master the art of number partitioning with multiple difficulty levels.</p>
-                    <a href="crim_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="crim_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/crim/crim.html" class="rules-link">rules</a>
+                    </div>
                 </div>
 
                 <div class="game-card">
                     <h3>CRIS</h3>
                     <p>Experience fast-paced partition gameplay with dynamic rules. Perfect your strategy and compete against sophisticated AI algorithms.</p>
-                    <a href="cris_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="cris_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/cris/crisdocu.html" class="rules-link">rules</a>
+                    </div>
                 </div>
 
                 <div class="game-card">
                     <h3>Sato-Welter</h3>
                     <p>Remove a hook (an upside-down L shape) from any square: all squares to the right in the row, and all squares below in the column. Outsmart your opponent!</p>
-                    <a href="sato_welter_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="sato_welter_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/Sato-Walter/satowalter.html" class="rules-link">rules</a>
+                    </div>
                 </div>
 
                 <div class="game-card">
                     <h3>IRT</h3>
                     <p>Strategic row removal game where players take turns eliminating entire rows. Master the classic Nim-style gameplay with beautiful tile themes.</p>
-                    <a href="irt_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="irt_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/irt/irt.html" class="rules-link">rules</a>
+                    </div>
                 </div>
 
                 <div class="game-card">
                     <h3>Corner</h3>
                     <p>Strategic corner elimination game following specific rules for consecutive rows. Master the unique gameplay mechanics and challenging AI opponents.</p>
-                    <a href="corner_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="corner_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/corner/corner.html" class="rules-link">rules</a>
+                    </div>
                 </div>
 
                 <div class="game-card">
                     <h3>AntiCorner</h3>
                     <p>The inverse of Corner with modified elimination rules. Experience a fresh take on partition games with innovative strategic elements.</p>
-                    <a href="anticorners_page.html" class="play-button">play now</a>
+                    <div class="game-buttons">
+                        <a href="anticorners_page.html" class="play-button">play now</a>
+                        <a href="wikidocus/anticorner/anticorner.html" class="rules-link">rules</a>
+                    </div>
                 </div>
             </div>
 
