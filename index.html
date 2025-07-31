@@ -10,365 +10,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
-            --orange: #FF6B35;
-            --orange-light: #FF8757;
-            --orange-dark: #E55A2B;
-            --white: #FFFFFF;
-            --off-white: #FAFAFA;
-            --gray-light: #F5F5F5;
-            --gray: #666666;
-            --gray-dark: #333333;
-            --black: #000000;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'JetBrains Mono', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
-            background-color: var(--white);
-            color: var(--gray-dark);
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header */
-        header {
-            border-bottom: 1px solid var(--gray-light);
-            padding: 20px 0;
-            background-color: var(--white);
-        }
-        
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--orange);
-            text-decoration: none;
-        }
-        
-        .logo::before {
-            content: "~/";
-            color: var(--gray);
-        }
-        
-        nav {
-            display: flex;
-            gap: 30px;
-        }
-        
-        nav a {
-            color: var(--gray-dark);
-            text-decoration: none;
-            font-weight: 400;
-            transition: color 0.2s ease;
-        }
-        
-        nav a:hover {
-            color: var(--orange);
-        }
-        
-        /* Main Content */
-        main {
-            padding: 60px 0;
-        }
-        
-        .hero {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-        
-        .hero h1 {
-            font-size: 32px;
-            font-weight: 600;
-            color: var(--orange);
-            margin-bottom: 10px;
-        }
-        
-        .hero h1::before {
-            content: "# ";
-            color: var(--gray);
-        }
-        
-        .hero p {
-            font-size: 16px;
-            color: var(--gray);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        /* Games Section */
-        .section-title {
-            font-size: 24px;
-            font-weight: 500;
-            color: var(--gray-dark);
-            margin-bottom: 40px;
-            text-align: center;
-        }
-        
-        .section-title::before {
-            content: "## ";
-            color: var(--orange);
-        }
-        
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 60px;
-        }
-        
-        .game-card {
-            border: 1px solid var(--gray-light);
-            background-color: var(--off-white);
-            padding: 25px;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
-        }
-        
-        .game-card:hover {
-            border-color: var(--orange-light);
-            background-color: var(--white);
-        }
-        
-        .game-card h3 {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--orange);
-            margin-bottom: 15px;
-        }
-        
-        .game-card p {
-            color: var(--gray);
-            margin-bottom: 20px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-        
-        .play-button {
-            display: inline-block;
-            background-color: var(--orange);
-            color: var(--white);
-            text-decoration: none;
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .play-button:hover {
-            background-color: var(--orange-dark);
-        }
-        
-        .play-button::before {
-            content: "$ ";
-        }
-        
-        .rules-link {
-            display: inline-block;
-            background-color: var(--white);
-            color: var(--gray-dark);
-            text-decoration: none;
-            padding: 8px 16px;
-            font-size: 12px;
-            font-weight: 500;
-            border: 1px solid var(--gray-light);
-            transition: all 0.2s ease;
-            margin-left: 10px;
-        }
-        
-        .rules-link:hover {
-            border-color: var(--orange);
-            color: var(--orange);
-            background-color: var(--off-white);
-        }
-        
-        .rules-link::before {
-            content: "? ";
-        }
-
-        .game-buttons {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0;
-        }
-        
-        /* Multiplayer Section */
-        .multiplayer-section {
-            background-color: var(--gray-light);
-            padding: 40px 0;
-            margin: 60px 0;
-        }
-        
-        .multiplayer-content {
-            text-align: center;
-        }
-        
-        .multiplayer-content h2 {
-            font-size: 20px;
-            font-weight: 500;
-            color: var(--gray-dark);
-            margin-bottom: 15px;
-        }
-        
-        .multiplayer-content h2::before {
-            content: "## ";
-            color: var(--orange);
-        }
-        
-        .multiplayer-content p {
-            color: var(--gray);
-            margin-bottom: 25px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .multiplayer-button {
-            background-color: var(--orange);
-            color: var(--white);
-            text-decoration: none;
-            padding: 12px 24px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-            display: inline-block;
-        }
-        
-        .multiplayer-button:hover {
-            background-color: var(--orange-dark);
-        }
-        
-        .multiplayer-button::before {
-            content: ">> ";
-        }
-        
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--gray-light);
-            padding: 30px 0;
-            background-color: var(--off-white);
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: var(--gray);
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .footer-links a {
-            color: var(--gray);
-            text-decoration: none;
-        }
-        
-        .footer-links a:hover {
-            color: var(--orange);
-        }
-        
-        /* About Section */
-        .about-section {
-            background-color: var(--off-white);
-            padding: 40px 0;
-            margin-bottom: 40px;
-        }
-        
-        .about-content {
-            max-width: 700px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .about-content h2 {
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--gray-dark);
-            margin-bottom: 20px;
-        }
-        
-        .about-content h2::before {
-            content: "## ";
-            color: var(--orange);
-        }
-        
-        .about-content p {
-            color: var(--gray);
-            font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-        
-        .about-content a {
-            color: var(--orange);
-            text-decoration: none;
-        }
-        
-        .about-content a:hover {
-            text-decoration: underline;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            nav {
-                gap: 20px;
-            }
-            
-            .hero h1 {
-                font-size: 24px;
-            }
-            
-            .games-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-        }
-    </style>
+    <!-- Stylesheet -->  
+    <link rel="stylesheet" href="style.css">  
 </head>
+
 <body>
     <header>
         <div class="container">
             <div class="header-content">
                 <a href="index.html" class="logo">partition-games</a>
                 <nav>
+                    <button id="about-btn" class="nav-button" aria-expanded="false" aria-haspopup="true">about</button>
                     <a href="developers.html">developers</a>
                     <a href="wiki.html">wiki</a>
                     <a href="https://github.com/ScarletrRaptor8/Partition-Games" target="_blank">github</a>
                 </nav>
+                
+                <div id="about-popover" class="about-popover hidden">
+                    <div class="about-popover-content">
+                        <button id="close-about" class="close-btn">&times;</button>
+                        <h3>About</h3>
+                        <p><strong>Rhodes College Summer Fellowship Program '25</strong></p>
+                        <p>This project is being developed under the supervision of <a href="https://www.rhodes.edu/bio/eric-gottlieb" target="_blank">Professor Gottlieb</a>. Soumtiro and Aayan are crafting this web application to aid Prof. Gottlieb and his team's research on combinatorial games, making these mathematical concepts approachable to everyone.</p>
+                    </div>
+                </div> 
             </div>
         </div>
     </header>
@@ -380,13 +45,7 @@
                 <p>Explore the fascinating world of integer partition games through interactive gameplay and mathematical strategy.</p>
             </div>
 
-            <div class="about-section">
-                <div class="about-content">
-                    <h2>About</h2>
-                    <p><strong>Rhodes College Summer Fellowship Program '25</strong></p>
-                    <p>This project is being developed under the supervision of <a href="https://www.rhodes.edu/bio/eric-gottlieb">Professor Gottlieb</a>. Soumtiro and Aayan are crafting this web application to aid Prof. Gottlieb and his team's research on combinatorial games, making these mathematical concepts approachable to everyone.</p>
-                </div>
-            </div>
+
 
             <h2 class="section-title">Choose Your Game</h2>
             
@@ -479,5 +138,7 @@
             </div>
         </div>
     </footer>
+    
+    <script src="script.js"></script>
 </body>
 </html>
