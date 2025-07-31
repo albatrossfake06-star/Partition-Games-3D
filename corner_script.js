@@ -39,6 +39,57 @@ class Board {
         this.rows = this.rows.filter(r => r > 0);
     }
     
+    // New method: remove only selected pieces
+    makeCornerMoveWithSelection(selectedPieces) {
+        if (this.isEmpty() || selectedPieces.length === 0) return;
+        
+        // Remove selected pieces (which should be last pieces in their respective groups)
+        for (const piece of selectedPieces) {
+            if (piece.row < this.rows.length && piece.col < this.rows[piece.row]) {
+                // Only remove if it's actually the last piece in the row
+                if (piece.col === this.rows[piece.row] - 1) {
+                    this.rows[piece.row]--;
+                }
+            }
+        }
+        
+        // Remove any rows that are now 0
+        this.rows = this.rows.filter(r => r > 0);
+    }
+    
+    // Get all the "last pieces" that can be selected
+    getSelectableLastPieces() {
+        if (this.isEmpty()) return [];
+        
+        // Group consecutive rows of same length
+        const groups = [];
+        let currentGroup = [0];
+        
+        for (let i = 1; i < this.rows.length; i++) {
+            if (this.rows[i] === this.rows[i-1]) {
+                currentGroup.push(i);
+            } else {
+                groups.push(currentGroup);
+                currentGroup = [i];
+            }
+        }
+        groups.push(currentGroup);
+        
+        // For each group, the last row in the group has a selectable piece
+        const selectablePieces = [];
+        for (const group of groups) {
+            const lastRowInGroup = group[group.length - 1];
+            if (this.rows[lastRowInGroup] > 0) {
+                selectablePieces.push({
+                    row: lastRowInGroup,
+                    col: this.rows[lastRowInGroup] - 1
+                });
+            }
+        }
+        
+        return selectablePieces;
+    }
+    
     squares() {
         const coords = [];
         for (let r = 0; r < this.rows.length; r++) { 
@@ -49,26 +100,103 @@ class Board {
     asTuple() { return JSON.stringify(this.rows); }
 }
 
+/* ───────── Grundy numbers for Corner game with selection ───────── */
+/*
+ * FIXED AI IMPLEMENTATION using proper Sprague-Grundy theory
+ * 
+ * This implements optimal play for the Corner game with piece selection.
+ * 
+ * Performance notes:
+ * - Memoization keeps play instant on boards ~40 squares
+ * - For larger boards, consider restricting moves to:
+ *   a) "remove k pieces where 1 ≤ k ≤ selectable.length" 
+ *   b) "remove exactly one piece" (original Corner rules)
+ * 
+ * Algorithm:
+ * 1. allCornerMoves() enumerates all non-empty subsets of selectable pieces
+ * 2. grundy() calculates mex over all possible child positions  
+ * 3. perfectMove() finds moves leading to grundy value 0 (winning)
+ * 4. AI uses this for optimal play at Hard difficulty
+ */
 const grundyMemo = new Map();
+
+// Generate all possible corner moves (non-empty subsets of selectable pieces)
+function* allCornerMoves(board) {
+    const selectable = board.getSelectableLastPieces();
+    const n = selectable.length;
+    
+    // Generate all non-empty subsets (1 to 2^n - 1)
+    for (let mask = 1; mask < (1 << n); mask++) {
+        const move = [];
+        for (let i = 0; i < n; i++) {
+            if (mask & (1 << i)) {
+                move.push(selectable[i]);
+            }
+        }
+        yield move;
+    }
+}
+
 function grundy(position) {
     if (position === '[]') return 0;
     if (grundyMemo.has(position)) return grundyMemo.get(position);
     
     const posArray = JSON.parse(position);
     const board = new Board(posArray);
-    board.makeCornerMove();
-    const childPosition = board.asTuple();
     
-    const childValue = grundy(childPosition);
-    const g = childValue === 0 ? 1 : 0; // Simple nim-like evaluation
+    // Check if there are any legal moves
+    const selectablePieces = board.getSelectableLastPieces();
+    if (selectablePieces.length === 0) {
+        grundyMemo.set(position, 0);
+        return 0;
+    }
+    
+    const childValues = new Set();
+    for (const move of allCornerMoves(board)) {
+        const child = new Board([...board.rows]); // Copy the rows array
+        child.makeCornerMoveWithSelection(move);
+        const childTuple = child.asTuple();
+        childValues.add(grundy(childTuple));
+        
+        // Early termination optimization: if we've seen grundy value 0,
+        // we know this position is winning, but we still need the full mex
+    }
+    
+    // Calculate mex (minimum excluded value)
+    let g = 0;
+    while (childValues.has(g)) g++;
     
     grundyMemo.set(position, g);
     return g;
 }
 
 function perfectMove(position) {
-    if (position === '[]') throw new Error("No legal move");
-    return "corner"; // Only one type of move in Corner
+    if (position === '[]') {
+        throw new Error("No legal move - empty board");
+    }
+    
+    const posArray = JSON.parse(position);
+    const board = new Board(posArray);
+    
+    // Check if there are any legal moves
+    const selectablePieces = board.getSelectableLastPieces();
+    if (selectablePieces.length === 0) {
+        throw new Error("No legal moves available");
+    }
+    
+    // Look for a winning move (one that leads to grundy value 0)
+    for (const move of allCornerMoves(board)) {
+        const child = new Board([...board.rows]);
+        child.makeCornerMoveWithSelection(move);
+        if (grundy(child.asTuple()) === 0) {
+            return move; // This move wins!
+        }
+    }
+    
+    // No winning move found, return the first legal move
+    // (In a losing position, all moves are equally bad)
+    const allMoves = [...allCornerMoves(board)];
+    return allMoves.length > 0 ? allMoves[0] : [];
 }
 
 function staircase(n) {
@@ -112,8 +240,12 @@ class Game {
     get currentPlayer() { return Game.PLAYERS[this.currentIndex]; }
     isAiTurn() { return this.aiIndex === this.currentIndex; }
     switchPlayer() { this.currentIndex = 1 - this.currentIndex; }
-    makeMove() {
-        this.board.makeCornerMove();
+    makeMove(selectedPieces = null) {
+        if (selectedPieces && selectedPieces.length > 0) {
+            this.board.makeCornerMoveWithSelection(selectedPieces);
+        } else {
+            this.board.makeCornerMove();
+        }
         const finished = this.board.isEmpty();
         if (!finished) this.switchPlayer();
         return finished;
@@ -159,16 +291,23 @@ class ProCornerGui {
         this.ANIMATION_MS = 500;
         this.AI_THINK_MS = 800;
         this.game = null;
-        this.hoveredMove = null;
         this.isAnimating = false;
+        this.hoveredMove = null;
         this.aiDifficulty = 'Medium';
+        this.currentTheme = 'grass';
         this.gameHistory = [];
+        this.initialPartition = [];
         
+        // Selection state for new Corner logic
+        this.selectedPieces = []; // Array of {row, col} objects
+        this.selectablePieces = []; // Array of {row, col} objects representing last pieces
+        this.isInSelectionMode = false;
+
         this.getDOMElements();
         this.bindEventListeners();
         this.initTheme();
-        SoundManager.init();
         this.showSetupModal();
+        SoundManager.init();
     }
 
     getDOMElements() {
@@ -195,6 +334,11 @@ class ProCornerGui {
         this.helpBtnModal = document.getElementById('help-btn-modal');
         this.helpPopover = document.getElementById('help-popover');
         this.downloadBtnModal = document.getElementById('download-btn-modal');
+        
+        // New selection control elements
+        this.selectionControls = document.getElementById('selection-controls');
+        this.confirmSelectionBtn = document.getElementById('confirm-selection-btn');
+        this.clearSelectionBtn = document.getElementById('clear-selection-btn');
     }
 
     bindEventListeners() {
@@ -222,10 +366,18 @@ class ProCornerGui {
             this.themeSelect.addEventListener('change', () => this.applyTileTheme());
         }
         
+        // Selection control buttons
+        if (this.confirmSelectionBtn) {
+            this.confirmSelectionBtn.addEventListener('click', () => this.confirmSelection());
+        }
+        if (this.clearSelectionBtn) {
+            this.clearSelectionBtn.addEventListener('click', () => this.clearSelection());
+        }
+        
         // Board interaction
         this.boardArea.addEventListener('mousemove', (event) => this.handleMouseMove(event));
         this.boardArea.addEventListener('mouseleave', () => this.handleMouseLeave());
-        this.boardArea.addEventListener('click', () => this.handleMouseClick());
+        this.boardArea.addEventListener('click', (event) => this.handleMouseClick(event));
     }
 
     applyTileTheme() {
@@ -241,7 +393,16 @@ class ProCornerGui {
             if (nums.length === 0 || nums.some(n => isNaN(n) || n <= 0)) throw new Error("Invalid input");
             
             const aiSide = this.aiSelect.value === "None" ? null : this.aiSelect.value;
-            this.aiDifficulty = this.difficultySlider.value;
+            
+            // Convert numeric difficulty to text
+            const difficultyValue = parseInt(this.difficultySlider.value);
+            switch(difficultyValue) {
+                case 1: this.aiDifficulty = 'Easy'; break;
+                case 2: this.aiDifficulty = 'Medium'; break;
+                case 3: this.aiDifficulty = 'Hard'; break;
+                default: this.aiDifficulty = 'Medium'; break;
+            }
+            
             this.applyTileTheme();
             
             this.setupModal.classList.remove('visible');
@@ -260,6 +421,13 @@ class ProCornerGui {
         this.hoveredMove = null;
         this.isAnimating = false;
         this.gameHistory = [];
+        
+        // Clear Grundy memoization for new game
+        grundyMemo.clear();
+        
+        // Reset selection mode
+        this.exitSelectionMode();
+        
         this.redrawBoard();
         this.updateStatus();
         if (this.game.isAiTurn()) { this.aiTurn(); }
@@ -272,8 +440,56 @@ class ProCornerGui {
         
         setTimeout(() => {
             this.aiThinkingIndicator.classList.remove('thinking');
-            // AI always makes the corner move (only legal move)
-            this.executeWithAnimation();
+            
+            try {
+                // Get the optimal move using Grundy theory
+                let selectedPieces;
+                
+                if (this.aiDifficulty === 'Easy') {
+                    // Easy AI: Make random moves
+                    const selectablePieces = this.game.board.getSelectableLastPieces();
+                    if (selectablePieces.length > 0) {
+                        // Randomly select 1 to all selectable pieces
+                        const numToSelect = Math.floor(Math.random() * selectablePieces.length) + 1;
+                        selectedPieces = [];
+                        const shuffled = [...selectablePieces].sort(() => Math.random() - 0.5);
+                        for (let i = 0; i < numToSelect; i++) {
+                            selectedPieces.push(shuffled[i]);
+                        }
+                        console.log(`AI (Easy) selected ${selectedPieces.length} random pieces`);
+                    }
+                } else if (this.aiDifficulty === 'Medium') {
+                    // Medium AI: 70% chance of optimal move, 30% chance of random
+                    if (Math.random() < 0.7) {
+                        selectedPieces = perfectMove(this.game.board.asTuple());
+                        console.log(`AI (Medium) playing optimal move with ${selectedPieces.length} pieces`);
+                    } else {
+                        // Make a random move
+                        const allMoves = [...allCornerMoves(this.game.board)];
+                        if (allMoves.length > 0) {
+                            selectedPieces = allMoves[Math.floor(Math.random() * allMoves.length)];
+                            console.log(`AI (Medium) playing random move with ${selectedPieces.length} pieces`);
+                        }
+                    }
+                } else {
+                    // Hard AI: Always play optimally
+                    selectedPieces = perfectMove(this.game.board.asTuple());
+                    console.log(`AI (Hard) playing optimal move with ${selectedPieces.length} pieces`);
+                }
+                
+                // Execute the move
+                if (selectedPieces && selectedPieces.length > 0) {
+                    this.executeWithAnimation(selectedPieces);
+                } else {
+                    console.warn('AI could not find valid move, using fallback');
+                    // Fallback: use the old corner move if something went wrong
+                    this.executeWithAnimation();
+                }
+            } catch (error) {
+                console.error('AI error:', error);
+                // Fallback to the original corner move
+                this.executeWithAnimation();
+            }
         }, this.AI_THINK_MS);
     }
     
@@ -353,29 +569,38 @@ class ProCornerGui {
         this.boardArea.classList.remove('clickable');
     }
 
-    executeWithAnimation() {
+    executeWithAnimation(selectedPieces = null) {
         if (this.isAnimating || this.game.board.isEmpty()) return;
         this.isAnimating = true;
         this.handleMouseLeave();
         SoundManager.play('remove');
         
         // Highlight and animate removal of affected cells
-        const groups = this.getConsecutiveGroups();
-        for (const group of groups) {
-            const lastRowInGroup = group[group.length - 1];
-            const lastCol = this.game.board.rows[lastRowInGroup] - 1;
-            if (lastCol >= 0) {
-                const tile = document.getElementById(`tile-${lastRowInGroup}-${lastCol}`);
+        if (selectedPieces && selectedPieces.length > 0) {
+            // Animate only selected pieces
+            selectedPieces.forEach(piece => {
+                const tile = document.getElementById(`tile-${piece.row}-${piece.col}`);
                 if (tile) tile.classList.add('removing');
+            });
+        } else {
+            // Default behavior: animate all last pieces
+            const groups = this.getConsecutiveGroups();
+            for (const group of groups) {
+                const lastRowInGroup = group[group.length - 1];
+                const lastCol = this.game.board.rows[lastRowInGroup] - 1;
+                if (lastCol >= 0) {
+                    const tile = document.getElementById(`tile-${lastRowInGroup}-${lastCol}`);
+                    if (tile) tile.classList.add('removing');
+                }
             }
         }
         
-        setTimeout(() => this.finishMove(), this.ANIMATION_MS);
+        setTimeout(() => this.finishMove(selectedPieces), this.ANIMATION_MS);
     }
     
-    finishMove() {
+    finishMove(selectedPieces = null) {
         this.saveGameState();
-        const finished = this.game.makeMove();
+        const finished = this.game.makeMove(selectedPieces);
         this.isAnimating = false;
         if (finished) {
             SoundManager.play('win');
@@ -453,10 +678,123 @@ class ProCornerGui {
         }, 200);
     }
     
-    handleMouseClick() { 
-        if (this.hoveredMove && !this.game.board.isEmpty()) { 
-            this.requestMove(); 
-        } 
+    handleMouseClick(event) { 
+        if (!this.game || this.game.board.isEmpty() || this.isAnimating || this.game.isAiTurn()) {
+            return;
+        }
+
+        if (this.isInSelectionMode) {
+            // Handle piece selection
+            const rect = this.boardArea.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            const extraLeftMargin = this.game.board.width() > 30 ? 20 : 0;
+            const col = Math.floor((x - this.MARGIN - extraLeftMargin) / this.CELL);
+            const row = Math.floor((y - this.MARGIN) / this.CELL);
+            
+            this.handleTileClick(row, col);
+        } else {
+            // Enter selection mode
+            this.enterSelectionMode();
+        }
+    }
+    
+    handleTileClick(row, col) {
+        // Check if this is a selectable piece
+        const selectablePiece = this.selectablePieces.find(p => p.row === row && p.col === col);
+        if (!selectablePiece) return;
+        
+        // Check if already selected
+        const selectedIndex = this.selectedPieces.findIndex(p => p.row === row && p.col === col);
+        
+        if (selectedIndex >= 0) {
+            // Deselect
+            this.selectedPieces.splice(selectedIndex, 1);
+        } else {
+            // Select
+            this.selectedPieces.push({row, col});
+        }
+        
+        this.updateSelectionDisplay();
+        this.updateSelectionButtons();
+    }
+    
+    enterSelectionMode() {
+        this.isInSelectionMode = true;
+        this.selectablePieces = this.game.board.getSelectableLastPieces();
+        this.selectedPieces = [];
+        
+        // Show selection controls
+        if (this.selectionControls) {
+            this.selectionControls.style.display = 'flex';
+        }
+        
+        this.updateSelectionDisplay();
+        this.updateSelectionButtons();
+    }
+    
+    exitSelectionMode() {
+        this.isInSelectionMode = false;
+        this.selectablePieces = [];
+        this.selectedPieces = [];
+        
+        // Hide selection controls
+        if (this.selectionControls) {
+            this.selectionControls.style.display = 'none';
+        }
+        
+        this.clearSelectionDisplay();
+    }
+    
+    updateSelectionDisplay() {
+        // Clear previous selection styling
+        this.boardArea.querySelectorAll('.tile').forEach(tile => {
+            tile.classList.remove('selectable', 'selected');
+        });
+        
+        // Mark selectable pieces
+        this.selectablePieces.forEach(piece => {
+            const tile = document.getElementById(`tile-${piece.row}-${piece.col}`);
+            if (tile) {
+                tile.classList.add('selectable');
+            }
+        });
+        
+        // Mark selected pieces
+        this.selectedPieces.forEach(piece => {
+            const tile = document.getElementById(`tile-${piece.row}-${piece.col}`);
+            if (tile) {
+                tile.classList.add('selected');
+            }
+        });
+    }
+    
+    clearSelectionDisplay() {
+        this.boardArea.querySelectorAll('.tile').forEach(tile => {
+            tile.classList.remove('selectable', 'selected');
+        });
+    }
+    
+    updateSelectionButtons() {
+        if (this.confirmSelectionBtn) {
+            this.confirmSelectionBtn.disabled = this.selectedPieces.length === 0;
+        }
+    }
+    
+    confirmSelection() {
+        if (this.selectedPieces.length === 0) return;
+        
+        SoundManager.play('click');
+        this.executeWithAnimation(this.selectedPieces);
+        this.exitSelectionMode();
+    }
+    
+    clearSelection() {
+        SoundManager.play('click');
+        this.selectedPieces = [];
+        this.updateSelectionDisplay();
+        this.updateSelectionButtons();
     }
     
     requestMove() { 
@@ -470,7 +808,9 @@ class ProCornerGui {
     initTheme() { 
         const savedTheme = localStorage.getItem('theme') || 'light'; 
         document.documentElement.setAttribute('data-theme', savedTheme); 
-        this.themeToggle.checked = savedTheme === 'dark'; 
+        if (this.themeToggle) {
+            this.themeToggle.checked = savedTheme === 'dark';
+        }
     }
     toggleTheme() { 
         const newTheme = this.themeToggle.checked ? 'dark' : 'light'; 
@@ -478,12 +818,23 @@ class ProCornerGui {
         localStorage.setItem('theme', newTheme); 
     }
     showSetupModal() { 
-        this.gameOverModal.classList.remove('visible'); 
-        this.setupModal.classList.add('visible'); 
+        if (this.gameOverModal) {
+            this.gameOverModal.classList.remove('visible');
+        }
+        if (this.setupModal) {
+            this.setupModal.classList.add('visible'); 
+        }
     }
     updateDifficultyLabel() {
-        const difficulty = this.difficultySlider.value;
-        this.difficultyLabel.textContent = `AI Difficulty: ${difficulty}`;
+        const value = parseInt(this.difficultySlider.value);
+        let difficulty;
+        switch(value) {
+            case 1: difficulty = 'Easy'; break;
+            case 2: difficulty = 'Medium'; break;
+            case 3: difficulty = 'Hard'; break;
+            default: difficulty = 'Medium'; break;
+        }
+        this.difficultyLabel.textContent = difficulty;
     }
     generatePartition() {
         const partitionType = this.partitionTypeSelect.value;
@@ -626,6 +977,6 @@ class ProCornerGui {
     }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('load', () => {
     window.cornerApp = new ProCornerGui();
 });
