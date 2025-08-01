@@ -1,0 +1,105 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<title>Continuous Corner</title>  
+
+<script>  
+window.MathJax = {  
+  tex: {  
+    inlineMath: [['$', '$'], ['\$', '\$']],  // enable $…$  and  $ … $  
+    processEscapes: true                       // let \$ print a literal $  
+  },  
+  svg: { fontCache: 'global' }                 // use SVG output; chtml also fine  
+};  
+</script> 
+
+  
+<!-- 1. MathJax -->  
+<script id="MathJax-script" async  
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">  
+</script>  
+  
+<!-- 2. Minimal styling ---------------------------------------------->  
+<style>  
+body          { font-family: "Arial", Times, serif;  
+                margin: 2em 8%; line-height: 1.35;}  
+h1            { text-align: center; margin-bottom: 0.3em;}  
+/* mdframed imitation */  
+.gamebox      { border: 3px solid #6a37a8; border-radius: 10px;  
+                padding: 1.0em 1.3em; position: relative;  
+                background: #f9f6ff; margin: 1.7em 0 1.5em 0;}  
+.gamebox:before{ content:"Game statement";  
+                 position:absolute; top:-0.9em; left:1em;  
+                 background:#f9f6ff; padding:0 0.4em;  
+                 color:#6a37a8; font-weight:bold;}  
+figcaption    { text-align: center; font-style: italic;  
+                margin-top: 0.3em;}  
+ul.moves      { list-style-type: none; padding-left: 0;}  
+ul.moves > li { margin: 1.4em 0;}  
+span.label    { font-weight: bold;}  
+/* bibliography */  
+.bibitem      { text-indent:-1.6em; padding-left:1.6em;  
+                margin-bottom:0.45em;}  
+</style>  
+</head>  
+<body>  
+  
+<!-- ----------------------------DOCUMENT BODY-------------------------->  
+<h1>Continuous Corner</h1>
+<h2 style="text-align: center;"> Integer Partition Combinatorial Game </h2>  
+  
+<div class="gamebox">  
+    Let $[r_1, r_2, r_3, \ldots, r_i]$ be an integer partition of a positive integer $n$ in descending order, where $\forall x \in \left(1, 2, \ldots, i\right), r_x \geq 1$. <b>Continuous Corner</b> is a variant of the Corner game designed to be played between two players, where the game board will be a <a href=https://en.wikipedia.org/wiki/Young_tableau>Young diagram</a>, representing a partition with previously documented properties. 
+    
+    When it's their turn, the player will select a <i>consecutive subset</i> of corner pieces to remove from the board. Like in Corner, corner pieces are the last cells of rows (following the consecutive grouping rule), but unlike Corner, players cannot select arbitrary subsets - they must choose consecutive corners only.
+
+    The player who makes the last move wins.     
+</div>  
+  
+  
+<h2 id="moves">Moves</h2>  
+<p>Continuous Corner restricts player choice compared to regular Corner:</p>  
+  
+<ul class="moves">  
+  <li>  
+    <span class="label">Corner Selection Rules:</span>  
+    <ul>
+        <li>Identify all corner pieces (last cells of each consecutive group, as in Corner)</li>
+        <li>From these corner pieces, you may only select a <strong>consecutive range</strong></li>
+        <li>For example, if corners exist at rows 1, 3, 5, and 7, valid selections include:
+            <ul>
+                <li>[1], [3], [5], [7] (individual corners)</li>
+                <li>[1,3], [3,5], [5,7] (consecutive pairs)</li>
+                <li>[1,3,5], [3,5,7] (consecutive triples)</li>
+                <li>[1,3,5,7] (all consecutive corners)</li>
+            </ul>
+        </li>
+        <li><strong>Invalid selections:</strong> [1,5], [1,7], [3,7] (non-consecutive)</li>
+    </ul>
+  </li>  
+  
+  <li>
+    <span class="label">Example Move:</span>
+    In a partition $\left(6, 4, 3, 3, 2, 1 \right)$, corner pieces are at rows 1, 2, 4, 5, 6. 
+    A player might choose the consecutive range [2, 4, 5], removing pieces from rows 2, 4, and 5 only.
+    This would transform the partition to $\left(6, 3, 3, 2, 1 \right)$.
+  </li>
+</ul>  
+  
+<h2>Strategic Implications</h2>
+
+<p>The consecutive selection constraint in Continuous Corner creates several interesting strategic differences from regular Corner:</p>
+
+<ul>
+    <li><strong>Reduced Branching:</strong> The number of possible moves is significantly reduced, making the game more manageable for analysis</li>
+    <li><strong>Positional Play:</strong> Players must consider not just which corners to remove, but the sequential implications of consecutive removal</li>
+    <li><strong>Mathematical Beauty:</strong> The consecutive constraint preserves some structural properties while adding tactical depth</li>
+</ul>
+
+<h2>More</h2>
+
+<p>Continuous Corner represents an exploration in constrained partition games, where the addition of simple rules can create rich strategic gameplay. This variant maintains the mathematical elegance of the Corner game while introducing new tactical considerations through the consecutive selection mechanism.</p>
+
+</body>  
+</html> 
