@@ -19,45 +19,49 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo-section">
-                    <a href="index.html" class="logo">partition-games</a>
-                    <span class="game-title"> /LCTR</span>
-                </div>
-                <nav>
-                    <!-- LCTR specific controls integrated into the nav -->
-                    <button id="help-btn" class="nav-button">? help</button>
-                    <div class="nav-control-group">
-                        <label for="theme-select" class="nav-label">Tiles:</label>
-                        <select id="theme-select" class="nav-select">
-                            <option value="grass">🔥 Fire</option>
-                            <option value="stone">🪨 Stone</option>
-                            <option value="ice">🧊 Ice</option>
-                        </select>
+                <div class="header-left">
+                    <div class="logo-section">
+                        <a href="index.html" class="logo">partition-games</a>
+                        <span class="game-title"> /LCTR</span>
                     </div>
-                    <!-- Global theme toggle -->
-                    <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
-                        <!-- Content is populated by script.js -->
-                    </button>
-                </nav>
+                </div>
+                
+                <div class="header-center">
+                    <div class="game-title-section">
+                        <h1>LCTR</h1>
+                    </div>
+                    <div class="status-container">
+                        <p id="status-label">Loading...</p>
+                        <div id="ai-thinking-indicator">
+                            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <nav>
+                        <!-- LCTR specific controls integrated into the nav -->
+                        <button id="help-btn" class="nav-button">? help</button>
+                        <div class="nav-control-group">
+                            <label for="theme-select" class="nav-label">Tiles:</label>
+                            <select id="theme-select" class="nav-select">
+                                <option value="grass">🔥 Fire</option>
+                                <option value="stone">🪨 Stone</option>
+                                <option value="ice">🧊 Ice</option>
+                            </select>
+                        </div>
+                        <!-- Global theme toggle -->
+                        <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
+                            <!-- Content is populated by script.js -->
+                        </button>
+                    </nav>
+                </div>
             </div>
         </div>
     </header>
 
     <main>
         <div class="container">
-            <!-- Game Title Section -->
-            <div class="game-title-section">
-                <h1>LCTR</h1>
-            </div>
-
-            <!-- Status Section -->
-            <div class="status-container">
-                <p id="status-label">Loading...</p>
-                <div id="ai-thinking-indicator">
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                </div>
-            </div>
-
             <!-- Game Card -->
             <div id="game-card" data-tile-theme="grass">
                 <div id="board-area"></div>

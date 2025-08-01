@@ -51,9 +51,9 @@ body {
 }
 
 .container {
-    max-width: 1000px;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0;
 }
 
 /* Smooth transitions for theme switching */
@@ -70,15 +70,36 @@ footer {
    ========================================================================== */
 
 header {
-    padding: 20px 0;
+    padding: 0px 30px;
     background-color: var(--white);
 }
 
 .header-content {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    gap: 20px;
     position: relative;
+}
+
+.header-left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+    gap: 8px;
+}
+
+.header-right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .logo-section {
@@ -100,14 +121,64 @@ header {
 }
 
 .game-title {
-    font-size: 18px;;
+    font-size: 18px;
     font-weight: 500;
     color: var(--gray-dark);
 }
 
+/* Header Game Title Section */
+.header-center .game-title-section {
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.header-center .game-title-section h1 {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--orange);
+    margin: 0;
+}
+
+.header-center .game-title-section ::before {
+    content: "< ";
+    font-weight: 500;
+    color: var(--gray-dark);
+}
+
+.header-center .game-title-section ::after {
+    content: " >";
+    font-weight: 500;
+    color: var(--gray-dark);
+}
+
+/* Header Status Container */
+.header-center .status-container { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 8px; 
+    margin-bottom: 0; 
+}
+
+.header-center #status-label { 
+    min-height: auto; 
+    margin: 0; 
+    font-size: 16px; 
+    font-weight: 500; 
+    color: var(--gray); 
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.header-center #status-label.exiting { 
+    opacity: 0; 
+    transform: translateY(-5px); 
+}
+
 nav {
     display: flex;
-    gap: 30px;
+    align-items: center;
+    gap: 16px;
 }
 
 nav a {
@@ -158,31 +229,7 @@ nav a:hover {
    ========================================================================== */
 
 main {
-    padding: 40px 0;
-}
-
-/* Game Title Section */
-.game-title-section {
-    text-align: center;
-    margin-bottom: 0.5rem;
-}
-
-.game-title-section h1 {
-    font-size: 36px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--orange);
-    margin: 0;
-}
-.game-title-section ::before {
-    content: "< ";
-    font-weight: 500;
-    color: var(--gray-dark);
-}
-.game-title-section ::after {
-    content: " >";
-    font-weight: 500;
-    color: var(--gray-dark);
+    padding: 20px 20px;
 }
 
 /* ==========================================================================
@@ -301,25 +348,7 @@ footer {
    10. Typography & Status
    ========================================================================== */
 
-.status-container { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 8px; 
-    margin-bottom: 24px; 
-}
-#status-label { 
-    min-height: 27px; 
-    margin: 0; 
-    font-size: 16px; 
-    font-weight: 500; 
-    color: var(--gray); 
-    transition: opacity 0.2s ease, transform 0.2s ease;
-}
-#status-label.exiting { 
-    opacity: 0; 
-    transform: translateY(-5px); 
-}
+
 
 /* ==========================================================================
    11. Game Components (Board, Tiles, Modals)
@@ -522,29 +551,25 @@ footer {
 
 @media (max-width: 768px) {
     .header-content {
-        flex-direction: column;
-        gap: 20px;
-        position: relative;
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
     
-    .logo-section {
-        justify-content: center;
+    .header-left {
+        order: 1;
+        justify-content: flex-start;
     }
     
-    nav {
-        gap: 20px;
+    .header-center {
+        order: 2;
     }
     
-    .theme-toggle {
-        gap: 4px;
+    .header-right {
+        order: 3;
+        justify-content: flex-end;
     }
     
-    .theme-icon {
-        width: 12px;
-        height: 12px;
-    }
-    
-    .game-title-section h1 {
+    .header-center .game-title-section h1 {
         font-size: 28px;
     }
     
