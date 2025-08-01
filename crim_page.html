@@ -3,132 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRIM Game</title>
-
-    <!--Google Fonts-->
+    <title>CRIM Game | Partition Games</title>
+    
+    <!-- Console-style monospace fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Stylesheet -->
+    <!-- CRIM Game-Specific Stylesheet -->
     <link rel="stylesheet" href="crim_style.css">
-    
 </head>
-<body>
-    <!-- Animated Background Layers -->
-    <div id="stars-small"></div>
-    <div id="stars-medium"></div>
-    <div id="stars-large"></div>
 
-    <main id="app-container">
-        <header>
-            <div class="header-left">
-                <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
-            </div>
-            <div class="header-center">
-                <h1>CRIM</h1>
-                <div class="header-status">
-                    <p id="status-label">Loading...</p>
-                    <div id="ai-thinking-indicator">
-                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+<body>
+    <!-- Unified Header from index.html -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-section">
+                        <a href="index.html" class="logo">partition-games</a>
+                        <span class="game-title"> /CRIM</span>
                     </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <label for="theme-select" class="theme-label">Tiles:</label>
-                <select id="theme-select" class="header-select">
-                    <option value="grass">🌱 Grass</option>
-                    <option value="stone">🪨 Stone</option>
-                    <option value="ice">🧊 Ice</option>
-                </select>
-                <button id="undo-btn" class="icon-button" aria-label="Undo Move" style="display: none;" title="Undo Move">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
-                    </svg>
-                </button>
-                <button id="download-btn" class="icon-button" aria-label="Download Game" style="display: none;" title="Download Game History">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
-                    </svg>
-                </button>
-                <button id="help-btn" class="icon-button" aria-label="Help">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">  
-                        <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
-                    </svg>             
-                </button>
-                <div class="theme-switcher">
-                    <span class="theme-icon sun">☀️</span>
-                    <label class="switch">
-                        <input type="checkbox" id="theme-toggle">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="theme-icon moon">🌙</span>
+                
+                <div class="header-center">
+                    <div class="game-title-section">
+                        <h1>CRIM</h1>
+                    </div>
+                    <div class="status-container">
+                        <p id="status-label">Loading...</p>
+                        <div id="ai-thinking-indicator">
+                            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <nav>
+                        <!-- CRIM specific controls integrated into the nav -->
+                        <button id="help-btn" class="nav-button">? help</button>
+                        <button id="cycle-theme-btn" class="nav-button" title="Click or Scroll to change theme">[tiles: 🔥]</button>
+                        <button id="undo-btn" class="nav-button" aria-label="Undo Move" style="display: none;" title="Undo Move">↶ undo</button>
+                        <button id="download-btn" class="nav-button" aria-label="Download Game" style="display: none;" title="Download Game History">↓ download</button>
+                        <!-- Global theme toggle -->
+                        <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
+                            <!-- Content is populated by script.js -->
+                        </button>
+                    </nav>
                 </div>
             </div>
-        </header>
-
-        <div id="game-card">
-            <div id="board-area"></div>
         </div>
+    </header>
 
-        <!-- Fixed New Game Button -->
-        <button id="new-game-btn" class="fixed-new-game-btn">New Game</button>
+    <main>
+        <div class="container">
+            <!-- Game Card -->
+            <div id="game-card" data-tile-theme="grass">
+                <div id="board-area"></div>
+            </div>
+
+            <button id="new-game-btn" class="fixed-new-game-btn">$ new game</button>
+        </div>
     </main>
 
-    <!-- Modals -->
+    <!-- Modals and Popovers -->
     <div id="setup-modal-backdrop" class="modal-backdrop">
         <div class="modal">
             <div class="modal-header">
                 <h2>Game Setup</h2>
-                <button id="help-btn-modal" class="icon-button" aria-label="Help">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">  
-                        <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
-                    </svg> 
-                </button>
+                <button id="help-btn-modal" class="icon-button" aria-label="Help">[?]</button>
             </div>
             <p>Enter a board configuration manually, or generate one randomly.</p>
-            
             <label for="rows-input">Row Lengths</label>
             <input type="text" id="rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
-            
             <hr>
-
             <label for="partition-type-select">Or, generate a partition:</label>
             <div class="input-group">
                 <select id="partition-type-select" class="partition-type-dropdown">
-                    <option value="random">Random</option>
-                    <option value="staircase">Staircase</option>
-                    <option value="square">Square</option>
-                    <option value="hook">Hook</option>
+                    <option value="random">random</option>
+                    <option value="staircase">staircase</option>
+                    <option value="square">square</option>
+                    <option value="hook">hook</option>
                 </select>
                 <input type="number" id="partition-number-input" placeholder="e.g., 25">
-                <button id="generate-partition-btn">Generate</button>
+                <button id="generate-partition-btn">generate</button>
             </div>
-            
             <hr>
-
             <label for="ai-select">Computer Player</label>
             <select id="ai-select">
-                <option value="B">Player B (Starts Second)</option>
-                <option value="A">Player A (Starts First)</option>
+                <option value="B">Bob (Starts Second)</option>
+                <option value="A">Alice (Starts First)</option>
                 <option value="None">None (Two Human Players)</option>
             </select>
-
             <label for="difficulty-slider">AI Difficulty: <span id="difficulty-label">Medium (50)</span></label>
             <div class="slider-container">
                 <input type="range" id="difficulty-slider" min="1" max="100" value="50" class="difficulty-range">
             </div>
-            
-            <button id="start-game-btn" class="modal-btn">Start Game</button>
+            <button id="start-game-btn" class="modal-btn"> >> start game</button>
         </div>
     </div>
     
-    <div id="game-over-modal-backdrop" class="modal-backdrop"><div class="modal"><h2 id="game-over-title">Game Over</h2><p id="game-over-message">Player X wins!</p><button id="download-btn-modal" class="icon-button" aria-label="Download Game" title="Download Game History" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg> Download</button><button id="play-again-btn" class="modal-btn">Play Again</button></div></div>
-    <div id="help-popover"><h3>How to Play</h3><p>On your turn, you can choose one of two moves:</p><ul><li>Remove any <strong>single row</strong> of squares.</li><li>Remove the <strong>entire leftmost column</strong> of squares.</li></ul><p><strong>Click</strong> on the number labels (grey bars) to select a specific row or column.</p></div>
-    
-    <!-- Audio Elements -->
-    
+    <div id="game-over-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h2 id="game-over-title">Game Over</h2>
+            <p id="game-over-message">Player X wins!</p>
+            <button id="download-btn-modal" class="icon-button" aria-label="Download Game" title="Download Game History" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg> Download
+            </button>
+            <button id="play-again-btn" class="modal-btn">Play Again</button>
+        </div>
+    </div>
 
+    <div id="help-popover">
+        <h3>How to Play</h3>
+        <p>On your turn, you can choose one of two moves:</p>
+        <ul>
+            <li>Remove any <strong>single row</strong> of squares.</li>
+            <li>Remove the <strong>entire leftmost column</strong> of squares.</li>
+        </ul>
+        <p><strong>Click</strong> on the number labels (grey bars) to select a specific row or column.</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
     <script src="crim_script.js"></script>
 </body>
 </html>

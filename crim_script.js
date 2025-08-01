@@ -251,6 +251,7 @@ class ProLCTRGui {
         this.newGameBtn = document.getElementById('new-game-btn');
         this.undoBtn = document.getElementById('undo-btn');
         this.downloadBtn = document.getElementById('download-btn');
+        this.cycleThemeBtn = document.getElementById('cycle-theme-btn');
         this.themeToggle = document.getElementById('theme-toggle');
         this.setupModal = document.getElementById('setup-modal-backdrop');
         this.gameOverModal = document.getElementById('game-over-modal-backdrop');
@@ -261,7 +262,6 @@ class ProLCTRGui {
         this.aiSelect = document.getElementById('ai-select');
         this.difficultySlider = document.getElementById('difficulty-slider');
         this.difficultyLabel = document.getElementById('difficulty-label');
-        this.themeSelect = document.getElementById('theme-select');
         this.startGameBtn = document.getElementById('start-game-btn');
         this.playAgainBtn = document.getElementById('play-again-btn');
         this.gameOverMessage = document.getElementById('game-over-message');
@@ -277,7 +277,6 @@ class ProLCTRGui {
         this.downloadBtn.addEventListener('click', () => { SoundManager.play('click'); this.downloadGame(); });
         this.playAgainBtn.addEventListener('click', () => { SoundManager.play('click'); this.showSetupModal(); });
         this.themeToggle.addEventListener('change', () => { SoundManager.play('click'); this.toggleTheme(); });
-        this.themeSelect.addEventListener('change', () => { SoundManager.play('click'); this.applyTileTheme(); });
         this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
         this.helpBtn.addEventListener('mouseenter', () => this.showHelp());
         this.helpBtn.addEventListener('mouseleave', () => this.hideHelp());
@@ -289,6 +288,55 @@ class ProLCTRGui {
         const downloadBtnModal = document.getElementById('download-btn-modal');
         if (downloadBtnModal) {
             downloadBtnModal.addEventListener('click', () => { SoundManager.play('click'); this.downloadGame(); });
+        }
+        
+        // Theme cycling functionality
+        if (this.cycleThemeBtn) {
+            const themes = [
+                { name: 'grass', icon: '🔥' },
+                { name: 'stone', icon: '🪨' },
+                { name: 'ice', icon: '🧊' }
+            ];
+            let currentThemeIndex = 0;
+
+            // A reusable function to update the theme
+            const updateTheme = (newIndex) => {
+                // This formula correctly wraps the index in both directions (forwards and backwards)
+                currentThemeIndex = (newIndex + themes.length) % themes.length;
+                
+                const newTheme = themes[currentThemeIndex];
+                
+                // Update the button's text to show the current theme
+                this.cycleThemeBtn.innerHTML = `[tiles: ${newTheme.icon}]`;
+                
+                // Apply the theme to the game card
+                if (this.gameCard) {
+                    this.gameCard.setAttribute('data-tile-theme', newTheme.name);
+                }
+            };
+
+            // 1. Handle Clicks
+            this.cycleThemeBtn.addEventListener('click', () => {
+                // Go to the next theme
+                updateTheme(currentThemeIndex + 1);
+            });
+
+            // 2. Handle Mouse Wheel Scrolling
+            this.cycleThemeBtn.addEventListener('wheel', (event) => {
+                // Prevent the default browser action (scrolling the page)
+                event.preventDefault();
+
+                if (event.deltaY < 0) {
+                    // Scrolled up: go to the previous theme
+                    updateTheme(currentThemeIndex - 1);
+                } else {
+                    // Scrolled down: go to the next theme
+                    updateTheme(currentThemeIndex + 1);
+                }
+            });
+
+            // Set the initial theme when the game loads
+            updateTheme(currentThemeIndex);
         }
     }
 
@@ -304,8 +352,25 @@ class ProLCTRGui {
         // Calculate required dimensions and update board area
         this.updateBoardDimensions();
         
-        const x0 = this.MARGIN;
-        const y0 = this.MARGIN;
+        // Calculate center position for the board
+        const board = this.game.board;
+        const boardWidth = board.width();
+        const boardHeight = board.height();
+        
+        // Get the actual board area dimensions
+        const boardAreaWidth = this.boardArea.offsetWidth;
+        const boardAreaHeight = this.boardArea.offsetHeight;
+        
+        // Calculate the total content width (including labels)
+        const contentWidth = this.LABEL + (boardWidth * this.CELL) + this.LABEL;
+        const contentHeight = this.LABEL + (boardHeight * this.CELL) + this.LABEL;
+        
+        // Calculate horizontal center offset (keep vertical at top)
+        const centerX = (boardAreaWidth - contentWidth) / 2;
+        
+        // Position the board horizontally centered but at the top
+        const x0 = centerX + this.LABEL;
+        const y0 = this.LABEL; // Start from top with just label space
         
         this.drawBoard(this.game.board, x0, y0);
     }
@@ -317,12 +382,12 @@ class ProLCTRGui {
         const boardHeight = board.height();
         const boardWidth = board.width();
         
-        // Calculate required dimensions (keeping original cell size)
-        let requiredWidth = this.MARGIN + (boardWidth * this.CELL) + this.LABEL;
-        let requiredHeight = this.MARGIN + (boardHeight * this.CELL) + this.LABEL;
+        // Calculate required dimensions (including labels on both sides)
+        let requiredWidth = this.LABEL + (boardWidth * this.CELL) + this.LABEL;
+        let requiredHeight = this.LABEL + (boardHeight * this.CELL) + this.LABEL;
         
         // Set minimum dimensions
-        const minDimension = 480;
+        const minDimension = 520; // Increased to match CSS
         requiredWidth = Math.max(requiredWidth, minDimension);
         requiredHeight = Math.max(requiredHeight, minDimension);
         
@@ -528,7 +593,6 @@ class ProLCTRGui {
             } 
             const aiSide = this.aiSelect.value === "None" ? null : this.aiSelect.value; 
             this.aiDifficultyValue = parseInt(this.difficultySlider.value); 
-            this.gameCard.setAttribute('data-tile-theme', this.themeSelect.value); 
             this.setupModal.classList.remove('visible'); 
             this.startGame(nums, aiSide); 
         } catch (e) { 
@@ -624,8 +688,6 @@ class ProLCTRGui {
         const savedTheme = localStorage.getItem('theme') || 'dark'; 
         document.documentElement.setAttribute('data-theme', savedTheme); 
         this.themeToggle.checked = savedTheme === 'dark'; 
-        // Apply initial tile theme
-        this.applyTileTheme();
         // Initialize difficulty label
         this.updateDifficultyLabel();
     }
@@ -635,9 +697,7 @@ class ProLCTRGui {
         localStorage.setItem('theme', newTheme); 
     }
 
-    applyTileTheme() {
-        this.gameCard.setAttribute('data-tile-theme', this.themeSelect.value);
-    }
+
 
     updateDifficultyLabel() {
         const value = parseInt(this.difficultySlider.value);

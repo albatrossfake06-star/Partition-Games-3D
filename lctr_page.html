@@ -19,45 +19,44 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo-section">
-                    <a href="index.html" class="logo">partition-games</a>
-                    <span class="game-title"> /LCTR</span>
-                </div>
-                <nav>
-                    <!-- LCTR specific controls integrated into the nav -->
-                    <button id="help-btn" class="nav-button">? help</button>
-                    <div class="nav-control-group">
-                        <label for="theme-select" class="nav-label">Tiles:</label>
-                        <select id="theme-select" class="nav-select">
-                            <option value="grass">🔥 Fire</option>
-                            <option value="stone">🪨 Stone</option>
-                            <option value="ice">🧊 Ice</option>
-                        </select>
+                <div class="header-left">
+                    <div class="logo-section">
+                        <a href="index.html" class="logo">partition-games</a>
+                        <span class="game-title"> /LCTR</span>
                     </div>
-                    <!-- Global theme toggle -->
-                    <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
-                        <!-- Content is populated by script.js -->
-                    </button>
-                </nav>
+                </div>
+                
+                <div class="header-center">
+                    <div class="game-title-section">
+                        <h1>LCTR</h1>
+                    </div>
+                    <div class="status-container">
+                        <p id="status-label">Loading...</p>
+                        <div id="ai-thinking-indicator">
+                            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <nav>
+                        <!-- LCTR specific controls integrated into the nav -->
+                        <button id="help-btn" class="nav-button">? help</button>
+                        <button id="cycle-theme-btn" class="nav-button" title="Click or Scroll to change theme">[tiles: 🔥]</button>
+                        <!-- Global theme toggle -->
+                        <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
+                            <!-- Content is populated by script.js -->
+                        </button>
+                    </nav>
+                </div>
             </div>
         </div>
     </header>
 
     <main>
         <div class="container">
-            <!-- Game Title Section -->
-            <div class="game-title-section">
-                <h1>LCTR</h1>
-            </div>
-
             <!-- Game Card -->
             <div id="game-card" data-tile-theme="grass">
-                <div class="status-container">
-                    <p id="status-label">Loading...</p>
-                    <div id="ai-thinking-indicator">
-                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                    </div>
-                </div>
                 <div id="board-area"></div>
             </div>
 
@@ -65,28 +64,12 @@
         </div>
     </main>
 
-    <!-- Unified Footer from index.html -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div>© 2024 Partition Games — Rhodes College</div>
-                <div class="footer-links">
-                    <a href="developers.html">developers</a>
-                    <a href="wiki.html">documentation</a>
-                    <a href="https://github.com/ScarletrRaptor8/Partition-Games" target="_blank">source</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <!-- Modals and Popovers -->
     <div id="setup-modal-backdrop" class="modal-backdrop">
         <div class="modal">
             <div class="modal-header">
                 <h2>Game Setup</h2>
-                <button id="help-btn-modal" class="icon-button" aria-label="Help">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.938 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/></svg> 
-                </button>
+                <button id="help-btn-modal" class="icon-button" aria-label="Help">[?]</button>
             </div>
             <p>Enter a board configuration manually, or generate one randomly.</p>
             <label for="rows-input">Row Lengths</label>
@@ -95,13 +78,13 @@
             <label for="partition-type-select">Or, generate a partition:</label>
             <div class="input-group">
                 <select id="partition-type-select" class="partition-type-dropdown">
-                    <option value="random">Random</option>
-                    <option value="staircase">Staircase</option>
-                    <option value="square">Square</option>
-                    <option value="hook">Hook</option>
+                    <option value="random">random</option>
+                    <option value="staircase">staircase</option>
+                    <option value="square">square</option>
+                    <option value="hook">hook</option>
                 </select>
                 <input type="number" id="partition-number-input" placeholder="e.g., 25">
-                <button id="generate-partition-btn">Generate</button>
+                <button id="generate-partition-btn">generate</button>
             </div>
             <hr>
             <label for="ai-select">Computer Player</label>
@@ -114,7 +97,7 @@
             <div class="slider-container">
                 <input type="range" id="difficulty-slider" min="1" max="100" value="50" class="difficulty-range">
             </div>
-            <button id="start-game-btn" class="modal-btn">Start Game</button>
+            <button id="start-game-btn" class="modal-btn"> >> start game</button>
         </div>
     </div>
 
