@@ -9,7 +9,7 @@ const config = {
     
     // Production server URL - UPDATE THIS WITH YOUR ACTUAL RENDER URL
     production: {
-        serverUrl: 'https://lctr-multiplayer.onrender.com'  // Replace with your actual Render URL
+        serverUrl: 'https://partition-games-server.onrender.com'  // Replace with your actual Render URL
     },
     
     // Helper function to get the appropriate server URL
