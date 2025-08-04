@@ -87,13 +87,7 @@
                 <button id="generate-partition-btn">generate</button>
             </div>
             <hr>
-            <label>Multiplayer</label>
-            <button id="create-game-btn" class="secondary-button">Create Online Game</button>
-            <div class="input-group">
-                <input type="text" id="join-room-input" placeholder="Enter Game ID">
-                <button id="join-game-btn">Join Game</button>
-            </div>
-            <p id="room-info-label" style="text-align: center; font-weight: bold;"></p>
+            <button id="multiplayer-btn" class="secondary-button">Play Multiplayer</button>
             <hr>
             <label for="ai-select">Computer Player</label>
             <select id="ai-select">
@@ -117,6 +111,41 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg> Download
             </button>
             <button id="play-again-btn" class="modal-btn">Play Again</button>
+        </div>
+    </div>
+
+    <div id="multiplayer-modal-backdrop" class="modal-backdrop">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Multiplayer Setup</h2>
+                <button id="multiplayer-back-btn" class="icon-button" aria-label="Back">[←]</button>
+            </div>
+            <p>Configure your board and create or join a multiplayer game.</p>
+            
+            <label for="multiplayer-rows-input">Row Lengths</label>
+            <input type="text" id="multiplayer-rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
+            
+            <hr>
+            <label for="multiplayer-partition-type-select">Or, generate a partition:</label>
+            <div class="input-group">
+                <select id="multiplayer-partition-type-select" class="partition-type-dropdown">
+                    <option value="random">random</option>
+                    <option value="staircase">staircase</option>
+                    <option value="square">square</option>
+                    <option value="hook">hook</option>
+                </select>
+                <input type="number" id="multiplayer-partition-number-input" placeholder="e.g., 25">
+                <button id="multiplayer-generate-partition-btn">generate</button>
+            </div>
+            
+            <hr>
+            <label>Game Actions</label>
+            <button id="create-game-btn" class="modal-btn">Create Online Game</button>
+            <div class="input-group">
+                <input type="text" id="join-room-input" placeholder="Enter Game ID">
+                <button id="join-game-btn">Join Game</button>
+            </div>
+            <p id="room-info-label" style="text-align: center; font-weight: bold; color: var(--gray);"></p>
         </div>
     </div>
 

@@ -99,6 +99,7 @@ class ProLCTRGui {
         this.roomId = null;
         this.playerSymbol = null; // 'A' for Alice, 'B' for Bob
         this.isMultiplayer = false;
+        this.turnMessageTimeout = null;
         
         // Socket connection debugging
         this.socket.on('connect', () => {
@@ -142,6 +143,13 @@ class ProLCTRGui {
         this.downloadBtnModal = document.getElementById('download-btn-modal');
         
         // Multiplayer elements
+        this.multiplayerBtn = document.getElementById('multiplayer-btn');
+        this.multiplayerModal = document.getElementById('multiplayer-modal-backdrop');
+        this.multiplayerBackBtn = document.getElementById('multiplayer-back-btn');
+        this.multiplayerRowsInput = document.getElementById('multiplayer-rows-input');
+        this.multiplayerPartitionTypeSelect = document.getElementById('multiplayer-partition-type-select');
+        this.multiplayerPartitionNumberInput = document.getElementById('multiplayer-partition-number-input');
+        this.multiplayerGeneratePartitionBtn = document.getElementById('multiplayer-generate-partition-btn');
         this.createGameBtn = document.getElementById('create-game-btn');
         this.joinGameBtn = document.getElementById('join-game-btn');
         this.joinRoomInput = document.getElementById('join-room-input');
@@ -220,6 +228,9 @@ class ProLCTRGui {
         this.boardArea.addEventListener('click', () => this.handleMouseClick());
         
         // Multiplayer button event listeners
+        this.multiplayerBtn.addEventListener('click', () => this.showMultiplayerModal());
+        this.multiplayerBackBtn.addEventListener('click', () => this.hideMultiplayerModal());
+        this.multiplayerGeneratePartitionBtn.addEventListener('click', () => this.generateMultiplayerPartition());
         this.createGameBtn.addEventListener('click', () => this.createMultiplayerGame());
         this.joinGameBtn.addEventListener('click', () => this.joinMultiplayerGame());
         
@@ -242,6 +253,7 @@ class ProLCTRGui {
             this.roomInfoLabel.textContent = `Game started! You are ${this.playerSymbol === 'A' ? 'Alice' : 'Bob'}`;
             this.roomInfoLabel.style.color = 'var(--gray)';
             this.setupModal.classList.remove('visible');
+            this.multiplayerModal.classList.remove('visible');
             
             console.log(`[${this.playerSymbol}] Set as player symbol, roomId is still:`, this.roomId);
             
@@ -294,11 +306,20 @@ class ProLCTRGui {
         
         this.socket.on('error', (message) => {
             console.log(`[${this.playerSymbol}] Received error:`, message);
+            
+            // Handle "not your turn" errors gracefully
+            if (message.includes('Not player\'s turn') || message.includes('REJECTED: Not player\'s turn')) {
+                this.showTurnMessage("Not your turn! Waiting for opponent...");
+                this.isAnimating = false; // Reset animation state
+                return;
+            }
+            
+            // For other errors, show alert and reset
             alert(`Error: ${message}`);
             this.roomInfoLabel.textContent = '';
             this.roomInfoLabel.style.color = '';
-            // Reset animation state if there was an error
             this.isAnimating = false;
+            this.resetToSinglePlayer();
         });
     }
 
@@ -306,7 +327,7 @@ class ProLCTRGui {
     createMultiplayerGame() {
         try {
             SoundManager.play('click');
-            const nums = this.rowsInput.value.trim().split(/\s+/).map(Number);
+            const nums = this.multiplayerRowsInput.value.trim().split(/\s+/).map(Number);
             if (nums.some(n => isNaN(n) || n <= 0)) throw new Error("Invalid input");
             if (nums.length === 1 && nums[0] === 0) throw new Error("Invalid input");
             
@@ -337,7 +358,70 @@ class ProLCTRGui {
         this.playerSymbol = null;
         this.roomInfoLabel.textContent = '';
         this.roomInfoLabel.style.color = '';
+        
+        // Clear any turn message timeouts
+        if (this.turnMessageTimeout) {
+            clearTimeout(this.turnMessageTimeout);
+            this.turnMessageTimeout = null;
+        }
+        
         this.showSetupModal();
+    }
+
+    showMultiplayerModal() {
+        SoundManager.play('click');
+        this.setupModal.classList.remove('visible');
+        this.multiplayerModal.classList.add('visible');
+        // Reset multiplayer state when showing modal
+        this.isMultiplayer = false;
+        this.roomId = null;
+        this.playerSymbol = null;
+        this.roomInfoLabel.textContent = '';
+        this.roomInfoLabel.style.color = '';
+    }
+
+    hideMultiplayerModal() {
+        SoundManager.play('click');
+        this.multiplayerModal.classList.remove('visible');
+        this.showSetupModal();
+    }
+
+    generateMultiplayerPartition() {
+        const partitionType = this.multiplayerPartitionTypeSelect.value;
+        const n_str = this.multiplayerPartitionNumberInput.value;
+        if (!n_str) { alert("Please enter a number for partition generation."); return; }
+        const n = parseInt(n_str, 10);
+        if (isNaN(n) || n <= 0 || n > 200) { alert("Please enter a positive number less than or equal to 200."); return; }
+        let partition;
+        if (partitionType === 'random') partition = randomPartition(n);
+        else if (partitionType === 'staircase') partition = staircase(n);
+        else if (partitionType === 'square') partition = square(n);
+        else if (partitionType === 'hook') partition = hook(n);
+        this.multiplayerRowsInput.value = partition.join(' ');
+    }
+
+    showTurnMessage(message) {
+        if (!this.statusLabel) return;
+        
+        // Store the original status
+        const originalText = this.statusLabel.textContent;
+        const originalColor = this.statusLabel.style.color;
+        
+        // Show the temporary message in orange
+        this.statusLabel.textContent = message;
+        this.statusLabel.style.color = 'var(--orange)';
+        
+        // Clear any existing timeout
+        if (this.turnMessageTimeout) {
+            clearTimeout(this.turnMessageTimeout);
+        }
+        
+        // Restore original status after 3 seconds
+        this.turnMessageTimeout = setTimeout(() => {
+            this.statusLabel.textContent = originalText;
+            this.statusLabel.style.color = originalColor;
+            this.turnMessageTimeout = null;
+        }, 3000);
     }
 
     processSetup() {
@@ -365,6 +449,13 @@ class ProLCTRGui {
         this.game = new Game(new Board(rows), aiSide);
         this.hoveredMove = null;
         this.isAnimating = false;
+        
+        // Clear any turn message timeouts
+        if (this.turnMessageTimeout) {
+            clearTimeout(this.turnMessageTimeout);
+            this.turnMessageTimeout = null;
+        }
+        
         this.redrawBoard();
         this.updateStatus();
         
@@ -572,6 +663,16 @@ class ProLCTRGui {
     requestMove(moveKind) { 
         if (!this.isAnimating && !this.game.isAiTurn() && moveKind) { 
             if (this.isMultiplayer && this.roomId) {
+                // Check if it's the player's turn locally first
+                const isMyTurn = (this.playerSymbol === 'A' && this.game.currentIndex === 0) ||
+                                (this.playerSymbol === 'B' && this.game.currentIndex === 1);
+                
+                if (!isMyTurn) {
+                    console.log(`[${this.playerSymbol}] Not my turn - blocking move locally`);
+                    this.showTurnMessage("Not your turn! Waiting for opponent...");
+                    return;
+                }
+                
                 // In multiplayer, emit the move to the server
                 console.log(`[${this.playerSymbol}] Attempting to make move:`, moveKind, 'Current player index:', this.game.currentIndex);
                 console.log(`[${this.playerSymbol}] Using roomId:`, this.roomId);
@@ -594,6 +695,7 @@ class ProLCTRGui {
     hideHelp() { this.helpPopover.classList.remove('visible'); }
     showSetupModal() { 
         this.gameOverModal.classList.remove('visible'); 
+        this.multiplayerModal.classList.remove('visible');
         this.setupModal.classList.add('visible'); 
         this.updateDifficultyLabel(); // Initialize the difficulty label
         
