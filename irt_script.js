@@ -380,6 +380,9 @@ class RITGui {
     this.setupB.classList.remove("visible");  
     this.initialPartition = rows.slice(); // Always store the initial partition
     this.gameHistory = [];
+    // Database tracking
+    this.movesSequence = [];
+    this.gameStartTime = new Date();
     this.saveGameState();
     this.draw(); this.updateStatus();  
     this.updateUndoButton();
@@ -434,6 +437,9 @@ class RITGui {
       document.getElementById(`t-${m.r}-${c}`)?.classList.add("removing");  
 
     setTimeout(()=>{  
+      // Track the move
+      this.movesSequence.push(`R${m.r}C${m.newLen}-${len-1}`);
+      
       const done=this.game.move(m);  
       this.anim=false; this.draw();  
       if(done){  
@@ -442,6 +448,7 @@ class RITGui {
         Sound.play("win");  
         this.msg.textContent=`Player ${this.game.player()} wins!`;  
         this.overB.classList.add("visible");  
+        this.storeGameInDatabase(this.game.player());
         this.updateUndoButton();
       }else{  
         this.updateStatus();  
@@ -618,6 +625,9 @@ class RITGui {
     this.game.board = new Board(previousState); // Create a new Board instance from the previous state
     this.game.turn = previousState.length - 1; // Turn is based on the number of moves made
     
+    // Remove the last move from the sequence
+    this.movesSequence.pop();
+    
     // Redraw and update UI
     this.draw();
     this.updateStatus();
@@ -697,6 +707,22 @@ class RITGui {
     if (value <= 70) return 'Medium';
     if (value <= 99) return 'Hard';
     return 'Perfect';
+  }
+
+  async storeGameInDatabase(winner) {
+    try {
+      if (window.DatabaseUtils) {
+        await window.DatabaseUtils.storeGameInDatabase(
+          'IRT',
+          this.initialPartition,
+          this.movesSequence,
+          winner && winner.charAt(0),
+          this.gameStartTime
+        );
+      }
+    } catch (err) {
+      console.warn('Database save failed:', err.message);
+    }
   }
 }  
   

@@ -379,6 +379,9 @@ class GameUI {
         this.selectedPieces = [];
         this.tileThemes = ['grass', 'water', 'fire', 'stone'];
         this.currentThemeIndex = 0;
+        // Database tracking
+        this.movesSequence = [];
+        this.gameStartTime = null;
 
         this.initializeElements();
         this.bindEvents();
@@ -547,6 +550,10 @@ class GameUI {
             this.game = new StrictContinuousCornerGame(rows, aiPlayer, difficulty);
             this.selectedPieces = [];
             
+            // Initialize database tracking
+            this.movesSequence = [];
+            this.gameStartTime = new Date();
+            
             this.hideSetupModal();
             this.hideGameOverModal();
             this.updateBoard();
@@ -695,6 +702,10 @@ class GameUI {
         
         setTimeout(() => {
             try {
+                // Track the move
+                const moveStr = this.selectedPieces.map(p => `R${p.row}C${p.col}`).join(',');
+                this.movesSequence.push(moveStr);
+                
                 const result = this.game.makeMove([...this.selectedPieces]);
                 this.selectedPieces = [];
                 this.updateBoard();
@@ -703,6 +714,7 @@ class GameUI {
                 
                 if (result.gameOver) {
                     this.showGameOverModal(result.winner);
+                    this.storeGameInDatabase(result.winner);
                 } else if (this.game.isAiTurn()) {
                     this.aiTurn();
                 }
@@ -932,6 +944,22 @@ class GameUI {
     </script>
 </body>
 </html>`;
+    }
+
+    async storeGameInDatabase(winner) {
+        try {
+            if (window.DatabaseUtils) {
+                await window.DatabaseUtils.storeGameInDatabase(
+                    'CKING',
+                    this.game.board.rows,
+                    this.movesSequence,
+                    winner && winner.charAt(0),
+                    this.gameStartTime
+                );
+            }
+        } catch (err) {
+            console.warn('Database save failed:', err.message);
+        }
     }
 }
 

@@ -174,8 +174,11 @@ class GameState{
 class CRPS_GUI{  
   constructor(){  
     this.CELL=40;this.GAP=30;this.LABEL=20;  
-    this.cpuSide='None';this.vsCPU=false;  
-    this.gameHistory=[];  
+    this.cpuSide='None';    this.vsCPU=false;  
+    this.gameHistory=[];
+    // Database tracking
+    this.movesSequence = [];
+    this.gameStartTime = null;  
     /* DOM handles */  
     this.boardArea=document.getElementById('board-area');  
     this.statusLabel=document.getElementById('status-label');  
@@ -258,7 +261,10 @@ class CRPS_GUI{
       // difficulty slider currently unused  
       this.state=new GameState(nums);  
       this.setupBackdrop.classList.remove('visible');  
-      this.clearGameHistory();this.redraw();  
+      this.clearGameHistory();this.redraw();
+      // Initialize database tracking
+      this.movesSequence = [];
+      this.gameStartTime = new Date();
       this.updateStatus();
       this.updateUndoButton();  
     }catch{alert('Please enter positive integers separated by spaces.');}  
@@ -316,6 +322,9 @@ class CRPS_GUI{
     // Restore the previous state
     this.state.fragments = prev.fragments;
     this.state.player = prev.player;
+    
+    // Remove the last move from the sequence
+    this.movesSequence.pop();
     
     this.redraw();  
     this.updateStatus();
@@ -412,11 +421,15 @@ class CRPS_GUI{
     SoundManager.play('click');  
     ev.currentTarget.classList.add(info.kind==='row'?'row-win':'col-win');  
     setTimeout(()=>{  
+      // Track the move
+      this.movesSequence.push(info.kind === 'row' ? `R${info.index}` : `C${info.index}`);
+      
       this.state.performMove(info.frag,info.kind,info.index);  
       if(!this.state.hasMoves()){  
         SoundManager.play('win');const winner=Player.other(this.state.player)===Player.RED?'A':'B';  
         this.gameOverMsg.textContent=`Player ${winner} wins!`;  
-        this.gameOverBackdrop.classList.add('visible');  
+        this.gameOverBackdrop.classList.add('visible');
+        this.storeGameInDatabase(winner);
         this.clearBoard();this.updateUndoButton();return;  
       }  
       this.redraw();  
@@ -866,6 +879,22 @@ window.addEventListener('load', initReplay);
 </script>
 </body>
 </html>`;
+  }
+
+  async storeGameInDatabase(winner) {
+    try {
+      if (window.DatabaseUtils) {
+        await window.DatabaseUtils.storeGameInDatabase(
+          'CRPS',
+          this.state.fragments[0] ? this.state.fragments[0].getRows() : [],
+          this.movesSequence,
+          winner && winner.charAt(0),
+          this.gameStartTime
+        );
+      }
+    } catch (err) {
+      console.warn('Database save failed:', err.message);
+    }
   }
 }  
 

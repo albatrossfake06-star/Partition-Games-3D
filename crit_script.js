@@ -377,6 +377,9 @@ class CRITGui {
     this.game.board = previousState.board;
     this.game.turn = previousState.turn;
     
+    // Remove the last move from the sequence
+    this.movesSequence.pop();
+    
     // Redraw and update UI
     this.draw();
     this.updateStatus();
@@ -426,7 +429,11 @@ class CRITGui {
       const aiPlayer = this.aiSel.value === "None" ? null : this.aiSel.value;
       const difficulty = this.difficultySlider.value <= 33 ? "Easy" : 
                         this.difficultySlider.value <= 66 ? "Medium" : "Hard";
-      this.game = new Game(vals, aiPlayer, difficulty);  
+      this.game = new Game(vals, aiPlayer, difficulty);
+      this.initialPartition = vals.slice();
+      // Initialize database tracking
+      this.movesSequence = [];
+      this.gameStartTime = new Date();
       this.hideSetup(); this.hideOver(); this.clearGameHistory(); this.draw(); this.updateStatus(); this.updateUndoButton();
       if (this.game.isAiTurn()) this.aiTurn();  
     } catch { alert("Please enter valid positive integers (e.g., '5 4 2 1')."); }  
@@ -526,12 +533,21 @@ class CRITGui {
     }
 
     setTimeout(()=>{  
+      // Track the move
+      if (m.type === 'row') {
+        this.movesSequence.push(`R${m.r}C${m.newLen}-${this.game.board.rows[m.r]-1}`);
+      } else if (m.type === 'col') {
+        const colHeights = this.game.board.getColumnHeights();
+        this.movesSequence.push(`C${m.c}R${m.newHeight}-${colHeights[m.c]-1}`);
+      }
+      
       const done=this.game.move(m);  
       this.anim=false; this.draw();  
       if(done){  
         Sound.play("win");  
         this.msg.textContent=`Player ${this.game.player()} wins!`;  
-        this.overB.classList.add("visible");  
+        this.overB.classList.add("visible");
+        this.storeGameInDatabase(this.game.player());
         this.updateUndoButton();
       }else{  
         this.updateStatus();  
@@ -1045,6 +1061,22 @@ window.addEventListener('load', initReplay);
 </script>
 </body>
 </html>`;
+  }
+
+  async storeGameInDatabase(winner) {
+    try {
+      if (window.DatabaseUtils) {
+        await window.DatabaseUtils.storeGameInDatabase(
+          'CRIT',
+          this.initialPartition,
+          this.movesSequence,
+          winner && winner.charAt(0),
+          this.gameStartTime
+        );
+      }
+    } catch (err) {
+      console.warn('Database save failed:', err.message);
+    }
   }
 }  
 

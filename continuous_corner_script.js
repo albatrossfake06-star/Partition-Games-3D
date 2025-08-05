@@ -283,6 +283,9 @@ class ContinuousCornerGui {
     constructor() {
         this.game = null;
         this.isAnimating = false;
+        // Database tracking
+        this.movesSequence = [];
+        this.gameStartTime = null;
         
         // DOM elements will be set in getDOMElements()
         this.gameCard = null;
@@ -504,6 +507,10 @@ class ContinuousCornerGui {
         const board = new Board(rows);
         this.game = new Game(board, aiPlayer, difficulty);
         this.gameHistory = [board.asTuple()]; // Save initial state
+        
+        // Initialize database tracking
+        this.movesSequence = [];
+        this.gameStartTime = new Date();
         
         // Reset selection state
         this.exitSelectionMode();
@@ -747,6 +754,12 @@ class ContinuousCornerGui {
     }
 
     finishMove(selectedPieces = null) {
+        // Track the move
+        if (selectedPieces && selectedPieces.length > 0) {
+            const moveStr = selectedPieces.map(p => `R${p.row}C${p.col}`).join(',');
+            this.movesSequence.push(moveStr);
+        }
+        
         const gameOver = this.game.makeMove(selectedPieces);
         this.isAnimating = false;
         
@@ -757,6 +770,15 @@ class ContinuousCornerGui {
             // Add final empty state to history
             this.gameHistory.push('[]');
             SoundManager.play('win');
+            const winner = this.game.currentPlayer;
+            this.storeGameInDatabase(winner);
+            
+            if (this.gameOverMessage) {
+                this.gameOverMessage.textContent = `Player ${winner} wins!`;
+            }
+            if (this.gameOverModal) {
+                this.gameOverModal.classList.add('visible');
+            }
         } else if (this.game.isAiTurn()) {
             this.aiTurn();
         }
@@ -1000,6 +1022,22 @@ class ContinuousCornerGui {
         
         URL.revokeObjectURL(url);
         SoundManager.play('click');
+    }
+
+    async storeGameInDatabase(winner) {
+        try {
+            if (window.DatabaseUtils) {
+                await window.DatabaseUtils.storeGameInDatabase(
+                    'CCORN',
+                    this.game.board.rows,
+                    this.movesSequence,
+                    winner && winner.charAt(0),
+                    this.gameStartTime
+                );
+            }
+        } catch (err) {
+            console.warn('Database save failed:', err.message);
+        }
     }
 }
 

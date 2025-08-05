@@ -288,6 +288,9 @@ class CRPMGui {
         this.idCounter = 0;
         this.idToAddress = new Map();
         this.gameHistory = [];
+        // Database tracking
+        this.movesSequence = [];
+        this.gameStartTime = null;
         this.getDOMElements();
         this.bindEventListeners();
         this.initTheme();
@@ -377,6 +380,10 @@ class CRPMGui {
         const board = new Board(rows);
         this.game = new Game(board, aiPlayer, this.aiDifficultyValue);
         this.gameHistory = [board.asTuple()];
+        
+        // Initialize database tracking
+        this.movesSequence = [];
+        this.gameStartTime = new Date();
         
         this.clearBoard();
         this.redrawBoard();
@@ -550,6 +557,9 @@ class CRPMGui {
         }
         
         setTimeout(() => {
+            // Track the move
+            this.movesSequence.push(kind === 'row' ? `R${index}` : `C${index}`);
+            
             const gameOver = this.game.makeMove(kind, index);
             this.isAnimating = false;
             
@@ -561,6 +571,7 @@ class CRPMGui {
                 this.gameHistory.push('[]');
                 SoundManager.play('win');
                 this.showGameOver();
+                this.storeGameInDatabase(this.game.currentPlayer === 'A' ? 'B' : 'A');
             } else if (this.game.isAiTurn()) {
                 this.aiTurn();
             }
@@ -668,6 +679,9 @@ class CRPMGui {
             const rowLengths = JSON.parse(previousState);
             this.game.board = new Board(rowLengths);
             this.game.switchPlayer(); // Go back to previous player
+            
+            // Remove the last move from the sequence
+            this.movesSequence.pop();
             this.redrawBoard();
             this.updateStatus();
             this.updateButtons();
@@ -1080,6 +1094,22 @@ window.addEventListener('load', initReplay);
 </script>
 </body>
 </html>`;
+    }
+
+    async storeGameInDatabase(winner) {
+        try {
+            if (window.DatabaseUtils) {
+                await window.DatabaseUtils.storeGameInDatabase(
+                    'CRPM',
+                    JSON.parse(this.gameHistory[0]),
+                    this.movesSequence,
+                    winner && winner.charAt(0),
+                    this.gameStartTime
+                );
+            }
+        } catch (err) {
+            console.warn('Database save failed:', err.message);
+        }
     }
 }
 

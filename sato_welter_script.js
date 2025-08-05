@@ -217,6 +217,9 @@ class SatoWelterGui {
         this.idCounter = 0;
         this.idToAddress = new Map();
         this.gameHistory = []; // Store previous game states for undo
+        // Database tracking
+        this.movesSequence = [];
+        this.gameStartTime = null;
         this.getDOMElements();
         this.bindEventListeners();
         this.initTheme();
@@ -302,6 +305,9 @@ class SatoWelterGui {
         this.hoveredMove = null;
         this.isAnimating = false;
         this.clearGameHistory();
+        // Initialize database tracking
+        this.movesSequence = [];
+        this.gameStartTime = new Date();
         this.redrawBoard();
         this.updateStatus();
         this.updateUndoButton();
@@ -401,12 +407,16 @@ class SatoWelterGui {
     }
     
     finishMove(r, c) {
+        // Track the move
+        this.movesSequence.push(`R${r}C${c}`);
+        
         const finished = this.game.makeMove(r, c);
         this.isAnimating = false;
         if (finished) {
             SoundManager.play('win');
             this.gameOverMessage.textContent = `Player ${this.game.currentPlayer} wins!`;
             this.gameOverModal.classList.add('visible');
+            this.storeGameInDatabase(this.game.currentPlayer);
             this.redrawBoard();
             this.updateUndoButton();
             this.updateDownloadButton();
@@ -537,6 +547,9 @@ class SatoWelterGui {
         // Reconstruct the board
         this.game.getBoard().grid = previousState.board.grid.map(row => [...row]);
         this.game.gameState.currentPlayer = previousState.currentPlayer === 'A' ? 0 : 1;
+        
+        // Remove the last move from the sequence
+        this.movesSequence.pop();
         
         // Redraw the board and update UI
         this.redrawBoard();
@@ -734,6 +747,22 @@ class SatoWelterGui {
  });
  updateDisplay();
 </script></body></html>`;
+    }
+
+    async storeGameInDatabase(winner) {
+        try {
+            if (window.DatabaseUtils) {
+                await window.DatabaseUtils.storeGameInDatabase(
+                    'SATO',
+                    this.game.getBoard().getRows(),
+                    this.movesSequence,
+                    winner && winner.charAt(0),
+                    this.gameStartTime
+                );
+            }
+        } catch (err) {
+            console.warn('Database save failed:', err.message);
+        }
     }
 }
 

@@ -144,8 +144,11 @@ class GameState{
 class CRIM_GUI{  
   constructor(){  
     this.CELL=40;this.GAP=30;this.LABEL=20;  
-    this.cpuSide='None';this.vsCPU=false;  
-    this.gameHistory=[];  
+    this.cpuSide='None';    this.vsCPU=false;  
+    this.gameHistory=[];
+    // Database tracking
+    this.movesSequence = [];
+    this.gameStartTime = null;  
     /* DOM handles */  
     this.boardArea=document.getElementById('board-area');  
     this.statusLabel=document.getElementById('status-label');  
@@ -246,7 +249,10 @@ class CRIM_GUI{
       }
       
       this.setupBackdrop.classList.remove('visible');  
-      this.clearGameHistory();this.redraw();  
+      this.clearGameHistory();this.redraw();
+      // Initialize database tracking
+      this.movesSequence = [];
+      this.gameStartTime = new Date();
       this.updateUndoButton();
       this.updateDownloadButton();
       const playerLetter=this.getLetterFromPlayer(this.state.player);  
@@ -289,7 +295,9 @@ class CRIM_GUI{
     if(!this.canUndo())return;  
     SoundManager.play('click');  
     const prev=this.gameHistory.pop();  
-    this.state.fragments=prev.fragments;this.state.player=prev.player;  
+    this.state.fragments=prev.fragments;this.state.player=prev.player;
+    // Remove the last move from the sequence
+    this.movesSequence.pop();
     this.redraw();  
     this.updateUndoButton();
     this.updateDownloadButton();
@@ -418,11 +426,15 @@ class CRIM_GUI{
     SoundManager.play('click');  
     ev.currentTarget.classList.add(info.kind==='row'?'row-win':'col-win');  
     setTimeout(()=>{  
+      // Track the move
+      this.movesSequence.push(info.kind === 'row' ? `R${info.index}` : `C${info.index}`);
+      
       this.state.performMove(info.frag,info.kind,info.index);  
       if(!this.state.hasMoves()){  
         SoundManager.play('win');const winner=Player.other(this.state.player)===Player.RED?'A':'B';  
         this.gameOverMsg.textContent=`Player ${winner} wins!`;  
-        this.gameOverBackdrop.classList.add('visible');  
+        this.gameOverBackdrop.classList.add('visible');
+        this.storeGameInDatabase(winner);
         this.updateDownloadButton();
         this.clearBoard();return;  
       }  
@@ -453,7 +465,23 @@ class CRIM_GUI{
     const id=[...this.idToAddress.entries()].find(([_,v])=>v.frag===fIdx&&v.kind===kind&&v.index===idx)?.[0];  
     if(id)document.getElementById(id).click();  
     this.updateDownloadButton();
-  }  
+  }
+
+  async storeGameInDatabase(winner) {
+    try {
+      if (window.DatabaseUtils) {
+        await window.DatabaseUtils.storeGameInDatabase(
+          'CRIS',
+          this.state.fragments[0] ? this.state.fragments[0].getRows() : [],
+          this.movesSequence,
+          winner && winner.charAt(0),
+          this.gameStartTime
+        );
+      }
+    } catch (err) {
+      console.warn('Database save failed:', err.message);
+    }
+  }
 }  
   
 /* ────────────────────  boot  ──────────────────── */  

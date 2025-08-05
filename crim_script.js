@@ -237,6 +237,9 @@ class ProLCTRGui {
         this.idCounter = 0;
         this.idToAddress = new Map();
         this.gameHistory = []; // Store previous game states for undo
+        // Database tracking
+        this.movesSequence = [];
+        this.gameStartTime = null;
         this.getDOMElements();
         this.bindEventListeners();
         this.initTheme();
@@ -516,6 +519,10 @@ class ProLCTRGui {
             this.clearHighlights();
             const move = { type: info.kind, index: info.index };
             const winner = this.game.currentPlayer;
+            
+            // Track the move
+            this.movesSequence.push(info.kind === 'row' ? `R${info.index}` : `C${info.index}`);
+            
             this.game.makeMove(move);
             
             // Check if game is over (no more moves available)
@@ -525,6 +532,7 @@ class ProLCTRGui {
                 SoundManager.play('win');
                 this.gameOverMessage.textContent = `Player ${winner} wins!`;
                 this.gameOverModal.classList.add('visible');
+                this.storeGameInDatabase(winner);
                         this.redrawBoard();
         this.updateStatus();
         this.updateUndoButton();
@@ -605,6 +613,9 @@ class ProLCTRGui {
         this.game = new Game(new Board(rows), aiSide); 
         this.isAnimating = false; 
         this.clearGameHistory(); // Clear undo history for new game
+        // Initialize database tracking
+        this.movesSequence = [];
+        this.gameStartTime = new Date();
         this.redrawBoard(); 
         this.updateStatus(); 
         this.updateUndoButton();
@@ -749,6 +760,9 @@ class ProLCTRGui {
         // Reconstruct the board
         this.game.board.grid = previousState.board.grid.map(row => [...row]);
         this.game.currentIndex = previousState.currentIndex;
+        
+        // Remove the last move from the sequence
+        this.movesSequence.pop();
         
         // Redraw the board and update UI
         this.redrawBoard();
@@ -1066,6 +1080,22 @@ class ProLCTRGui {
     </script>
 </body>
 </html>`;
+    }
+
+    async storeGameInDatabase(winner) {
+        try {
+            if (window.DatabaseUtils) {
+                await window.DatabaseUtils.storeGameInDatabase(
+                    'CRIM',
+                    this.game.board.getRows(),
+                    this.movesSequence,
+                    winner && winner.charAt(0),
+                    this.gameStartTime
+                );
+            }
+        } catch (err) {
+            console.warn('Database save failed:', err.message);
+        }
     }
 }
 
