@@ -3,7 +3,8 @@
 
 class LCTRMultiplayerAuth {
     constructor() {
-        this.serverUrl = 'http://localhost:3001';
+        this.serverUrl = window.GameConfig ? window.GameConfig.getServerUrl() : 'http://localhost:3001';
+        console.log('LCTR Multiplayer Auth initialized with server URL:', this.serverUrl);
         this.socket = null;
         this.token = localStorage.getItem('jwt');
         this.userId = null;
@@ -181,6 +182,8 @@ class LCTRMultiplayerAuth {
             this.showMessage('Username and password are required', 'error');
             return;
         }
+        
+        console.log('Attempting login to server:', this.serverUrl);
         
         try {
             const response = await fetch(`${this.serverUrl}/api/auth/login`, {
