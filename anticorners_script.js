@@ -1,4 +1,12 @@
-// --- PARTITION UTILITIES ---
+// --- CORE GAME LOGIC ---
+// This section contains the fundamental rules and AI logic for the Anticorners game.
+
+// --- PARTITION GENERATION UTILITIES ---
+
+function staircase(n) { let parts = []; let t = n; while (t >= 1) { parts.push(t); t = t - 1; } return parts; }
+function square(n) { let parts = []; let t = n; while (t >= 1) { parts.push(n); t = t - 1; } return parts; }
+function hook(n) { let parts = []; let t = n; parts.push(t); while (t >= 2) { parts.push(1); t = t - 1; } return parts; }
+
 function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -16,30 +24,6 @@ function randomPartition(n) {
     }
     
     return parts.sort((a, b) => b - a);
-}
-
-function staircase(n) {
-    let parts = [];
-    for (let t = n; t >= 1; t--) {
-        parts.push(t);
-    }
-    return parts;
-}
-
-function square(n) {
-    let parts = [];
-    for (let t = 0; t < n; t++) {
-        parts.push(n);
-    }
-    return parts;
-}
-
-function hook(n) {
-    let parts = [n];
-    for (let t = 1; t < n; t++) {
-        parts.push(1);
-    }
-    return parts;
 }
 
 // --- CORE GAME LOGIC ---
@@ -291,6 +275,55 @@ function perfectMove(position) {
     return anticorners[0]; // fallback
 }
 
+// --- THEME CYCLING FUNCTIONALITY ---
+const TILE_THEMES = ['grass', 'stone', 'ice'];
+const TILE_THEME_NAMES = {
+    'grass': '🌱',
+    'stone': '🪨', 
+    'ice': '🧊'
+};
+
+function initThemeSystem() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const cycleThemeBtn = document.getElementById('cycle-theme-btn');
+    
+    // Initialize theme toggle content from script.js (if available)
+    if (typeof updateThemeToggleButton === 'function') {
+        updateThemeToggleButton();
+    }
+    
+    // Initialize tile theme
+    let currentTileThemeIndex = 0;
+    updateTileThemeButton();
+    
+    function updateTileThemeButton() {
+        const currentTheme = TILE_THEMES[currentTileThemeIndex];
+        const emoji = TILE_THEME_NAMES[currentTheme];
+        if (cycleThemeBtn) {
+            cycleThemeBtn.textContent = `[tiles: ${emoji}]`;
+        }
+        
+        const gameCard = document.getElementById('game-card');
+        if (gameCard) {
+            gameCard.setAttribute('data-tile-theme', currentTheme);
+        }
+    }
+    
+    function cycleTileTheme() {
+        currentTileThemeIndex = (currentTileThemeIndex + 1) % TILE_THEMES.length;
+        updateTileThemeButton();
+    }
+    
+    // Bind events
+    if (cycleThemeBtn) {
+        cycleThemeBtn.addEventListener('click', cycleTileTheme);
+        cycleThemeBtn.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            cycleTileTheme();
+        });
+    }
+}
+
 // --- GUI CONTROLLER ---
 class AnticornersGui {
     constructor() {
@@ -309,8 +342,8 @@ class AnticornersGui {
         
         this.getDOMElements();
         this.bindEventListeners();
-        this.initTheme();
         this.showSetupModal();
+        initThemeSystem();
     }
 
     getDOMElements() {
@@ -319,8 +352,6 @@ class AnticornersGui {
         this.boardArea = document.getElementById('board-area');
         this.aiThinkingIndicator = document.getElementById('ai-thinking-indicator');
         this.newGameBtn = document.getElementById('new-game-btn');
-        this.themeToggle = document.getElementById('theme-toggle');
-        this.themeSelect = document.getElementById('theme-select');
         
         // Modals
         this.setupModal = document.getElementById('setup-modal-backdrop');
@@ -353,15 +384,10 @@ class AnticornersGui {
         this.startGameBtn.addEventListener('click', () => this.processSetup());
         this.newGameBtn.addEventListener('click', () => this.showSetupModal());
         this.playAgainBtn.addEventListener('click', () => this.showSetupModal());
-        this.themeToggle.addEventListener('change', () => this.toggleTheme());
         this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
         
         if (this.generatePartitionBtn) {
             this.generatePartitionBtn.addEventListener('click', () => this.generatePartition());
-        }
-        
-        if (this.themeSelect) {
-            this.themeSelect.addEventListener('change', () => this.applyTileTheme());
         }
         
         if (this.undoBtn) {
@@ -387,11 +413,7 @@ class AnticornersGui {
         }
     }
 
-    applyTileTheme() {
-        if (this.themeSelect && this.gameCard) {
-            this.gameCard.setAttribute('data-tile-theme', this.themeSelect.value);
-        }
-    }
+
     
     processSetup() {
         try {
@@ -402,7 +424,6 @@ class AnticornersGui {
             
             const aiSide = this.aiSelect.value === "None" ? null : this.aiSelect.value;
             this.aiDifficulty = parseInt(this.difficultySlider.value);
-            this.applyTileTheme();
             
             this.hideSetupModal();
             this.startGame(nums, aiSide);
@@ -1044,18 +1065,7 @@ class AnticornersGui {
 </html>`;
     }
 
-    // Theme and UI methods
-    initTheme() { 
-        const savedTheme = localStorage.getItem('theme') || 'light'; 
-        document.documentElement.setAttribute('data-theme', savedTheme); 
-        this.themeToggle.checked = savedTheme === 'dark'; 
-    }
-    
-    toggleTheme() { 
-        const newTheme = this.themeToggle.checked ? 'dark' : 'light'; 
-        document.documentElement.setAttribute('data-theme', newTheme); 
-        localStorage.setItem('theme', newTheme); 
-    }
+    // UI methods
     
     showSetupModal() { 
         this.gameOverModal.classList.remove('visible'); 
