@@ -89,32 +89,12 @@ class ProLCTRGui {
         this.aiDifficulty = '50';
         this.gameHistory = [];
         
-        // Multiplayer properties - Environment-aware server connection
-        const serverUrl = window.GameConfig ? window.GameConfig.getServerUrl() : 'http://localhost:3001';
-        
-        console.log(`Connecting to multiplayer server: ${serverUrl}`);
-        
-        this.socket = io(serverUrl, {
-            forceNew: true,
-            reconnection: true,
-            timeout: 5000,
-            transports: ['websocket', 'polling']
-        });
+        // Multiplayer properties - will be set by multiplayer auth
+        this.socket = null; // Will be set by multiplayer auth
         this.roomId = null;
         this.playerSymbol = null; // 'A' for Alice, 'B' for Bob
         this.isMultiplayer = false;
         this.turnMessageTimeout = null;
-        
-        // Socket connection debugging
-        this.socket.on('connect', () => {
-            console.log('Socket connected:', this.socket.id);
-        });
-        this.socket.on('disconnect', () => {
-            console.log('Socket disconnected');
-        });
-        this.socket.on('connect_error', (error) => {
-            console.log('Socket connection error:', error);
-        });
         
         this.getDOMElements();
         this.bindEventListeners();
@@ -237,121 +217,17 @@ class ProLCTRGui {
         this.multiplayerGeneratePartitionBtn.addEventListener('click', () => this.generateMultiplayerPartition());
         this.createGameBtn.addEventListener('click', () => this.createMultiplayerGame());
         this.joinGameBtn.addEventListener('click', () => this.joinMultiplayerGame());
-        
-        // Socket event listeners
-        this.socket.on('gameCreated', ({ roomId }) => {
-            this.roomId = roomId;
-            this.isMultiplayer = true;
-            this.playerSymbol = 'A'; // Creator is Alice (first player)
-            this.roomInfoLabel.textContent = `Game ID: ${roomId} - Waiting for opponent...`;
-            this.roomInfoLabel.style.color = 'var(--orange)';
-        });
-        
-        this.socket.on('gameStart', ({ board, players, currentPlayer }) => {
-            console.log(`[${this.socket.id}] Received gameStart:`, { board, players, currentPlayer });
-            console.log(`[${this.socket.id}] Current roomId before gameStart:`, this.roomId);
-            
-            this.isMultiplayer = true;
-            // Determine if this client is Alice or Bob
-            this.playerSymbol = players[0] === this.socket.id ? 'A' : 'B';
-            this.roomInfoLabel.textContent = `Game started! You are ${this.playerSymbol === 'A' ? 'Alice' : 'Bob'}`;
-            this.roomInfoLabel.style.color = 'var(--gray)';
-            this.setupModal.classList.remove('visible');
-            this.multiplayerModal.classList.remove('visible');
-            
-            console.log(`[${this.playerSymbol}] Set as player symbol, roomId is still:`, this.roomId);
-            
-            this.startGame(board, null); // No AI in multiplayer
-        });
-        
-        this.socket.on('gameStateUpdate', ({ board, moveKind, currentPlayer, gameEnded, winner }) => {
-            if (!this.isMultiplayer) return;
-            
-            console.log(`[${this.playerSymbol}] Received gameStateUpdate:`, { 
-                board, 
-                moveKind, 
-                currentPlayer, 
-                gameEnded, 
-                winner,
-                currentBoardBeforeUpdate: this.game.board.rows,
-                currentIndexBefore: this.game.currentIndex
-            });
-            
-            // Update the local game state from server
-            this.game.board.rows = [...board];
-            this.game.currentIndex = currentPlayer;
-            
-            console.log(`[${this.playerSymbol}] After setting currentIndex:`, {
-                newCurrentIndex: this.game.currentIndex,
-                currentPlayer: currentPlayer,
-                gameCurrentPlayer: this.game.currentPlayer
-            });
-            
-            // Simply redraw the board with the new state
-            this.redrawBoard();
-            this.isAnimating = false;
-            
-            console.log(`[${this.playerSymbol}] Updated board and redrawn`);
-            
-            if (gameEnded) {
-                SoundManager.play('win');
-                const winnerName = winner === 0 ? 'Alice' : 'Bob';
-                this.gameOverMessage.textContent = `Player ${winnerName} wins!`;
-                this.gameOverModal.classList.add('visible');
-            } else {
-                this.updateStatus();
-            }
-        });
-        
-        this.socket.on('playerDisconnected', ({ message }) => {
-            alert(message);
-            this.resetToSinglePlayer();
-        });
-        
-        this.socket.on('error', (message) => {
-            console.log(`[${this.playerSymbol}] Received error:`, message);
-            
-            // Handle "not your turn" errors gracefully
-            if (message.includes('Not player\'s turn') || message.includes('REJECTED: Not player\'s turn')) {
-                this.showTurnMessage("Not your turn! Waiting for opponent...");
-                this.isAnimating = false; // Reset animation state
-                return;
-            }
-            
-            // For other errors, show alert and reset
-            alert(`Error: ${message}`);
-            this.roomInfoLabel.textContent = '';
-            this.roomInfoLabel.style.color = '';
-            this.isAnimating = false;
-            this.resetToSinglePlayer();
-        });
     }
 
-    // Multiplayer helper methods
+    // Multiplayer helper methods - these are now handled by lctr_multiplayer_auth.js
     createMultiplayerGame() {
-        try {
-            SoundManager.play('click');
-            const nums = this.multiplayerRowsInput.value.trim().split(/\s+/).map(Number);
-            if (nums.some(n => isNaN(n) || n <= 0)) throw new Error("Invalid input");
-            if (nums.length === 1 && nums[0] === 0) throw new Error("Invalid input");
-            
-            this.socket.emit('createGame', nums);
-        } catch (e) {
-            alert("Invalid input. Please enter positive, space-separated integers.");
-        }
+        // This is handled by the multiplayer auth script
+        console.log('createMultiplayerGame called - should be handled by auth script');
     }
     
     joinMultiplayerGame() {
-        SoundManager.play('click');
-        const roomId = this.joinRoomInput.value.trim().toUpperCase();
-        if (!roomId) {
-            alert("Please enter a Game ID");
-            return;
-        }
-        
-        console.log(`Attempting to join room:`, roomId);
-        this.roomId = roomId; // Set roomId when joining
-        this.socket.emit('joinGame', roomId);
+        // This is handled by the multiplayer auth script
+        console.log('joinMultiplayerGame called - should be handled by auth script');
     }
     
 
@@ -495,11 +371,6 @@ class ProLCTRGui {
         if (this.isMultiplayer) {
             const isMyTurn = (this.playerSymbol === 'A' && this.game.currentIndex === 0) ||
                             (this.playerSymbol === 'B' && this.game.currentIndex === 1);
-            console.log(`[${this.playerSymbol}] Turn check:`, {
-                playerSymbol: this.playerSymbol,
-                currentIndex: this.game.currentIndex,
-                isMyTurn: isMyTurn
-            });
             if (!isMyTurn) return;
         }
         const rect = this.boardArea.getBoundingClientRect();
@@ -593,8 +464,12 @@ class ProLCTRGui {
         this.gameHistory.push(gameState);
     }
 
-    redrawBoard() {
+    clearBoard() {
         this.boardArea.innerHTML = '';
+    }
+
+    redrawBoard() {
+        this.clearBoard();
         if (!this.game) return;
         const extraLeftMargin = this.game.board.width() > 30 ? 20 : 0;
         
@@ -624,6 +499,10 @@ class ProLCTRGui {
         
         this.boardArea.style.width = `${boardWidth}px`;
         this.boardArea.style.height = `${boardHeight}px`;
+    }
+
+    drawBoard() {
+        this.redrawBoard();
     }
 
     updateStatus() {
@@ -666,7 +545,20 @@ class ProLCTRGui {
     }
     requestMove(moveKind) { 
         if (!this.isAnimating && !this.game.isAiTurn() && moveKind) { 
-            if (this.isMultiplayer && this.roomId) {
+            if (this.isMultiplayer) {
+                // Get roomId from multiplayer auth
+                const roomId = window.lctrMultiplayerAuth ? window.lctrMultiplayerAuth.roomId : null;
+                
+                if (!roomId) {
+                    console.log(`[${this.playerSymbol}] No roomId available - cannot make move`);
+                    console.log(`[${this.playerSymbol}] Multiplayer auth state:`, {
+                        authExists: !!window.lctrMultiplayerAuth,
+                        authRoomId: window.lctrMultiplayerAuth?.roomId,
+                        thisRoomId: this.roomId
+                    });
+                    return;
+                }
+                
                 // Check if it's the player's turn locally first
                 const isMyTurn = (this.playerSymbol === 'A' && this.game.currentIndex === 0) ||
                                 (this.playerSymbol === 'B' && this.game.currentIndex === 1);
@@ -679,11 +571,17 @@ class ProLCTRGui {
                 
                 // In multiplayer, emit the move to the server
                 console.log(`[${this.playerSymbol}] Attempting to make move:`, moveKind, 'Current player index:', this.game.currentIndex);
-                console.log(`[${this.playerSymbol}] Using roomId:`, this.roomId);
-                this.socket.emit('makeMove', { roomId: this.roomId, moveKind: moveKind });
+                console.log(`[${this.playerSymbol}] Using roomId:`, roomId);
+                
+                // Use the multiplayer auth's makeMove method
+                if (window.lctrMultiplayerAuth) {
+                    window.lctrMultiplayerAuth.makeMove(moveKind);
+                } else {
+                    console.log(`[${this.playerSymbol}] Multiplayer auth not available`);
+                }
             } else {
                 // In single player, execute locally
-                console.log(`[${this.playerSymbol}] Single player mode - isMultiplayer:`, this.isMultiplayer, 'roomId:', this.roomId);
+                console.log(`[${this.playerSymbol}] Single player mode - isMultiplayer:`, this.isMultiplayer);
                 this.executeWithAnimation(moveKind); 
             }
         } else {
@@ -699,12 +597,20 @@ class ProLCTRGui {
     hideHelp() { this.helpPopover.classList.remove('visible'); }
     showSetupModal() { 
         this.gameOverModal.classList.remove('visible'); 
+        
+        // If we're in multiplayer mode, show the multiplayer modal instead
+        if (this.isMultiplayer) {
+            this.setupModal.classList.remove('visible');
+            this.multiplayerModal.classList.add('visible');
+            return;
+        }
+        
+        // Otherwise show the single-player setup modal
         this.multiplayerModal.classList.remove('visible');
         this.setupModal.classList.add('visible'); 
         this.updateDifficultyLabel(); // Initialize the difficulty label
         
-        // Reset multiplayer state when showing setup modal (but don't call showSetupModal again)
-        this.isMultiplayer = false;
+        // Reset multiplayer state when showing single-player setup modal
         this.roomId = null;
         this.playerSymbol = null;
         this.roomInfoLabel.textContent = '';
@@ -865,6 +771,13 @@ class ProLCTRGui {
         this.playerSymbol = playerNumber === 0 ? 'A' : 'B';
         this.isMultiplayer = true;
         
+        // Get socket and roomId from multiplayer auth
+        if (window.lctrMultiplayerAuth) {
+            this.socket = window.lctrMultiplayerAuth.socket;
+            this.roomId = window.lctrMultiplayerAuth.roomId;
+            console.log(`[${this.playerSymbol}] Set roomId to:`, this.roomId);
+        }
+        
         // Clear any existing board and redraw
         this.clearBoard();
         this.drawBoard();
@@ -904,32 +817,50 @@ class ProLCTRGui {
         this.drawBoard();
     }
 
-    updateBoardFromServer(boardData) {
-        console.log('Updating board from server:', boardData);
+    updateBoardFromServer(boardData, currentPlayer = null, gameEnded = false, winner = null) {
+        console.log('Updating board from server:', { boardData, currentPlayer, gameEnded, winner });
         
         if (this.game && this.isMultiplayer) {
             // Update the board state
             this.game.board = new Board(boardData);
             
+            // Update current player if provided
+            if (currentPlayer !== null) {
+                this.game.currentIndex = currentPlayer;
+            }
+            
             // Redraw the board
             this.clearBoard();
             this.drawBoard();
+            
+            // Handle game end
+            if (gameEnded) {
+                SoundManager.play('win');
+                const winnerName = winner === 0 ? 'Alice' : 'Bob';
+                this.gameOverMessage.textContent = `Player ${winnerName} wins!`;
+                this.gameOverModal.classList.add('visible');
+            } else {
+                // Update status
+                this.updateStatus();
+            }
         }
     }
 
     endMultiplayerGame(message) {
-        this.isMultiplayer = false;
         this.statusLabel.textContent = message;
         this.statusLabel.style.color = message.includes('won') ? 'var(--orange)' : 'var(--gray)';
         
         // Show game over modal
         this.gameOverMessage.textContent = message;
-        this.gameOverModal.style.display = 'flex';
+        this.gameOverModal.classList.add('visible');
         
         // Refresh user stats if multiplayer auth is available
         if (window.lctrMultiplayerAuth) {
             window.lctrMultiplayerAuth.loadUserStats();
         }
+        
+        // Keep multiplayer state so Play Again returns to multiplayer modal
+        // Don't set this.isMultiplayer = false here
     }
 
     // Override makeMove to handle multiplayer

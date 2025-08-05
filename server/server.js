@@ -34,7 +34,7 @@ const server = http.createServer(app);
 const isProduction = process.env.NODE_ENV === 'production';
 const allowedOrigins = isProduction
   ? ['https://partitiongames.netlify.app', 'https://www.partitiongames.netlify.app']
-  : ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:3000', 'null']; // Allow file:// protocol in development
+  : ['http://localhost:8000', 'http://127.0.0.1:8000', 'http://localhost:3000', 'http://localhost:8080', 'http://127.0.0.1:8080', 'null', '*']; // Allow file:// protocol in development
 
 // Enable CORS for Socket.IO
 const io = socketIo(server, {
@@ -215,16 +215,19 @@ app.get('/api/games/my-history', authMiddleware, async (req, res) => {
   }
 });
 
-// Socket.IO authentication middleware
+// Socket.IO authentication middleware (optional for basic gameplay)
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    socket.userId = decoded.id;
-    return next();
-  } catch {
-    return next(new Error('Unauthorized'));
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.userId = decoded.id;
+    } catch {
+      // Token is invalid, but allow connection for basic gameplay
+      console.log(`Invalid token for socket ${socket.id}, allowing connection for basic gameplay`);
+    }
   }
+  return next();
 });
 
 io.on('connection', (socket) => {
@@ -387,9 +390,9 @@ io.on('connection', (socket) => {
             
             console.log(`Game result recorded successfully with ID ${result.rows[0].id}: Winner ${winnerSocket.userId}, Loser ${loserSocket.userId}`);
           } else {
-            console.error('Could not record game result: Missing socket connections or user IDs');
-            console.error(`Winner socket: ${winnerSocket ? 'exists' : 'missing'}, userId: ${winnerSocket?.userId}`);
-            console.error(`Loser socket: ${loserSocket ? 'exists' : 'missing'}, userId: ${loserSocket?.userId}`);
+            console.log('Game completed but not recording result - players not authenticated');
+            console.log(`Winner socket: ${winnerSocket ? 'exists' : 'missing'}, userId: ${winnerSocket?.userId}`);
+            console.log(`Loser socket: ${loserSocket ? 'exists' : 'missing'}, userId: ${loserSocket?.userId}`);
           }
         } catch (err) {
           console.error('Error recording game result:', err);
@@ -467,4 +470,28 @@ app.get('/games', (req, res) => {
     };
   }
   res.json(gamesInfo);
+});
+
+// Test database connectivity
+app.get('/test-db', async (req, res) => {
+  try {
+    // Test users table
+    const usersResult = await pool.query('SELECT COUNT(*) as user_count FROM users');
+    
+    // Test games table
+    const gamesResult = await pool.query('SELECT COUNT(*) as game_count FROM games');
+    
+    res.json({
+      status: 'Database connected successfully',
+      users: usersResult.rows[0].user_count,
+      games: gamesResult.rows[0].game_count,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Database test failed:', err);
+    res.status(500).json({
+      error: 'Database connection failed',
+      details: err.message
+    });
+  }
 });

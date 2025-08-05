@@ -127,10 +127,10 @@ class GameState{
     if(newFrags.length>1){  
       if(kind==='row'){  
         let y=originalY;  
-        newFrags.forEach(nf=>{nf.x=originalX;nf.y=y;y+=nf.rows*CELL_SIZE+GAP_SIZE*2;});  
+        newFrags.forEach(nf=>{nf.x=originalX;nf.y=y;y+=nf.rows*40+60;});  
       }else{  
         let x=originalX;  
-        newFrags.forEach(nf=>{nf.x=x;nf.y=originalY;x+=nf.cols*CELL_SIZE+GAP_SIZE*2;});  
+        newFrags.forEach(nf=>{nf.x=x;nf.y=originalY;x+=nf.cols*40+60;});  
       }  
     }else if(newFrags.length===1){newFrags[0].x=originalX;newFrags[0].y=originalY;}  
   
@@ -158,6 +158,7 @@ class CRIM_GUI{
     document.getElementById('start-game-btn').addEventListener('click',()=>{SoundManager.play('click');this.startFromInput();});  
     document.getElementById('new-game-btn')  .addEventListener('click',()=>{SoundManager.play('click');this.showSetup();});  
     document.getElementById('play-again-btn').addEventListener('click',()=>{SoundManager.play('click');this.showSetup();});  
+    document.getElementById('undo-btn').addEventListener('click',()=>{SoundManager.play('click');this.undoMove();});  
     /* partition generation */  
     document.getElementById('generate-partition-btn').addEventListener('click',()=>{SoundManager.play('click');this.generatePartition();});  
     /* theme toggle */  
@@ -176,7 +177,7 @@ class CRIM_GUI{
     }
     /* tile themes */  
     const cycleThemeBtn=document.getElementById('cycle-theme-btn');
-    this.tileThemes = ['grass', 'water', 'fire', 'stone'];
+    this.tileThemes = ['grass', 'stone', 'ice'];
     this.currentThemeIndex = 0;
     if(cycleThemeBtn){
       cycleThemeBtn.addEventListener('click',()=>{SoundManager.play('click');this.cycleTileTheme();});
@@ -184,15 +185,13 @@ class CRIM_GUI{
     /* help */  
     const helpBtn=document.getElementById('help-btn');  
     const helpBtnModal=document.getElementById('help-btn-modal');
-    const closeHelpBtn=document.getElementById('close-help-btn');
     if(helpBtn){
-      helpBtn.addEventListener('click',()=>this.showHelp());  
+      helpBtn.addEventListener('mouseenter',()=>this.showHelp());  
+      helpBtn.addEventListener('mouseleave',()=>this.hideHelp());
     }
     if(helpBtnModal){  
-      helpBtnModal.addEventListener('click',()=>this.showHelp());
-    }
-    if(closeHelpBtn){
-      closeHelpBtn.addEventListener('click',()=>this.hideHelp());
+      helpBtnModal.addEventListener('mouseenter',()=>this.showHelp());
+      helpBtnModal.addEventListener('mouseleave',()=>this.hideHelp());
     }  
     /* sound */  
     SoundManager.init();  
@@ -208,6 +207,7 @@ class CRIM_GUI{
     this.setupBackdrop.classList.add('visible');  
     this.statusLabel.textContent='Waiting for start…';  
     this.clearBoard();  
+    this.updateDownloadButton();
   }  
   startFromInput(){  
     try{  
@@ -217,14 +217,44 @@ class CRIM_GUI{
       this.vsCPU=(this.cpuSide!=='None');  
       // difficulty slider currently unused  
       this.state=new GameState(nums);  
+      
+      // Center the initial board
+      if (this.state.fragments.length > 0) {
+        const frag = this.state.fragments[0];
+        const boardWidth = frag.cols;
+        const boardHeight = frag.rows;
+        
+        // Calculate the total content width (including labels)
+        const contentWidth = this.LABEL + (boardWidth * this.CELL) + this.LABEL;
+        const contentHeight = this.LABEL + (boardHeight * this.CELL) + this.LABEL;
+        
+        // Set minimum dimensions for board area
+        const minDimension = 520;
+        const boardAreaWidth = Math.max(contentWidth, minDimension);
+        const boardAreaHeight = Math.max(contentHeight, minDimension);
+        
+        // Calculate horizontal center offset
+        const centerX = (boardAreaWidth - contentWidth) / 2;
+        
+        // Position the board horizontally centered but at the top
+        const x0 = centerX + this.LABEL;
+        const y0 = this.LABEL; // Start from top with just label space
+        
+        // Update the first fragment's position to be centered
+        this.state.fragments[0].x = x0;
+        this.state.fragments[0].y = y0;
+      }
+      
       this.setupBackdrop.classList.remove('visible');  
       this.clearGameHistory();this.redraw();  
-      const playerLetter=this.state.player===Player.RED?'A':'B';  
-      const playerType=this.vsCPU&&this.state.player===this.cpuSide?'Computer':'Human';  
+      this.updateUndoButton();
+      this.updateDownloadButton();
+      const playerLetter=this.getLetterFromPlayer(this.state.player);  
+      const playerType=this.vsCPU&&this.state.player===this.getPlayerFromLetter(this.cpuSide)?'Computer':'Human';  
       this.statusLabel.textContent=`Player ${playerLetter} (${playerType}) to move`;  
         
     }catch{alert('Please enter positive integers separated by spaces.');}  
-    if(this.vsCPU&&this.state.player===this.cpuSide){  
+    if(this.vsCPU&&this.state.player===this.getPlayerFromLetter(this.cpuSide)){  
       setTimeout(()=>this.aiTurnPerfect(),1000);  
     }  
   }  
@@ -253,7 +283,7 @@ class CRIM_GUI{
       const g=f.grid.map(row=>[...row]);return new Fragment(g,f.x,f.y);  
     });  
     this.gameHistory.push({fragments:fragmentsCopy,player:this.state.player});  
-      
+    this.updateDownloadButton();
   }  
   undoMove(){  
     if(!this.canUndo())return;  
@@ -261,12 +291,53 @@ class CRIM_GUI{
     const prev=this.gameHistory.pop();  
     this.state.fragments=prev.fragments;this.state.player=prev.player;  
     this.redraw();  
-    const playerLetter=this.state.player===Player.RED?'A':'B';  
-    const playerType=this.vsCPU&&this.state.player===this.cpuSide?'Computer':'Human';  
+    this.updateUndoButton();
+    this.updateDownloadButton();
+    const playerLetter=this.getLetterFromPlayer(this.state.player);  
+    const playerType=this.vsCPU&&this.state.player===this.getPlayerFromLetter(this.cpuSide)?'Computer':'Human';  
     this.statusLabel.textContent=`Player ${playerLetter} (${playerType}) to move`;  
       
   }  
-  clearGameHistory(){this.gameHistory=[];}  
+  clearGameHistory(){
+    this.gameHistory=[];
+    this.updateDownloadButton();
+  }
+  
+  updateUndoButton() {
+    const undoBtn = document.getElementById('undo-btn');
+    if (!undoBtn) return;
+    
+    const canUndo = this.state && this.gameHistory.length > 0 && !this.vsCPU;
+    
+    if (canUndo) {
+      undoBtn.style.display = 'inline-flex';
+      undoBtn.disabled = false;
+    } else {
+      undoBtn.style.display = 'none';
+    }
+  }
+  
+  updateDownloadButton() {
+    const downloadBtn = document.getElementById('download-btn');
+    if (!downloadBtn) return;
+    
+    const canDownload = this.state && this.gameHistory.length > 0;
+    
+    if (canDownload) {
+      downloadBtn.style.display = 'inline-flex';
+      downloadBtn.disabled = false;
+    } else {
+      downloadBtn.style.display = 'none';
+    }
+  }
+  
+  getPlayerFromLetter(letter) {
+    return letter === 'A' ? Player.RED : Player.BLUE;
+  }
+  
+  getLetterFromPlayer(player) {
+    return player === Player.RED ? 'A' : 'B';
+  }  
   
   updateThemeToggleButton() {
     const themeToggle = document.getElementById('theme-toggle');
@@ -289,25 +360,14 @@ class CRIM_GUI{
       localStorage.setItem('cris-tile-theme', theme);
     }
     if (cycleBtn) {
-      const themeEmojis = { grass: '🌱', water: '💧', fire: '🔥', stone: '🪨' };
+      const themeEmojis = { grass: '🌱', stone: '🪨', ice: '🧊' };
       const theme = this.tileThemes[this.currentThemeIndex];
       cycleBtn.textContent = `[tiles: ${themeEmojis[theme] || '🌱'}]`;
     }
   }
 
-  showHelp() {
-    const helpPopover = document.getElementById('help-popover');
-    if (helpPopover) {
-      helpPopover.style.display = 'block';
-    }
-  }
-
-  hideHelp() {
-    const helpPopover = document.getElementById('help-popover');
-    if (helpPopover) {
-      helpPopover.style.display = 'none';
-    }
-  }  
+  showHelp() { this.helpPopover.classList.add('visible'); }
+  hideHelp() { this.helpPopover.classList.remove('visible'); }  
   
   redraw(){  
     this.clearBoard();if(!this.state)return;  
@@ -363,14 +423,17 @@ class CRIM_GUI{
         SoundManager.play('win');const winner=Player.other(this.state.player)===Player.RED?'A':'B';  
         this.gameOverMsg.textContent=`Player ${winner} wins!`;  
         this.gameOverBackdrop.classList.add('visible');  
+        this.updateDownloadButton();
         this.clearBoard();return;  
       }  
       this.redraw();  
-      const playerLetter=this.state.player===Player.RED?'A':'B';  
-      const playerType=this.vsCPU&&this.state.player===this.cpuSide?'Computer':'Human';  
+      this.updateUndoButton();
+      this.updateDownloadButton();
+      const playerLetter=this.getLetterFromPlayer(this.state.player);  
+      const playerType=this.vsCPU&&this.state.player===this.getPlayerFromLetter(this.cpuSide)?'Computer':'Human';  
       this.statusLabel.textContent=`Player ${playerLetter} (${playerType}) to move`;  
         
-      if(this.vsCPU&&this.state.player===this.cpuSide)setTimeout(()=>this.aiTurnPerfect(),300);  
+      if(this.vsCPU&&this.state.player===this.getPlayerFromLetter(this.cpuSide))setTimeout(()=>this.aiTurnPerfect(),300);  
     },300);  
   }  
   
@@ -389,6 +452,7 @@ class CRIM_GUI{
   executeAIMove(fIdx,kind,idx){  
     const id=[...this.idToAddress.entries()].find(([_,v])=>v.frag===fIdx&&v.kind===kind&&v.index===idx)?.[0];  
     if(id)document.getElementById(id).click();  
+    this.updateDownloadButton();
   }  
 }  
   
@@ -435,6 +499,8 @@ function downloadGame(){
 window.addEventListener('load',()=>{  
   const btn=document.getElementById('download-btn');  
   if(btn)btn.addEventListener('click',downloadGame);  
+  const btnModal=document.getElementById('download-btn-modal');  
+  if(btnModal)btnModal.addEventListener('click',downloadGame);  
 });  
   
 /* --- HTML GENERATOR ------------------------------------------------ */  

@@ -14,8 +14,9 @@ const config = {
     
     // Helper function to get the appropriate server URL
     getServerUrl: function() {
-        const isProduction = window.location.hostname !== 'localhost' && 
-                           window.location.hostname !== '127.0.0.1';
+        // For development, always use localhost unless explicitly on production domain
+        const isProduction = window.location.hostname === 'partitiongames.netlify.app' || 
+                           window.location.hostname === 'www.partitiongames.netlify.app';
         return isProduction ? this.production.serverUrl : this.development.serverUrl;
     }
 };

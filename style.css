@@ -212,8 +212,9 @@ main {
     font-size: 13px;
     line-height: 1.5;
     font-family: "Inter Tight", sans-serif;
+    word-spacing: -0.05em;
     font-optical-sizing: auto;
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
     text-transform: lowercase;
 }
