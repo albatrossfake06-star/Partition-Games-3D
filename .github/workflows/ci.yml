@@ -1,0 +1,53 @@
+name: LCTR CI Tests
+
+# This tells GitHub to run the workflow on every push or pull request to the main branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# This defines the series of jobs to run
+jobs:
+  # We have one job, which we'll call "test"
+  test:
+    # It will run on the latest version of Ubuntu Linux
+    runs-on: ubuntu-latest
+    
+    # All commands will be run from inside the 'server' directory
+    defaults:
+      run:
+        working-directory: ./server
+
+    steps:
+      # Step 1: Check out a copy of your repository's code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js version 18
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          # Cache npm dependencies to speed up future builds
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      # Step 3: Install all project dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run the Jest unit tests
+      - name: Run unit tests
+        run: npm test
+
+      # Step 5: Run the Cypress E2E tests using the official Cypress GitHub Action
+      - name: Run E2E tests
+        uses: cypress-io/github-action@v6
+        with:
+          # Specify the working directory for Cypress
+          working-directory: server
+          # The command to start your server
+          start: npm start
+          # Wait for the specific game page to be available before running tests
+          wait-on: 'http://localhost:3001/lctr_page.html'
