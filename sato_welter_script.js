@@ -206,8 +206,8 @@ const SoundManager = {
 class SatoWelterGui {
     constructor() {
         this.CELL = 40;
+        this.GAP = 1; // Small gap between tiles to prevent border overlap
         this.MARGIN = 20;
-        this.GAP = 30;
         this.ANIMATION_MS = 500;
         this.AI_THINK_MS = 800;
         this.game = null;
@@ -330,12 +330,21 @@ class SatoWelterGui {
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
         let hovered = null;
-        
-        // Find which square is hovered
+
         const board = this.game.getBoard();
+
+        // *** ADD THE CENTERING LOGIC HERE AS WELL ***
+        const boardDataWidth = board.cols * this.CELL + (board.cols - 1) * this.GAP;
+        const minDimension = 480;
+        let boardWidth = Math.max(this.MARGIN * 2 + boardDataWidth, minDimension);
+        const actualContentWidth = this.MARGIN * 2 + boardDataWidth;
+        const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+        
+        // Find which square is hovered using the offset
         board.squares().forEach(({ r, c }) => {
-            const left = this.MARGIN + c * this.CELL;
-            const top = this.MARGIN + r * this.CELL;
+            // Use the offset when calculating the tile's left boundary
+            const left = centerOffsetX + this.MARGIN + c * (this.CELL + this.GAP);
+            const top = this.MARGIN + r * (this.CELL + this.GAP);
             if (mouseX >= left && mouseX < left + this.CELL && mouseY >= top && mouseY < top + this.CELL) {
                 hovered = { r, c };
             }
@@ -348,10 +357,10 @@ class SatoWelterGui {
         }
         
         this.hoveredMove = hovered;
+        // This part remains the same, as it just adds/removes CSS classes
         this.gameCard.querySelectorAll('.tile').forEach(t => t.classList.remove('highlighted'));
         
         if (this.hoveredMove) {
-            // Highlight the hook: all squares to the right in row, and all below in column, including (r, c)
             board.squares().forEach(({ r, c }) => {
                 if ((r === this.hoveredMove.r && c >= this.hoveredMove.c) || 
                     (c === this.hoveredMove.c && r >= this.hoveredMove.r)) {
@@ -410,31 +419,41 @@ class SatoWelterGui {
         if (this.game.isAiTurn()) { this.aiTurn(); }
     }
     redrawBoard() {
-        this.boardArea.querySelectorAll('.tile').forEach(tile => tile.remove());
-        
+        this.boardArea.innerHTML = ''; // Clear the board more efficiently
         if (!this.game) return;
-        
+
         const board = this.game.getBoard();
-        
-        // Draw squares for the board
+
+        // Calculate actual content size including gaps
+        const boardDataWidth = board.cols * this.CELL + (board.cols - 1) * this.GAP;
+        const boardDataHeight = board.rows * this.CELL + (board.rows - 1) * this.GAP;
+        const minDimension = 480;
+
+        // Determine the full container size, enforcing a minimum
+        let boardWidth = Math.max(this.MARGIN * 2 + boardDataWidth, minDimension);
+        let boardHeight = Math.max(this.MARGIN * 2 + boardDataHeight, minDimension);
+
+        // *** THIS IS THE CRITICAL CENTERING LOGIC ***
+        // Calculate the horizontal offset needed to center the content
+        const actualContentWidth = this.MARGIN * 2 + boardDataWidth;
+        const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+
+        // Draw squares for the board using the calculated offset
         board.squares().forEach(({ r, c }) => {
             const tile = document.createElement('div');
             tile.className = 'tile';
             tile.id = `tile-${r}-${c}`;
             tile.style.width = `${this.CELL}px`;
             tile.style.height = `${this.CELL}px`;
-            tile.style.left = `${this.MARGIN + c * this.CELL}px`;
-            tile.style.top = `${this.MARGIN + r * this.CELL}px`;
+            // Apply the centering offset to the left position
+            tile.style.left = `${centerOffsetX + this.MARGIN + c * (this.CELL + this.GAP)}px`;
+            tile.style.top = `${this.MARGIN + r * (this.CELL + this.GAP)}px`;
             this.boardArea.appendChild(tile);
         });
         
-        // Set board area size
-        const boardWidth = board.cols * this.CELL;
-        const boardHeight = board.rows * this.CELL;
-        const minDimension = 480;
-        
-        this.boardArea.style.width = `${Math.max(this.MARGIN * 2 + boardWidth, minDimension)}px`;
-        this.boardArea.style.height = `${Math.max(this.MARGIN * 2 + boardHeight, minDimension)}px`;
+        // Set the final size of the board area container
+        this.boardArea.style.width = `${boardWidth}px`;
+        this.boardArea.style.height = `${boardHeight}px`;
     }
     updateStatus() {
         if (!this.game) return;
