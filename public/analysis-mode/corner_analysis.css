@@ -26,7 +26,6 @@
     font-size: 16px;
     color: inherit;
     border-bottom: 1px solid currentColor;
-    border-bottom-opacity: 0.3;
     padding-bottom: 5px;
 }
 
@@ -81,7 +80,7 @@
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid currentColor;
-    border-top-opacity: 0.2;
+    height: flex;
 }
 
 .chart-container .label {
@@ -92,7 +91,6 @@
 
 #g-number-chart {
     border: 1px solid currentColor;
-    border-opacity: 0.3;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.05);
     display: block;
@@ -104,7 +102,6 @@
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid currentColor;
-    border-top-opacity: 0.2;
 }
 
 .optimal-moves-container .label {
@@ -126,7 +123,6 @@
 .optimal-moves-list .move-option {
     padding: 2px 0;
     border-bottom: 1px solid currentColor;
-    border-bottom-opacity: 0.1;
 }
 
 .optimal-moves-list .move-option:last-child {

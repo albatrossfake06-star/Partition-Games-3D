@@ -618,14 +618,17 @@ footer {
 
 .selection-controls {
     display: flex;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     flex-direction: column;
     gap: 8px;
-    padding: 16px;
-    background: var(--white);
-    transition: background-color 0.3s ease;
+    z-index: 1100;
 }
 
 .confirm-btn {
+    content: 'confirm';
     background-color: var(--orange);
     color: var(--white);
     border: none;
@@ -634,6 +637,8 @@ footer {
     font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 200px;
+    flex-shrink: 0;
 }
 
 .confirm-btn:hover:not(:disabled) {
@@ -655,6 +660,8 @@ footer {
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
+    width: 200px;
+    flex-shrink: 0;
 }
 
 .clear-btn:hover {

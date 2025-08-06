@@ -12,7 +12,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="unified_game_styles.css" />
-    <link rel="stylesheet" href="corner_analysis.css" />
+    <link rel="stylesheet" href="public/analysis-mode/corner_analysis.css" />
   </head>
 
   <body>
@@ -107,7 +107,7 @@
             </div>
             <div class="chart-container">
               <span class="label">G-Number History:</span>
-              <canvas id="g-number-chart" width="250" height="80"></canvas>
+              <canvas id="g-number-chart"></canvas>
             </div>
           </div>
           <!-- Selection Control Buttons -->
@@ -130,7 +130,7 @@
               >
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
               </svg>
-              confirm selection
+              confirm
             </button>
             <button id="clear-selection-btn" class="selection-button clear-btn">
               <svg
@@ -272,6 +272,6 @@
     <script src="script.js"></script>
     <script src="database-utils.js"></script>
     <script src="corner_script.js"></script>
-    <script src="corner_analysis.js"></script>
+    <script src="public/analysis-mode/corner_analysis.js"></script>
   </body>
 </html>
