@@ -144,33 +144,40 @@ class GameState{
   }  
   hasMoves(){return this.fragments.some(f=>f.hasMoves());}  
   performMove(fIdx,kind,lineIdx){  
-    const parent = this.fragments[fIdx];
-    const originalX=parent.x,originalY=parent.y;  
-    if(kind==='row')parent.deleteRow(lineIdx);else parent.deleteCol(lineIdx);  
-    const children = parent.splitIntoFragments();  
+    const frag = this.fragments[fIdx];
+    const parentPid = frag.partitionId;   // remember the id we started with
+    const originalX=frag.x,originalY=frag.y;  
+    if(kind==='row')frag.deleteRow(lineIdx);else frag.deleteCol(lineIdx);  
+    const newFrags = frag.splitIntoFragments();   // after the cut  
   
-    // 1. Hand out permanent ids  
-    children.forEach(ch => {  
-      ch.partitionId = this.nextPartitionId++;  
-    });  
+    /* ── id-handling ─────────────────────────────────────────── */  
+    if(newFrags.length === 1){                 // no split ⇒ keep the old id  
+      newFrags[0].partitionId = parentPid;  
+    }else{                                     // a true split  
+      newFrags[0].partitionId = parentPid;     // the "senior" piece  
+      for(let i = 1; i < newFrags.length; i++){// younger pieces  
+        newFrags[i].partitionId = this.nextPartitionId++;  
+      }  
+    }  
+    /* ────────────────────────────────────────────────────────── */  
   
-    // 2. Replace parent in fragment array  
-    this.fragments.splice(fIdx, 1, ...children);  
+    // Replace parent in fragment array  
+    this.fragments.splice(fIdx, 1, ...newFrags);  
   
-    // 3. Keep the array ordered (OPTIONAL, purely cosmetic)  
+    // Keep the array ordered (OPTIONAL, purely cosmetic)  
     this.fragments.sort((a, b) => a.partitionId - b.partitionId);  
   
     // Position the children
-    if(children.length>1){  
+    if(newFrags.length>1){  
       if(kind==='row'){  
         let y=originalY;  
-        children.forEach(nf=>{nf.x=originalX;nf.y=y;y+=nf.rows*40+60;});  
+        newFrags.forEach(nf=>{nf.x=originalX;nf.y=y;y+=nf.rows*40+60;});  
       }else{  
         let x=originalX;  
-        children.forEach(nf=>{nf.x=x;nf.y=originalY;x+=nf.cols*40+60;});  
+        newFrags.forEach(nf=>{nf.x=x;nf.y=originalY;x+=nf.cols*40+60;});  
       }  
-    }else if(children.length===1){
-      children[0].x=originalX;children[0].y=originalY;
+    }else if(newFrags.length===1){
+      newFrags[0].x=originalX;newFrags[0].y=originalY;
     }
     
     // Sanity check (optional but helpful)
