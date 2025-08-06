@@ -155,6 +155,9 @@ class CornerAnalysis {
         this.undoBtn = document.getElementById('undo-btn');
         this.analysisToggle = document.getElementById('analysis-mode-toggle');
 
+        // Info button element
+        this.analysisInfoBtn = document.getElementById('analysis-info-btn');
+
         // Panel fields
         this.p_n_status = document.getElementById('p-n-status');
         this.g_value = document.getElementById('g-value');
@@ -181,6 +184,11 @@ class CornerAnalysis {
         }
         if (this.undoBtn) {
             this.undoBtn.addEventListener('click', () => this.undoMove());
+        }
+
+        // Info button event listener
+        if (this.analysisInfoBtn) {
+            this.analysisInfoBtn.addEventListener('click', () => this.openAnalysisDoc());
         }
     }
 
@@ -413,5 +421,10 @@ class CornerAnalysis {
         this.gui.boardArea.querySelectorAll('.tile').forEach(t => {
             t.classList.remove('winning-move-highlight', 'blunder-move-highlight', 'neutral-move-highlight');
         });
+    }
+
+    // --- Info Documentation Method ---
+    openAnalysisDoc() {
+        window.open('docs/analysis_doc.html', '_blank');
     }
 }

@@ -11,7 +11,6 @@
     font-family: inherit;
     color: inherit;
     font-size: 14px;
-    width: 280px;
     overflow-y: auto;
     display: none; /* Hidden by default */
     z-index: 100;
@@ -21,12 +20,38 @@
     display: block;
 }
 
-#analysis-container h3 {
-    margin: 0 0 10px 0;
-    font-size: 16px;
-    color: inherit;
+/* Analysis header styling */
+.analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
     border-bottom: 1px solid currentColor;
     padding-bottom: 5px;
+}
+
+.analysis-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: inherit;
+}
+
+/* Analysis info button styling */
+#analysis-info-btn {
+    font-size: 14px;
+    padding: 4px 6px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+#analysis-info-btn:hover {
+    opacity: 1;
+    background: rgba(255, 107, 53, 0.1);
+    border-color: var(--orange, #FF6B35);
+    transform: scale(1.05);
 }
 
 #analysis-container p {
@@ -90,7 +115,7 @@
 }
 
 #g-number-chart {
-    border: 1px solid currentColor;
+    /* border: 1px solid currentColor; */
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.05);
     display: block;
