@@ -316,7 +316,7 @@ class CRPMGui {
         this.aiSelect = document.getElementById('ai-select');
         this.difficultySlider = document.getElementById('difficulty-slider');
         this.difficultyLabel = document.getElementById('difficulty-label');
-        this.themeSelect = document.getElementById('theme-select');
+        this.cycleThemeBtn = document.getElementById('cycle-theme-btn');
         this.startGameBtn = document.getElementById('start-game-btn');
         this.playAgainBtn = document.getElementById('play-again-btn');
         this.gameOverMessage = document.getElementById('game-over-message');
@@ -332,7 +332,55 @@ class CRPMGui {
         this.downloadBtn.addEventListener('click', () => { SoundManager.play('click'); this.downloadGame(); });
         this.playAgainBtn.addEventListener('click', () => { SoundManager.play('click'); this.showSetupModal(); });
         this.themeToggle.addEventListener('change', () => { SoundManager.play('click'); this.toggleTheme(); });
-        this.themeSelect.addEventListener('change', () => { SoundManager.play('click'); this.applyTileTheme(); });
+        // Theme cycling functionality
+        if (this.cycleThemeBtn) {
+            const themes = [
+                { name: 'grass', icon: '🌱' },
+                { name: 'stone', icon: '🪨' },
+                { name: 'ice', icon: '🧊' }
+            ];
+            let currentThemeIndex = 0;
+
+            // A reusable function to update the theme
+            const updateTheme = (newIndex) => {
+                // This formula correctly wraps the index in both directions (forwards and backwards)
+                currentThemeIndex = (newIndex + themes.length) % themes.length;
+                
+                const newTheme = themes[currentThemeIndex];
+                
+                // Update the button's text to show the current theme
+                this.cycleThemeBtn.innerHTML = `[tiles: ${newTheme.icon}]`;
+                
+                // Apply the theme to the game card
+                if (this.gameCard) {
+                    this.gameCard.setAttribute('data-tile-theme', newTheme.name);
+                }
+            };
+
+            // 1. Handle Clicks
+            this.cycleThemeBtn.addEventListener('click', () => {
+                SoundManager.play('click');
+                // Go to the next theme
+                updateTheme(currentThemeIndex + 1);
+            });
+
+            // 2. Handle Mouse Wheel Scrolling
+            this.cycleThemeBtn.addEventListener('wheel', (event) => {
+                // Prevent the default browser action (scrolling the page)
+                event.preventDefault();
+
+                if (event.deltaY < 0) {
+                    // Scrolled up: go to the previous theme
+                    updateTheme(currentThemeIndex - 1);
+                } else {
+                    // Scrolled down: go to the next theme
+                    updateTheme(currentThemeIndex + 1);
+                }
+            });
+
+            // Set the initial theme when the game loads
+            updateTheme(currentThemeIndex);
+        }
         this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
         this.helpBtn.addEventListener('mouseenter', () => this.showHelp());
         this.helpBtn.addEventListener('mouseleave', () => this.hideHelp());
@@ -402,119 +450,89 @@ class CRPMGui {
 
     redrawBoard() {
         this.clearBoard();
-        
+        if (!this.game) return;
         if (this.game.board.isEmpty()) {
             this.boardArea.innerHTML = '<p>Game Complete!</p>';
             return;
         }
-        
-        const squares = this.game.board.squares();
-        const rows = this.game.board.height();
-        const cols = this.game.board.width();
-        
-        if (squares.length === 0) {
-            this.boardArea.innerHTML = '<p>No pieces remaining!</p>';
-            return;
-        }
-        
-        // Create board container
-        const boardContainer = document.createElement('div');
-        boardContainer.className = 'board-container';
-        
-        // Create column labels
-        const colLabelsRow = document.createElement('div');
-        colLabelsRow.className = 'col-labels-row';
-        colLabelsRow.style.display = 'flex';
-        colLabelsRow.style.marginBottom = '4px';
-        colLabelsRow.style.paddingLeft = `${this.LABEL + 4}px`;
-        
-        for (let c = 0; c < cols; c++) {
-            const colLabel = document.createElement('div');
-            colLabel.className = 'col-label';
-            colLabel.textContent = c + 1;
-            colLabel.style.width = `${this.CELL}px`;
-            colLabel.style.height = `${this.LABEL}px`;
-            colLabel.style.marginRight = '2px';
-            
-            // Set up label click handler and styling based on player restrictions
-            const currentPlayer = this.game.currentPlayer;
-            const colAlive = this.game.board.colsAlive().includes(c);
-            
-            if (currentPlayer === 'B' && colAlive) {
-                colLabel.classList.add('clickable');
-                colLabel.addEventListener('click', () => this.handleLabelClick('col', c));
+        // Calculate required dimensions and update board area
+        this.updateBoardDimensions();
+        // Calculate center position for the board
+        const board = this.game.board;
+        const boardWidth = board.width();
+        const boardHeight = board.height();
+        const boardAreaWidth = this.boardArea.offsetWidth;
+        const boardAreaHeight = this.boardArea.offsetHeight;
+        const contentWidth = this.LABEL + (boardWidth * this.CELL) + this.LABEL;
+        const contentHeight = this.LABEL + (boardHeight * this.CELL) + this.LABEL;
+        const centerX = (boardAreaWidth - contentWidth) / 2;
+        const x0 = centerX + this.LABEL;
+        const y0 = this.LABEL;
+        // Draw row labels (only clickable for Player A)
+        board.rowsAlive().forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'label-cell';
+            div.style.width = `${this.LABEL}px`;
+            div.style.height = `${this.CELL}px`;
+            div.style.left = `${x0 - this.LABEL}px`;
+            div.style.top = `${y0 + r * this.CELL}px`;
+            div.textContent = r + 1;
+            const id = `lbl-${++this.idCounter}`;
+            div.id = id;
+            this.idToAddress.set(id, { kind: 'row', index: r });
+            if (this.game.currentPlayer === 'A') {
+                div.addEventListener('click', e => this.handleLabelClick('row', r));
+                div.classList.add('clickable');
             } else {
-                colLabel.classList.add('disabled');
+                div.classList.add('disabled');
             }
-            
-            colLabelsRow.appendChild(colLabel);
-        }
-        
-        // Create board rows
-        const boardGrid = document.createElement('div');
-        boardGrid.className = 'board-grid';
-        
-        for (let r = 0; r < rows; r++) {
-            const rowContainer = document.createElement('div');
-            rowContainer.style.display = 'flex';
-            rowContainer.style.alignItems = 'center';
-            rowContainer.style.marginBottom = '2px';
-            
-            // Row label
-            const rowLabel = document.createElement('div');
-            rowLabel.className = 'row-label';
-            rowLabel.textContent = r + 1;
-            rowLabel.style.width = `${this.LABEL}px`;
-            rowLabel.style.height = `${this.CELL}px`;
-            rowLabel.style.marginRight = '4px';
-            
-            // Set up label click handler and styling based on player restrictions
-            const currentPlayer = this.game.currentPlayer;
-            const rowAlive = this.game.board.rowsAlive().includes(r);
-            
-            if (currentPlayer === 'A' && rowAlive) {
-                rowLabel.classList.add('clickable');
-                rowLabel.addEventListener('click', () => this.handleLabelClick('row', r));
+            this.boardArea.appendChild(div);
+        });
+        // Draw column labels (only clickable for Player B)
+        board.colsAlive().forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'label-cell';
+            div.style.width = `${this.CELL}px`;
+            div.style.height = `${this.LABEL}px`;
+            div.style.left = `${x0 + c * this.CELL}px`;
+            div.style.top = `${y0 - this.LABEL}px`;
+            div.textContent = c + 1;
+            const id = `lbl-${++this.idCounter}`;
+            div.id = id;
+            this.idToAddress.set(id, { kind: 'col', index: c });
+            if (this.game.currentPlayer === 'B') {
+                div.addEventListener('click', e => this.handleLabelClick('col', c));
+                div.classList.add('clickable');
             } else {
-                rowLabel.classList.add('disabled');
+                div.classList.add('disabled');
             }
-            
-            rowContainer.appendChild(rowLabel);
-            
-            // Row tiles
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'row';
-            rowDiv.style.display = 'flex';
-            
-            for (let c = 0; c < cols; c++) {
-                const tile = document.createElement('div');
-                tile.className = 'tile';
-                tile.style.width = `${this.CELL}px`;
-                tile.style.height = `${this.CELL}px`;
-                tile.style.marginRight = '2px';
-                
-                if (this.game.board.grid[r] && this.game.board.grid[r][c] === 1) {
-                    tile.classList.add('active');
-                    tile.id = `tile-${this.idCounter++}`;
-                    this.idToAddress.set(tile.id, { row: r, col: c });
-                } else {
-                    tile.classList.add('empty');
-                    tile.style.visibility = 'hidden';
-                }
-                
-                rowDiv.appendChild(tile);
-            }
-            
-            rowContainer.appendChild(rowDiv);
-            boardGrid.appendChild(rowContainer);
-        }
-        
-        boardContainer.appendChild(colLabelsRow);
-        boardContainer.appendChild(boardGrid);
-        this.boardArea.appendChild(boardContainer);
-        
-        // Apply theme
-        this.applyTileTheme();
+            this.boardArea.appendChild(div);
+        });
+        // Draw tiles
+        board.squares().forEach(({ r, c }) => {
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.id = `tile-${r}-${c}`;
+            tile.style.width = `${this.CELL}px`;
+            tile.style.height = `${this.CELL}px`;
+            tile.style.left = `${x0 + c * this.CELL}px`;
+            tile.style.top = `${y0 + r * this.CELL}px`;
+            this.boardArea.appendChild(tile);
+        });
+    }
+
+    updateBoardDimensions() {
+        if (!this.game) return;
+        const board = this.game.board;
+        const boardHeight = board.height();
+        const boardWidth = board.width();
+        let requiredWidth = this.LABEL + (boardWidth * this.CELL) + this.LABEL;
+        let requiredHeight = this.LABEL + (boardHeight * this.CELL) + this.LABEL;
+        const minDimension = 520;
+        requiredWidth = Math.max(requiredWidth, minDimension);
+        requiredHeight = Math.max(requiredHeight, minDimension);
+        this.boardArea.style.width = `${requiredWidth}px`;
+        this.boardArea.style.height = `${requiredHeight}px`;
     }
 
     handleLabelClick(kind, index) {
@@ -580,7 +598,10 @@ class CRPMGui {
 
     findTileId(row, col) {
         for (const [id, address] of this.idToAddress.entries()) {
-            if (address.row === row && address.col === col) {
+            if (address.kind === 'row' && address.index === row) {
+                return id;
+            }
+            if (address.kind === 'col' && address.index === col) {
                 return id;
             }
         }
@@ -731,24 +752,20 @@ class CRPMGui {
     }
 
     applyTileTheme() {
-        const theme = this.themeSelect.value;
-        this.gameCard.dataset.tileTheme = theme;
-        localStorage.setItem('crpm-tile-theme', theme);
+        // This method is now handled by the cycle theme button
+        // The theme is applied directly in the updateTheme function
     }
 
     initTheme() {
         const savedTheme = localStorage.getItem('crpm-theme');
-        const savedTileTheme = localStorage.getItem('crpm-tile-theme');
         
         if (savedTheme === 'dark') {
             this.themeToggle.checked = true;
             document.body.classList.add('dark-theme');
         }
         
-        if (savedTileTheme) {
-            this.themeSelect.value = savedTileTheme;
-            this.applyTileTheme();
-        }
+        // Tile theme is now handled by the cycle theme button
+        // The initial theme will be set when the cycle button is initialized
     }
 
     showHelp() {
