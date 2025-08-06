@@ -48,9 +48,9 @@ const GAMES_CONFIG = [
         moveFormat: 'rowCol'
     },
     { 
-        script: 'corner_king_script.js', 
-        page: 'corner_king_page.html',
-        gameType: 'CORNER_KING',
+        script: 'scc_script.js',
+page: 'scc_page.html',
+gameType: 'SCC',
         moveFormat: 'coordinates'
     },
     { 

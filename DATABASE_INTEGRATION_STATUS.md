@@ -74,8 +74,8 @@ As of the latest test, the database contains records for:
 - **Move Format**: `R` or `C` (row/column removal)
 - **Status**: ✅ Working
 
-#### 11. **Corner King** (`CKING`)
-- **File**: `corner_king_script.js`
+#### 11. **SCC** (`SCC`)
+- **File**: `scc_script.js`
 - **Move Format**: `R${r}C${c}` (coordinates)
 - **Status**: ✅ Working
 

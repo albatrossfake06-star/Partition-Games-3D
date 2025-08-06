@@ -11,7 +11,7 @@ const GAME_TYPE_CODES = {
     'ANTI': 'ANTI',
     'SATO_WELTER': 'SATO',
     'CORNER': 'CORN',
-    'CORNER_KING': 'CKING',
+    'SCC': 'SCC',
     'CONTINUOUS_CORNER': 'CCORN',
     'IRT': 'IRT',
     'CRIT': 'CRIT',

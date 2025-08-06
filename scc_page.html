@@ -10,62 +10,57 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Corner King Game-Specific Stylesheet -->
-    <link rel="stylesheet" href="corner_king_style.css">
+    <!-- SCC Game-Specific Stylesheet -->
+    <link rel="stylesheet" href="scc_style.css">
 </head>
 
 <body>
-    <!-- Unified Header from index.html -->
     <header>
-        <div class="container">
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="logo-section">
-                        <a href="index.html" class="logo">partition-games</a>
-                        <span class="game-title">/SCC</span>
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-section">
+                    <a href="index.html" class="logo">partition-games</a>
+                    <span class="game-title"> /scc</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="game-title-section">
+                    <h1>scc</h1>
+                </div>
+                <div class="status-container">
+                    <p id="status-label">loading...</p>
+                    <div id="ai-thinking-indicator">
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
                     </div>
                 </div>
-                
-                <div class="header-center">
-                    <div class="game-title-section">
-                        <h1>SCC</h1>
+            </div>
+            <div class="header-right">
+                <nav>
+                    <div class="nav-control-group">
+                        <label for="theme-select" class="nav-label">tiles:</label>
+                        <select id="theme-select" class="nav-select">
+                            <option value="grass">🌱 grass</option>
+                            <option value="stone">🪨 stone</option>
+                            <option value="ice">🧊 ice</option>
+                        </select>
                     </div>
-                    <div class="status-container">
-                        <p id="status-label">loading...</p>
-                        <div id="ai-thinking-indicator">
-                            <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="header-right">
-                    <nav>
-                        <!-- Corner King specific controls integrated into the nav -->
-                        <button id="help-btn" class="nav-button">? help</button>
-                        <button id="cycle-theme-btn" class="nav-button" title="Click or Scroll to change theme">[tiles: 🌱]</button>
-                        <button id="confirm-move-btn" class="nav-button" aria-label="Confirm Move" style="display: none;" title="Confirm Move">✓ confirm</button>
-                        <button id="clear-selection-btn" class="nav-button" aria-label="Clear Selection" style="display: none;" title="Clear Selection">✕ clear</button>
-                        <button id="undo-btn" class="nav-button" aria-label="Undo Move" style="display: none;" title="Undo Move">↶ undo</button>
-                        <button id="download-btn" class="nav-button" aria-label="Download Game" style="display: none;" title="Download Game History">↓ download</button>
-                        <!-- Global theme toggle -->
-                        <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
-                            <!-- Content is populated by script.js -->
-                        </button>
-                    </nav>
-                </div>
+                    <button id="confirm-move-btn" class="nav-button" aria-label="confirm move" style="display: none;" title="confirm move">confirm</button>
+                    <button id="clear-selection-btn" class="nav-button" aria-label="clear selection" style="display: none;" title="clear selection">clear</button>
+                    <button id="undo-btn" class="nav-button" aria-label="undo move" style="display: none;" title="undo move">undo</button>
+                    <button id="download-btn" class="nav-button" aria-label="download game" style="display: none;" title="download game history">download</button>
+                    <button id="help-btn" class="nav-button">? help</button>
+                    <button id="theme-toggle" class="theme-toggle nav-button" aria-label="toggle theme"></button>
+                </nav>
             </div>
         </div>
     </header>
 
     <main>
-        <div class="container">
-            <!-- Game Card -->
-            <div id="game-card" data-tile-theme="grass">
-                <div id="board-area"></div>
-            </div>
-
-            <button id="new-game-btn" class="fixed-new-game-btn">$ new game</button>
+        <div id="game-card" data-tile-theme="grass">
+            <div id="board-area"></div>
         </div>
+
+        <button id="new-game-btn" class="fixed-new-game-btn">new game</button>
     </main>
 
     <!-- Modals and Popovers -->
@@ -113,20 +108,19 @@
         </div>
     </div>
 
-    <div id="help-popover" style="display: none;">
-        <h2>strict continuous corner rules</h2>
+    <div id="help-popover">
+        <h3>how to play scc</h3>
         <p><strong>objective:</strong> be the last player to make a move.</p>
         <p><strong>corner pieces:</strong> only the rightmost piece in each row can be selected (highlighted with orange borders).</p>
         <p><strong>starting requirement:</strong> your selection must include either the topmost cell (first corner in sequence, with special glow) OR the bottommost cell (last corner in sequence, with special glow).</p>
         <p><strong>continuous rule:</strong> selected corners must form a contiguous sequence along the corner path. Corners are arranged in order from top-right to bottom-left, and you can only select consecutive corners in this sequence.</p>
         <p><strong>win condition:</strong> the player who makes the last move wins.</p>
-        <button id="close-help-btn">close</button>
     </div>
 
         <!-- Scripts -->
     <script src="config.js"></script>
     <script src="script.js"></script>
     <script src="database-utils.js"></script>
-    <script src="corner_king_script.js"></script>
+    <script src="scc_script.js"></script>
 </body>
 </html> 
