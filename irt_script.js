@@ -90,58 +90,7 @@ function generatePartition() {
   rowsInput.value = partition.join(' ');
 }
 
-// Game state management for undo functionality
-function saveGameState() {
-  if (!this.game) return;
-  
-  // Deep copy the current game state
-  const gameState = {
-    board: this.game.board.clone(),
-    turn: this.game.turn
-  };
-  
-  this.gameHistory.push(gameState);
-  this.updateUndoButton();
-}
 
-function undoMove() {
-  if (!this.game || this.gameHistory.length === 0 || !this.canUndo()) {
-    return;
-  }
-
-  // Restore the previous game state
-  const previousState = this.gameHistory.pop();
-  this.game.board = previousState.board;
-  this.game.turn = previousState.turn;
-  
-  // Redraw and update UI
-  this.draw();
-  this.updateStatus();
-  this.updateUndoButton();
-}
-
-function canUndo() {
-  return this.game && this.gameHistory.length > 0 && 
-         !this.game.isAiTurn() && !this.anim;
-}
-
-function updateUndoButton() {
-  if (!this.undoBtn) return;
-  
-  const canUndo = this.canUndo();
-  
-  if (this.game && this.gameHistory.length >= 0) {
-    this.undoBtn.style.display = 'flex';
-    this.undoBtn.disabled = !canUndo;
-  } else {
-    this.undoBtn.style.display = 'none';
-  }
-}
-
-function clearGameHistory() {
-  this.gameHistory = [];
-  this.updateUndoButton();
-}
 
 
   
@@ -292,23 +241,18 @@ class Game {
 // ────────────────────────────────────────────────────────────  
 // 4.  Sound helper  
 // ────────────────────────────────────────────────────────────  
-const Sound = {  
-  s:{},  
-  init(){ ["hover","remove","win","click"].forEach(id=>this.s[id]=document.getElementById(`sound-${id}`)); },  
-  play(id){ const a=this.s[id]; if(!a) return; a.currentTime=0; a.play().catch(()=>{}); }  
-};  
+  
   
 // ────────────────────────────────────────────────────────────  
 // 5.  GUI controller   (hover logic updated)  
 // ────────────────────────────────────────────────────────────  
 class RITGui {  
-  CELL=40; MARGIN=20; ANIM=350; AI_WAIT=650;
+  CELL=40; GAP=1; MARGIN=20; ANIM=350; AI_WAIT=650; // Small gap between tiles to prevent border overlap
   currentCellSize = this.CELL; // Dynamic cell size  
   
   constructor() {  
-    /* canvas & misc */  
-    this.canvas = document.getElementById("game-canvas");  
-    this.ctx    = this.canvas.getContext("2d");  
+    /* board & misc */  
+    this.boardArea = document.getElementById("board-area");  
     this.card   = document.getElementById("game-card");  
     this.status = document.getElementById("status-label");  
     this.dots   = document.getElementById("ai-thinking-indicator");  
@@ -321,20 +265,16 @@ class RITGui {
     this.aiSel  = document.getElementById("ai-select");  
     this.difficultySlider = document.getElementById("difficulty-slider");
     this.difficultyLabel = document.getElementById("difficulty-label");
-    this.themeSel=document.getElementById("theme-select");  
     this.themeT = document.getElementById("theme-toggle");  
-    this.undoBtn = document.getElementById("undo-btn");
 
     /* buttons */  
     document.getElementById("start-game-btn").onclick = ()=>this.start();  
     document.getElementById("play-again-btn").onclick = ()=>this.showSetup();  
     document.getElementById("new-game-btn").onclick   = ()=>this.showSetup();  
-    this.undoBtn.onclick = ()=>this.undoMove();
     document.getElementById("generate-partition-btn").onclick = ()=>this.generatePartition();
 
-    /* theme & help */  
-    this.themeT.onchange = ()=>this.toggleTheme();  
-    this.themeSel.onchange = ()=>this.applyTileTheme();
+        /* theme & help */  
+    this.themeT.onclick = ()=>this.toggleTheme();
     this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
     const helpBtn  = document.getElementById("help-btn");  
     const helpBtnModal = document.getElementById("help-btn-modal");
@@ -346,17 +286,17 @@ class RITGui {
       helpBtnModal.onmouseleave = ()=>helpPop.classList.remove("visible");
     }
   
-    /* canvas interaction */  
-    this.canvas.onmousemove = e=>this.hover(e);  
-    this.canvas.onmouseleave= ()=>this.clearHover();  
-    this.canvas.onclick     = ()=>this.tryHumanMove();  
+    /* board interaction */  
+    this.boardArea.onmousemove = e=>this.hover(e);  
+    this.boardArea.onmouseleave= ()=>this.clearHover();  
+    this.boardArea.onclick     = ()=>this.tryHumanMove();  
   
     /* state */  
     this.game=null; this.hoverMove=null; this.anim=false;  
     this.gameHistory = []; // Store previous game states for replay
   
     /* boot */  
-    this.initTheme(); Sound.init(); this.showSetup();
+    this.initTheme(); this.showSetup();
     
     // Add window resize listener for responsive cell sizing
     window.addEventListener('resize', () => {
@@ -383,14 +323,11 @@ class RITGui {
     // Database tracking
     this.movesSequence = [];
     this.gameStartTime = new Date();
-    this.saveGameState();
     this.draw(); this.updateStatus();  
-    this.updateUndoButton();
     if (this.game.isAiTurn()) this.aiTurn();
   }  
   aiTurn() {  
     this.dots.classList.add("thinking");  
-    this.updateUndoButton(); // Update undo button state during AI turn
     setTimeout(()=>{  
       const m=this.game.aiMove();  
       this.dots.classList.remove("thinking");  
@@ -402,8 +339,19 @@ class RITGui {
   hover(evt){  
     if(!this.game || this.game.isAiTurn() || this.anim) return;  
     const {x,y}=this.rel(evt);  
-    const r=Math.floor((y-this.MARGIN)/this.currentCellSize);  
-    const c=Math.floor((x-this.MARGIN)/this.currentCellSize);  
+    
+    // Calculate the same centerOffsetX as in draw() including gaps
+    const boardDataWidth = this.game.board.width() * this.currentCellSize + (this.game.board.width() - 1) * this.GAP;  
+    let boardWidth = this.MARGIN * 2 + boardDataWidth;
+    const minDimension = 480;
+    boardWidth = Math.max(boardWidth, minDimension);
+    const actualContentWidth = this.MARGIN * 2 + boardDataWidth;
+    const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+    
+    // Adjust coordinates for the centering offset and gaps
+    const adjustedX = x - centerOffsetX;
+    const r=Math.floor((y-this.MARGIN)/(this.currentCellSize + this.GAP));  
+    const c=Math.floor((adjustedX-this.MARGIN)/(this.currentCellSize + this.GAP));  
     let m=null;  
     if(r>=0 && r<this.game.board.height()){  
       const len=this.game.board.rows[r];  
@@ -418,7 +366,7 @@ class RITGui {
     if(JSON.stringify(m)!==JSON.stringify(this.hoverMove)){  
       this.hoverMove=m; this.highlight(m);  
     }  
-    this.canvas.classList.toggle("clickable",!!m);  
+    this.boardArea.classList.toggle("clickable",!!m);  
   }  
   tryHumanMove(){  
     if(this.game && !this.game.isAiTurn() && !this.anim && this.hoverMove)  
@@ -428,10 +376,7 @@ class RITGui {
   
   /* ---------- execute move ---------- */  
   execute(m){  
-    // Save the current state before making a move (for undo functionality)
-    this.saveGameState();
-    
-    this.anim=true; Sound.play("remove");  
+    this.anim=true; 
     const len=this.game.board.rows[m.r];  
     for(let c=m.newLen;c<len;c++)  
       document.getElementById(`t-${m.r}-${c}`)?.classList.add("removing");  
@@ -445,54 +390,61 @@ class RITGui {
       if(done){  
         // --- FIX: Save empty board state for replay ---
         this.gameHistory.push([]); // Add empty board after last move
-        Sound.play("win");  
         this.msg.textContent=`Player ${this.game.player()} wins!`;  
         this.overB.classList.add("visible");  
         this.storeGameInDatabase(this.game.player());
-        this.updateUndoButton();
       }else{  
         this.updateStatus();  
-        this.updateUndoButton();
         if(this.game.isAiTurn()) this.aiTurn();  
       }  
     }, this.ANIM);  
   }  
   
-  /* ---------- drawing ---------- */  
+    /* ---------- drawing ---------- */  
   draw(){  
-    this.card.querySelectorAll(".tile").forEach(t=>t.remove());  
+    this.clearBoard();
+    if (!this.game) return;
     
     // Dynamic cell sizing to prevent overflow
     this.calculateOptimalCellSize();
     
-    const w=this.MARGIN*2+this.game.board.width()*this.currentCellSize;  
-    const h=this.MARGIN*2+this.game.board.height()*this.currentCellSize;  
-    this.canvas.width=w; this.canvas.height=h;  
-    this.ctx.clearRect(0,0,w,h);  
-    this.ctx.strokeStyle=getComputedStyle(document.documentElement)  
-                         .getPropertyValue("--border-color").trim();  
-    this.ctx.lineWidth=1;  
-  
+    // Calculate actual content size including gaps
+    const boardDataWidth = this.game.board.width() * this.currentCellSize + (this.game.board.width() - 1) * this.GAP;  
+    const boardDataHeight = this.game.board.height() * this.currentCellSize + (this.game.board.height() - 1) * this.GAP;  
+    let boardWidth = this.MARGIN * 2 + boardDataWidth;
+    let boardHeight = this.MARGIN * 2 + boardDataHeight;
+    const minDimension = 480;
+    boardWidth = Math.max(boardWidth, minDimension);
+    boardHeight = Math.max(boardHeight, minDimension);
+    
+    // Calculate horizontal centering offset
+    const actualContentWidth = this.MARGIN * 2 + boardDataWidth;
+    const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+
     this.game.board.squares().forEach(({r,c})=>{  
-      const sx=this.MARGIN+c*this.currentCellSize+.5;  
-      const sy=this.MARGIN+r*this.currentCellSize+.5;  
-      this.ctx.strokeRect(sx,sy,this.currentCellSize,this.currentCellSize);  
-  
-      const d=document.createElement("div");  
-      d.className="tile"; d.id=`t-${r}-${c}`;  
-      d.style.width=d.style.height=`${this.currentCellSize}px`;  
-      d.style.left=`${this.canvas.offsetLeft+sx}px`;  
-      d.style.top =`${this.canvas.offsetTop +sy}px`;  
-      this.card.appendChild(d);  
+      const tile = document.createElement("div");  
+      tile.className="tile"; 
+      tile.id=`t-${r}-${c}`;  
+      tile.style.width = `${this.currentCellSize}px`;
+      tile.style.height = `${this.currentCellSize}px`;
+      tile.style.left = `${centerOffsetX + this.MARGIN + c * (this.currentCellSize + this.GAP)}px`;
+      tile.style.top = `${this.MARGIN + r * (this.currentCellSize + this.GAP)}px`;
+      this.boardArea.appendChild(tile);  
     });  
+    
+    this.boardArea.style.width = `${boardWidth}px`;
+    this.boardArea.style.height = `${boardHeight}px`;
+  }
+  
+  clearBoard() {
+    this.boardArea.querySelectorAll(".tile").forEach(t => t.remove());
   }  
   highlight(m){  
-    this.card.querySelectorAll(".tile").forEach(t=>t.classList.remove("highlighted"));  
+    this.boardArea.querySelectorAll(".tile").forEach(t=>t.classList.remove("highlighted"));  
     if(!m) return;  
     const len=this.game.board.rows[m.r];  
     for(let c=m.newLen;c<len;c++)  
       document.getElementById(`t-${m.r}-${c}`)?.classList.add("highlighted");  
-    Sound.play("hover");  
   }  
   
   /* ---------- misc helpers ---------- */  
@@ -500,21 +452,46 @@ class RITGui {
     const who=this.game.isAiTurn()?"Computer":"Human";  
     this.status.textContent=`Player ${this.game.player()} (${who}) to move`;  
   }  
-  rel(evt){ const r=this.canvas.getBoundingClientRect(); return {x:evt.clientX-r.left, y:evt.clientY-r.top}; }  
+  rel(evt){ const r=this.boardArea.getBoundingClientRect(); return {x:evt.clientX-r.left, y:evt.clientY-r.top}; }  
   
   /* theme */  
   initTheme(){  
-    const t=localStorage.getItem("theme")||"light";  
-    document.documentElement.setAttribute("data-theme",t);  
-    this.themeT.checked=(t==="dark");  
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    
+    // Initialize theme toggle button
+    const sunIcon = `<svg class="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+    const moonIcon = `<svg class="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    
+    if (savedTheme === "dark") {
+      this.themeT.innerHTML = sunIcon + "[light]";
+      this.themeT.setAttribute("aria-label", "Switch to light mode");
+    } else {
+      this.themeT.innerHTML = moonIcon + "[dark]";
+      this.themeT.setAttribute("aria-label", "Switch to dark mode");
+    }
   }  
   toggleTheme(){  
-    const t=this.themeT.checked?"dark":"light";  
-    document.documentElement.setAttribute("data-theme",t);  
-    localStorage.setItem("theme",t);  
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", newTheme);  
+    localStorage.setItem("theme", newTheme);
+    
+    // Update button content
+    const sunIcon = `<svg class="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+    const moonIcon = `<svg class="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    
+    if (newTheme === "dark") {
+      this.themeT.innerHTML = sunIcon + "[light]";
+      this.themeT.setAttribute("aria-label", "Switch to light mode");
+    } else {
+      this.themeT.innerHTML = moonIcon + "[dark]";
+      this.themeT.setAttribute("aria-label", "Switch to dark mode");
+    }
   }  
   applyTileTheme(){
-    this.card.setAttribute("data-tile-theme", this.themeSel.value);
+    // Default to grass theme since theme-select was removed
+    this.card.setAttribute("data-tile-theme", "grass");
   }
 
   // Random partition utility functions
@@ -608,54 +585,7 @@ class RITGui {
     rowsInput.value = partition.join(' ');
   }
 
-  // Game state management for undo functionality
-  saveGameState() {
-    if (!this.game) return;
-    // Save a deep copy of the current rows
-    this.gameHistory.push(this.game.board.rows.slice());
-  }
 
-  undoMove() {
-    if (!this.game || this.gameHistory.length === 0 || !this.canUndo()) {
-      return;
-    }
-
-    // Restore the previous game state
-    const previousState = this.gameHistory.pop();
-    this.game.board = new Board(previousState); // Create a new Board instance from the previous state
-    this.game.turn = previousState.length - 1; // Turn is based on the number of moves made
-    
-    // Remove the last move from the sequence
-    this.movesSequence.pop();
-    
-    // Redraw and update UI
-    this.draw();
-    this.updateStatus();
-    this.updateUndoButton();
-  }
-
-  canUndo() {
-    return this.game && this.gameHistory.length > 0 && 
-           !this.game.isAiTurn() && !this.anim;
-  }
-
-  updateUndoButton() {
-    if (!this.undoBtn) return;
-    
-    const canUndo = this.canUndo();
-    
-    if (this.game && this.gameHistory.length >= 0) {
-      this.undoBtn.style.display = 'flex';
-      this.undoBtn.disabled = !canUndo;
-    } else {
-      this.undoBtn.style.display = 'none';
-    }
-  }
-
-  clearGameHistory() {
-    this.gameHistory = [];
-    this.updateUndoButton();
-  }
   
   calculateOptimalCellSize() {
     if (!this.game) {
@@ -666,9 +596,9 @@ class RITGui {
     const boardWidth = this.game.board.width();
     const boardHeight = this.game.board.height();
     
-    // Calculate required canvas size with default cell size
-    const requiredWidth = this.MARGIN * 2 + boardWidth * this.CELL;
-    const requiredHeight = this.MARGIN * 2 + boardHeight * this.CELL;
+    // Calculate required canvas size with default cell size including gaps
+    const requiredWidth = this.MARGIN * 2 + boardWidth * this.CELL + (boardWidth - 1) * this.GAP;
+    const requiredHeight = this.MARGIN * 2 + boardHeight * this.CELL + (boardHeight - 1) * this.GAP;
     
     // Get actual available viewport space
     // Account for header (about 90px), padding (40px total), and some breathing room (40px)
@@ -692,7 +622,6 @@ class RITGui {
   showSetup(){ 
     this.overB.classList.remove("visible"); 
     this.setupB.classList.add("visible"); 
-    this.updateUndoButton(); // Update undo button when showing setup
     this.updateDifficultyLabel(); // Initialize difficulty label
   }
 

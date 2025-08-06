@@ -3,82 +3,72 @@
 <head>  
   <meta charset="UTF-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>RIT – Young-Diagram Game</title>  
+  <title>RIT Game | Partition Games</title>  
   
-  <!-- Google fonts -->  
+  <!-- Console-style monospace fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">  
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&display=swap" rel="stylesheet">  
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;800&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">  
   
-  <!-- Styles -->  
+  <!-- RIT Game-Specific Stylesheet (Self-contained) -->
   <link rel="stylesheet" href="irt_style.css">  
 </head>  
 <body>  
-  <!-- starry background -->  
-  <div id="stars-small"></div>  
-  <div id="stars-medium"></div>  
-  <div id="stars-large"></div>  
-  
-  <main id="app-container">  
-    <header>  
-      <div class="header-left">
-        <a href="index.html" class="home-btn" aria-label="Home">🏠</a>
-      </div>  
-      <div class="header-center">
-        <h1>RIT</h1>
-        <div class="header-status">
-          <p id="status-label">Loading…</p>  
-          <div id="ai-thinking-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>  
+  <!-- Unified Header from index.html -->
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="logo-section">
+            <a href="index.html" class="logo">partition-games</a>
+            <span class="game-title"> /RIT</span>
+          </div>
+        </div>
+        
+        <div class="header-center">
+          <div class="game-title-section">
+            <h1>RIT</h1>
+          </div>
+          <div class="status-container">
+            <p id="status-label">Loading...</p>
+            <div id="ai-thinking-indicator">
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <nav>
+            <!-- RIT specific controls integrated into the nav -->
+            <button id="help-btn" class="nav-button">? help</button>
+            <button id="cycle-theme-btn" class="nav-button" title="Click or Scroll to change theme">[tiles: 🔥]</button>
+            <!-- Global theme toggle -->
+            <button id="theme-toggle" class="theme-toggle nav-button" aria-label="Toggle theme">
+              <!-- Content is populated by script.js -->
+            </button>
+          </nav>
         </div>
       </div>
-      <div class="header-right">  
-        <label for="theme-select" class="theme-label">Tiles:</label>
-        <select id="theme-select" class="header-select">
-          <option value="grass">🌱 Grass</option>
-          <option value="stone">🪨 Stone</option>
-          <option value="ice">🧊 Ice</option>
-        </select>
-        <button id="undo-btn" class="icon-button" aria-label="Undo Move" style="display: none;" title="Undo Move">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-            <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
-          </svg>
-        </button>
-        <!-- help -->  
-        <button id="help-btn" aria-label="Help">  
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">  
-            <path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm.75 13.03a.75.75 0 10-1.5 0v.44a.75.75 0 101.5 0v-.44zm-1.406-7.222c-.302.123-.594.328-.843.602a.75.75 0 101.098 1.024c.076-.081.168-.148.28-.198.227-.104.532-.177.971-.177.456 0 .793.081 1.017.212.214.125.333.298.333.545 0 .288-.114.463-.395.661-.266.188-.68.37-1.272.603l-.011.004c-.594.235-1.164.518-1.605.932-.458.43-.693.978-.693 1.664v.122a.75.75 0 101.5 0v-.096c0-.247.114-.423.395-.607.266-.174.68-.358 1.272-.591l.012-.004c.594-.235 1.163-.518 1.604-.932.459-.432.694-.979.694-1.665 0-.8-.373-1.41-.992-1.8C13.216 7.267 12.458 7.06 11.72 7.06c-.74 0-1.326.124-1.676.248z" clip-rule="evenodd"/>  
-          </svg>  
-        </button>  
-        <!-- light / dark -->  
-        <div class="theme-switcher">
-          <span class="theme-icon sun">☀️</span>
-          <label class="switch">  
-            <input type="checkbox" id="theme-toggle">  
-            <span class="slider round"></span>  
-          </label>
-          <span class="theme-icon moon">🌙</span>
-        </div>
-      </div>
-    </header>  
-  
-    <div id="game-card">  
-      <canvas id="game-canvas"></canvas>  
-    </div>  
+    </div>
+  </header>
 
-    <!-- Fixed New Game Button -->
-    <button id="new-game-btn" class="fixed-new-game-btn">New Game</button>
-  </main>  
-  
+  <main>
+    <div class="container">
+      <!-- Game Card -->
+      <div id="game-card" data-tile-theme="grass">
+        <div id="board-area"></div>
+      </div>
+
+      <button id="new-game-btn" class="fixed-new-game-btn">$ new game</button>
+    </div>
+  </main>
+
   <!-- setup modal -->  
   <div id="setup-modal-backdrop" class="modal-backdrop">  
     <div class="modal">  
       <div class="modal-header">
         <h2>Game Setup</h2>
-        <button id="help-btn-modal" class="icon-button" aria-label="Help">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">  
-            <path fill-rule="evenodd" d="M12 2.25A9.75 9.75 0 1021.75 12 9.762 9.762 0 0012 2.25zM12 18a.937.937 0 01-.938-.938.938.938 0 011.876 0A.938.937 0 0112 18zm1.434-3.876a.937.937 0 01-1.868-.372c.17-.852.683-1.323 1.284-1.877.61-.561 1.242-1.143 1.242-2.397 0-1.209-.974-2.187-2.192-2.187-1.1 0-1.954.53-2.378 1.417a.937.937 0 11-1.687-.802C8.299 6.44 9.86 5.25 11.896 5.25c2.27 0 4.06 1.774 4.06 4.062 0 2.046-1.2 3.089-2.018 3.838-.543.499-.809.746-.904 1.0z" clip-rule="evenodd"/>  
-          </svg> 
-        </button>
+        <button id="help-btn-modal" class="icon-button" aria-label="Help">[?]</button>
       </div>
       <p>Enter the partition of the initial Young-diagram.</p>  
 
@@ -90,35 +80,32 @@
       <label for="partition-type-select">Or, generate a partition:</label>
       <div class="input-group">
         <select id="partition-type-select" class="partition-type-dropdown">
-          <option value="random">Random</option>
-          <option value="staircase">Staircase</option>
-          <option value="rectangle">Rectangle</option>
-          <option value="square">Square</option>
-          <option value="hook">Hook</option>
-          <option value="triangle">Triangle</option>
+          <option value="random">random</option>
+          <option value="staircase">staircase</option>
+          <option value="rectangle">rectangle</option>
+          <option value="square">square</option>
+          <option value="hook">hook</option>
+          <option value="triangle">triangle</option>
         </select>
         <input type="number" id="partition-number-input" placeholder="e.g., 25">
-        <button id="generate-partition-btn">Generate</button>
+        <button id="generate-partition-btn">generate</button>
       </div>
-      
       <hr>
-
-      <label for="ai-select">Computer Player</label>  
-      <select id="ai-select">  
-        <option value="B">Player B (Starts Second)</option>  
-        <option value="A">Player A (Starts First)</option>  
-        <option value="None">None (Two Human Players)</option>  
-      </select>  
-
+      <label for="ai-select">Computer Player</label>
+      <select id="ai-select">
+        <option value="B">Bob (Starts Second)</option>
+        <option value="A">Alice (Starts First)</option>
+        <option value="None">None (Two Human Players)</option>
+      </select>
       <label for="difficulty-slider">AI Difficulty: <span id="difficulty-label">Medium (50)</span></label>
       <div class="slider-container">
         <input type="range" id="difficulty-slider" min="1" max="100" value="50" class="difficulty-range">
-      </div>  
-
-      <button id="start-game-btn" class="modal-btn">Start Game</button>  
+      </div>
+      <hr>
+      <button id="start-game-btn" class="modal-btn">start game</button>
     </div>  
   </div>  
-  
+
   <!-- game-over modal -->  
   <div id="game-over-modal-backdrop" class="modal-backdrop">  
     <div class="modal">  
@@ -127,29 +114,24 @@
       <button id="download-btn" class="icon-button" aria-label="Download Game" title="Download Game History" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/></svg> Download
       </button>
-      <button id="play-again-btn" class="modal-btn">Play Again</button>  
+      <button id="play-again-btn" class="modal-btn">play again</button>  
     </div>  
   </div>  
-  
-  <!-- help pop-over -->  
+
+  <!-- help popover -->  
   <div id="help-popover">  
-    <h3>Rules (RIT)</h3>  
-    <p>• The diagram is a left-justified stack of rows (a Young diagram).<br>  
-       • On your turn pick any row whose length is <em>at least</em> the length of the row directly underneath (if such a row exists).<br>  
-       • Remove one or more blocks from the <em>right end</em> of that row, leaving <em>at least&nbsp;one</em> block behind.<br>  
-       • The player that removes the last remaining block anywhere on the board wins.</p>  
+    <h3>How to Play</h3>  
+    <p>RIT is a Young-diagram game where players take turns removing cells from a partition.</p>  
+    <ul>  
+      <li>Click on a cell to remove it and all cells to its right and below</li>  
+      <li>The player who removes the last cell wins</li>  
+      <li>You can only remove cells that are not isolated</li>  
+    </ul>  
   </div>  
+
   
-  <!-- UI sounds (royalty-free) -->  
-  <audio id="sound-hover"  src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-mystery-alert-234.mp3" preload="auto"></audio>  
-  <audio id="sound-remove" src="https://assets.mixkit.co/sfx/preview/mixkit-click-error-1110.mp3" preload="auto"></audio>  
-  <audio id="sound-win"    src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-bonus-alert-767.mp3" preload="auto"></audio>  
-  <audio id="sound-click"  src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" preload="auto"></audio>  
-  
-    <!-- logic -->
-  <script src="config.js"></script>
-  <script src="script.js"></script>
-  <script src="database-utils.js"></script>
+
+  <!-- Scripts -->  
   <script src="irt_script.js"></script>  
 </body>  
 </html>  
