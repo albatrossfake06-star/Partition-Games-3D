@@ -292,11 +292,12 @@ const Sound = {
 class CRITGui {  
   CELL=40; MARGIN=20; ANIM=350; AI_WAIT=650;
   currentCellSize = this.CELL; // Dynamic cell size  
+  GAP = 1; // Gap between tiles
   
   constructor() {  
     /* canvas & misc */  
     this.canvas = document.getElementById("game-canvas");  
-    this.ctx    = this.canvas.getContext("2d");  
+    this.ctx    = this.canvas?.getContext("2d");  
     this.card   = document.getElementById("game-card");  
     this.status = document.getElementById("status-label");  
     this.dots   = document.getElementById("ai-thinking-indicator");  
@@ -309,16 +310,34 @@ class CRITGui {
     this.aiSel  = document.getElementById("ai-select");  
     this.difficultySlider = document.getElementById("difficulty-slider");
     this.difficultyLabel = document.getElementById("difficulty-label");
-    this.themeSel=document.getElementById("theme-select");  
+    this.themeSel = document.getElementById("theme-select"); // May not exist in CRIT
     this.themeT = document.getElementById("theme-toggle");  
     this.undoBtn = document.getElementById("undo-btn");
 
     /* buttons */  
-    document.getElementById("start-game-btn").onclick = ()=>this.start();  
-    document.getElementById("play-again-btn").onclick = ()=>this.showSetup();  
-    document.getElementById("new-game-btn").onclick   = ()=>this.showSetup();  
-    this.undoBtn.onclick = ()=>this.undoMove();
-    document.getElementById("generate-partition-btn").onclick = ()=>this.generatePartition();
+    const startGameBtn = document.getElementById("start-game-btn");
+    if (startGameBtn) {
+      startGameBtn.onclick = ()=>this.start();
+    }
+    
+    const playAgainBtn = document.getElementById("play-again-btn");
+    if (playAgainBtn) {
+      playAgainBtn.onclick = ()=>this.showSetup();
+    }
+    
+    const newGameBtn = document.getElementById("new-game-btn");
+    if (newGameBtn) {
+      newGameBtn.onclick = ()=>this.showSetup();
+    }
+    
+    if (this.undoBtn) {
+      this.undoBtn.onclick = ()=>this.undoMove();
+    }
+    
+    const generatePartitionBtn = document.getElementById("generate-partition-btn");
+    if (generatePartitionBtn) {
+      generatePartitionBtn.onclick = ()=>this.generatePartition();
+    }
 
     // Download button
     const downloadBtn = document.getElementById("download-btn");
@@ -327,23 +346,38 @@ class CRITGui {
     }
 
     /* theme & help */  
-    this.themeT.onchange = ()=>this.toggleTheme();  
-    this.themeSel.onchange = ()=>this.applyTileTheme();
-    this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
+    if (this.themeT) {
+      this.themeT.onchange = ()=>this.toggleTheme();
+    }
+    
+    if (this.themeSel) {
+      this.themeSel.onchange = ()=>this.applyTileTheme();
+    }
+    
+    if (this.difficultySlider) {
+      this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
+    }
+    
     const helpBtn  = document.getElementById("help-btn");  
     const helpBtnModal = document.getElementById("help-btn-modal");
     const helpPop  = document.getElementById("help-popover");  
-    helpBtn.onmouseenter = ()=>helpPop.classList.add("visible");  
-    helpBtn.onmouseleave = ()=>helpPop.classList.remove("visible");
-    if (helpBtnModal) {
+    
+    if (helpBtn && helpPop) {
+      helpBtn.onmouseenter = ()=>helpPop.classList.add("visible");  
+      helpBtn.onmouseleave = ()=>helpPop.classList.remove("visible");
+    }
+    
+    if (helpBtnModal && helpPop) {
       helpBtnModal.onmouseenter = ()=>helpPop.classList.add("visible");  
       helpBtnModal.onmouseleave = ()=>helpPop.classList.remove("visible");
     }
   
-    /* canvas interaction */  
-    this.canvas.onmousemove = e=>this.hover(e);  
-    this.canvas.onmouseleave = e=>this.clearHover();  
-    this.canvas.onclick = e=>this.tryHumanMove();  
+    /* canvas interaction - now using card for mouse events */  
+    if (this.card) {
+      this.card.onmousemove = e=>this.hover(e);  
+      this.card.onmouseleave = e=>this.clearHover();  
+      this.card.onclick = e=>this.tryHumanMove();
+    }
   
     /* state */  
     this.game = null; this.anim = false; this.hoverMove = null;
@@ -351,6 +385,10 @@ class CRITGui {
   
     /* start */  
     Sound.init(); this.initTheme(); this.showSetup();  
+  }
+
+  clearBoard() {
+    this.card.querySelectorAll(".tile").forEach(t => t.remove());
   }
 
   // Game state management for undo functionality
@@ -416,7 +454,14 @@ class CRITGui {
   }
 
   /* modal control */  
-  showSetup() { this.setupB.classList.add("visible"); this.clearGameHistory(); }  
+  showSetup() { 
+    // Hide game over modal first if it's visible
+    if (this.overB) {
+      this.overB.classList.remove("visible");
+    }
+    this.setupB.classList.add("visible"); 
+    this.clearGameHistory(); 
+  }  
   hideSetup() { this.setupB.classList.remove("visible"); }  
   showOver()  { this.overB.classList.add("visible"); }  
   hideOver()  { this.overB.classList.remove("visible"); }  
@@ -455,9 +500,15 @@ class CRITGui {
     
     let m = null;
     
+    // Calculate horizontal centering offset to match draw method
+    const boardDataWidth = this.game.board.width() * this.currentCellSize + (this.game.board.width() - 1) * this.GAP;  
+    const boardWidth = Math.max(this.MARGIN * 2 + boardDataWidth, 480);
+    const actualContentWidth = this.MARGIN * 2 + boardDataWidth;
+    const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+    
     // Check for row moves first
     const r=Math.floor((y-this.MARGIN)/this.currentCellSize);  
-    const c=Math.floor((x-this.MARGIN)/this.currentCellSize);  
+    const c=Math.floor((x-centerOffsetX-this.MARGIN)/(this.currentCellSize + this.GAP));  
     
     if(r>=0 && r<this.game.board.height()){  
       const len=this.game.board.rows[r];  
@@ -498,7 +549,7 @@ class CRITGui {
     if(JSON.stringify(m)!==JSON.stringify(this.hoverMove)){  
       this.hoverMove=m; this.highlight(m);  
     }  
-    this.canvas.classList.toggle("clickable",!!m);  
+    this.card.classList.toggle("clickable",!!m);  
   }  
   
   tryHumanMove(){  
@@ -559,32 +610,39 @@ class CRITGui {
   
   /* drawing */  
   draw(){  
-    this.card.querySelectorAll(".tile").forEach(t=>t.remove());  
+    this.clearBoard();
+    if (!this.game) return;
     
     // Dynamic cell sizing to prevent overflow
     this.calculateOptimalCellSize();
     
-    const w=this.MARGIN*2+this.game.board.width()*this.currentCellSize;  
-    const h=this.MARGIN*2+this.game.board.height()*this.currentCellSize;  
-    this.canvas.width=w; this.canvas.height=h;  
-    this.ctx.clearRect(0,0,w,h);  
-    this.ctx.strokeStyle=getComputedStyle(document.documentElement)  
-                         .getPropertyValue("--border-color").trim();  
-    this.ctx.lineWidth=1;  
-  
+    // Calculate actual content size including gaps
+    const boardDataWidth = this.game.board.width() * this.currentCellSize + (this.game.board.width() - 1) * this.GAP;  
+    const boardDataHeight = this.game.board.height() * this.currentCellSize + (this.game.board.height() - 1) * this.GAP;  
+    let boardWidth = this.MARGIN * 2 + boardDataWidth;
+    let boardHeight = this.MARGIN * 2 + boardDataHeight;
+    const minDimension = 480;
+    boardWidth = Math.max(boardWidth, minDimension);
+    boardHeight = Math.max(boardHeight, minDimension);
+    
+    // Calculate horizontal centering offset
+    const actualContentWidth = this.MARGIN * 2 + boardDataWidth;
+    const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+
     this.game.board.squares().forEach(({r,c})=>{  
-      const sx=this.MARGIN+c*this.currentCellSize+.5;  
-      const sy=this.MARGIN+r*this.currentCellSize+.5;  
-      this.ctx.strokeRect(sx,sy,this.currentCellSize,this.currentCellSize);  
-  
-      const d=document.createElement("div");  
-      d.className="tile"; d.id=`t-${r}-${c}`;  
-      d.style.width=d.style.height=`${this.currentCellSize}px`;  
-      d.style.left=`${this.canvas.offsetLeft+sx}px`;  
-      d.style.top =`${this.canvas.offsetTop +sy}px`;  
-      this.card.appendChild(d);  
+      const tile = document.createElement("div");  
+      tile.className="tile"; 
+      tile.id=`t-${r}-${c}`;  
+      tile.style.width = `${this.currentCellSize}px`;
+      tile.style.height = `${this.currentCellSize}px`;
+      tile.style.left = `${centerOffsetX + this.MARGIN + c * (this.currentCellSize + this.GAP)}px`;
+      tile.style.top = `${this.MARGIN + r * (this.currentCellSize + this.GAP)}px`;
+      this.card.appendChild(tile);  
     });  
-  }  
+    
+    this.card.style.width = `${boardWidth}px`;
+    this.card.style.height = `${boardHeight}px`;
+  }
   
   highlight(m){  
     this.card.querySelectorAll(".tile").forEach(t=>t.classList.remove("highlighted"));  
@@ -631,7 +689,7 @@ class CRITGui {
     const who=this.game.isAiTurn()?"Computer":"Human";  
     this.status.textContent=`Player ${this.game.player()} (${who}) to move - Row or Column`;  
   }  
-  rel(evt){ const r=this.canvas.getBoundingClientRect(); return {x:evt.clientX-r.left, y:evt.clientY-r.top}; }  
+  rel(evt){ const r=this.card.getBoundingClientRect(); return {x:evt.clientX-r.left, y:evt.clientY-r.top}; }  
   
   /* theme */  
   initTheme(){  
@@ -645,7 +703,9 @@ class CRITGui {
     localStorage.setItem("crit-theme",t);  
   }  
   applyTileTheme(){
-    this.card.setAttribute("data-tile-theme", this.themeSel.value);
+    if (this.themeSel && this.card) {
+      this.card.setAttribute("data-tile-theme", this.themeSel.value);
+    }
   }
 
   // Partition generation methods
