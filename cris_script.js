@@ -66,6 +66,7 @@ class Fragment{
     this.grid=grid;this.rows=grid.length;  
     this.cols=this.rows?grid[0].length:0;  
     this.x=x;this.y=y;  
+    this.partitionId = 0; // NEW: partition ID for move notation
   }  
   rowsAlive(){const a=[];for(let r=0;r<this.rows;r++)if(this.grid[r].some(v=>v))a.push(r);return a;}  
   colsAlive(){  
@@ -134,12 +135,25 @@ class Fragment{
 }  
   
 class GameState{  
-  constructor(rowSizes){this.fragments=[Fragment.fromRowSizes(rowSizes)];this.player=Player.RED;}  
+  constructor(rowSizes){
+    const f = Fragment.fromRowSizes(rowSizes);
+    f.partitionId = 1; // initial fragment is P1
+    this.fragments = [f];
+    this.nextPartitionId = 2; // counter for future partitions
+    this.player=Player.RED;
+  }  
   hasMoves(){return this.fragments.some(f=>f.hasMoves());}  
   performMove(fIdx,kind,lineIdx){  
     const frag=this.fragments[fIdx],originalX=frag.x,originalY=frag.y;  
     if(kind==='row')frag.deleteRow(lineIdx);else frag.deleteCol(lineIdx);  
     const newFrags=frag.splitIntoFragments();  
+  
+    // give each newborn fragment its own id  
+    if(newFrags.length){  
+      newFrags.forEach(nf=>{  
+        nf.partitionId = this.nextPartitionId++;  
+      });  
+    }  
   
     if(newFrags.length>1){  
       if(kind==='row'){  
@@ -304,16 +318,25 @@ class CRIM_GUI{
   saveGameState(){  
     if(!this.state)return;  
     const fragmentsCopy=this.state.fragments.map(f=>{  
-      const g=f.grid.map(row=>[...row]);return new Fragment(g,f.x,f.y);  
+      const g=f.grid.map(row=>[...row]);
+      const clone = new Fragment(g,f.x,f.y);
+      clone.partitionId = f.partitionId; // NEW
+      return clone;
     });  
-    this.gameHistory.push({fragments:fragmentsCopy,player:this.state.player});  
+    this.gameHistory.push({
+      fragments:fragmentsCopy,
+      player:this.state.player,
+      nextPid: this.state.nextPartitionId // NEW
+    });  
     this.updateDownloadButton();
   }  
   undoMove(){  
     if(!this.canUndo())return;  
     SoundManager.play('click');  
     const prev=this.gameHistory.pop();  
-    this.state.fragments=prev.fragments;this.state.player=prev.player;
+    this.state.fragments=prev.fragments;
+    this.state.player=prev.player;
+    this.state.nextPartitionId= prev.nextPid; // NEW
     // Remove the last move from the sequence
     this.movesSequence.pop();
     this.redraw();  
@@ -444,8 +467,12 @@ class CRIM_GUI{
     SoundManager.play('click');  
     ev.currentTarget.classList.add(info.kind==='row'?'row-win':'col-win');  
     setTimeout(()=>{  
-      // Track the move
-      this.movesSequence.push(info.kind === 'row' ? `R${info.index}` : `C${info.index}`);
+      // BEFORE executing the move, capture the partition id
+      const pid = this.state.fragments[info.frag].partitionId;
+      const token = info.kind==='row'
+        ? `R${info.index} (P${pid})`
+        : `C${info.index} (P${pid})`;
+      this.movesSequence.push(token); // now full notation
       
       this.state.performMove(info.frag,info.kind,info.index);  
       if(!this.state.hasMoves()){  
@@ -519,7 +546,14 @@ window.addEventListener('load',()=>{
   
 /* ────────────────────  DOWNLOAD  ──────────────────── */  
 function cloneFrag(f){  
-  return{rows:f.rows,cols:f.cols,grid:f.grid.map(r=>[...r])};  
+  return{
+    rows:f.rows,
+    cols:f.cols,
+    x:f.x,
+    y:f.y,
+    partitionId : f.partitionId, // NEW
+    grid:f.grid.map(r=>[...r])
+  };  
 }  
   
 function downloadGame(){  

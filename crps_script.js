@@ -80,6 +80,7 @@ class Fragment{
     this.grid=grid;this.rows=grid.length;  
     this.cols=this.rows?grid[0].length:0;  
     this.x=x;this.y=y;  
+    this.partitionId = 0; // NEW: partition ID for move notation
   }  
   rowsAlive(){const a=[];for(let r=0;r<this.rows;r++)if(this.grid[r].some(v=>v))a.push(r);return a;}  
   colsAlive(){  
@@ -149,7 +150,10 @@ class Fragment{
   
 class GameState{  
   constructor(rowSizes){
-    this.fragments=[Fragment.fromRowSizes(rowSizes)];
+    const f = Fragment.fromRowSizes(rowSizes);
+    f.partitionId = 1; // initial fragment is P1
+    this.fragments = [f];
+    this.nextPartitionId = 2; // counter for future partitions
     this.player=Player.RED;
   }  
   hasMoves(){
@@ -170,6 +174,13 @@ class GameState{
     const frag=this.fragments[fIdx],originalX=frag.x,originalY=frag.y;  
     if(kind==='row')frag.deleteRow(lineIdx);else frag.deleteCol(lineIdx);  
     const newFrags=frag.splitIntoFragments();  
+  
+    // give each newborn fragment its own id  
+    if(newFrags.length){  
+      newFrags.forEach(nf=>{  
+        nf.partitionId = this.nextPartitionId++;  
+      });  
+    }  
   
     if(newFrags.length>1){  
       if(kind==='row'){  
@@ -399,12 +410,15 @@ class CRPS_GUI{
     // Create a deep copy of the current game state
     const fragmentsCopy = this.state.fragments.map(f => {
       const gridCopy = f.grid.map(row => [...row]);
-      return new Fragment(gridCopy, f.x, f.y);
+      const clone = new Fragment(gridCopy, f.x, f.y);
+      clone.partitionId = f.partitionId; // NEW
+      return clone;
     });
     
     this.gameHistory.push({
       fragments: fragmentsCopy,
       player: this.state.player,
+      nextPid: this.state.nextPartitionId, // NEW
       timestamp: Date.now()
     });
     this.updateUndoButton();  
@@ -417,6 +431,7 @@ class CRPS_GUI{
     // Restore the previous state
     this.state.fragments = prev.fragments;
     this.state.player = prev.player;
+    this.state.nextPartitionId= prev.nextPid; // NEW
     
     // Remove the last move from the sequence
     this.movesSequence.pop();
@@ -534,8 +549,12 @@ class CRPS_GUI{
     SoundManager.play('click');  
     ev.currentTarget.classList.add(info.kind==='row'?'row-win':'col-win');  
     setTimeout(()=>{  
-      // Track the move
-      this.movesSequence.push(info.kind === 'row' ? `R${info.index}` : `C${info.index}`);
+      // BEFORE executing the move, capture the partition id
+      const pid = this.state.fragments[info.frag].partitionId;
+      const token = info.kind==='row'
+        ? `R${info.index} (P${pid})`
+        : `C${info.index} (P${pid})`;
+      this.movesSequence.push(token); // now full notation
       
       this.state.performMove(info.frag,info.kind,info.index);  
       if(!this.state.hasMoves()){  
