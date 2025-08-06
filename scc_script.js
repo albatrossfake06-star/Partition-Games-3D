@@ -615,6 +615,7 @@ class GameUI {
             // Initialize database tracking
             this.movesSequence = [];
             this.gameStartTime = new Date();
+            this.initialPartition = [...rows]; // Store initial partition
             
             this.hideSetupModal();
             this.hideGameOverModal();
@@ -1049,7 +1050,7 @@ class GameUI {
             if (window.DatabaseUtils) {
                 await window.DatabaseUtils.storeGameInDatabase(
                     'SCC',
-                    this.game.board.rows,
+                    this.initialPartition,
                     this.movesSequence,
                     winner && winner.charAt(0),
                     this.gameStartTime

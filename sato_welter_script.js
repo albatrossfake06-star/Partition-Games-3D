@@ -325,6 +325,7 @@ class SatoWelterGui {
         // Initialize database tracking
         this.movesSequence = [];
         this.gameStartTime = new Date();
+        this.initialPartition = [...rows]; // Store initial partition
         this.redrawBoard();
         this.updateStatus();
         this.updateUndoButton();
@@ -427,13 +428,14 @@ class SatoWelterGui {
         // Track the move
         this.movesSequence.push(`R${r}C${c}`);
         
+        const mover = this.game.currentPlayer; // Player who is about to move
         const finished = this.game.makeMove(r, c);
         this.isAnimating = false;
         if (finished) {
             SoundManager.play('win');
-            this.gameOverMessage.textContent = `Player ${this.game.currentPlayer} wins!`;
+            this.gameOverMessage.textContent = `Player ${mover} wins!`;
             this.gameOverModal.classList.add('visible');
-            this.storeGameInDatabase(this.game.currentPlayer);
+            this.storeGameInDatabase(mover);
             this.redrawBoard();
             this.updateUndoButton();
             this.updateDownloadButton();
@@ -771,7 +773,7 @@ class SatoWelterGui {
             if (window.DatabaseUtils) {
                 await window.DatabaseUtils.storeGameInDatabase(
                     'SATO',
-                    this.game.getBoard().getRowSizes(),
+                    this.initialPartition,
                     this.movesSequence,
                     winner && winner.charAt(0),
                     this.gameStartTime

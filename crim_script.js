@@ -622,6 +622,7 @@ class ProLCTRGui {
         // Initialize database tracking
         this.movesSequence = [];
         this.gameStartTime = new Date();
+        this.initialPartition = [...rows]; // Store initial partition
         this.redrawBoard(); 
         this.updateStatus(); 
         this.updateUndoButton();
@@ -1093,7 +1094,7 @@ class ProLCTRGui {
             if (window.DatabaseUtils) {
                 await window.DatabaseUtils.storeGameInDatabase(
                     'CRIM',
-                    this.game.board.getRows(),
+                    this.initialPartition,
                     this.movesSequence,
                     winner && winner.charAt(0),
                     this.gameStartTime

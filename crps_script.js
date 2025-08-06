@@ -354,6 +354,7 @@ class CRPS_GUI{
       // Initialize database tracking
       this.movesSequence = [];
       this.gameStartTime = new Date();
+      this.initialPartition = [...nums]; // Store initial partition
       this.updateStatus();
       this.updateUndoButton();  
     }catch{alert('Please enter positive integers separated by spaces.');}  
@@ -998,7 +999,7 @@ window.addEventListener('load', initReplay);
       if (window.DatabaseUtils) {
         await window.DatabaseUtils.storeGameInDatabase(
           'CRPS',
-          this.state.fragments[0] ? this.state.fragments[0].getRows() : [],
+          this.initialPartition,
           this.movesSequence,
           winner && winner.charAt(0),
           this.gameStartTime

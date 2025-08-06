@@ -270,6 +270,7 @@ class CRIM_GUI{
       // Initialize database tracking
       this.movesSequence = [];
       this.gameStartTime = new Date();
+      this.initialPartition = [...nums]; // Store initial partition
       this.updateUndoButton();
       this.updateDownloadButton();
       const playerLetter=this.getLetterFromPlayer(this.state.player);  
@@ -489,7 +490,7 @@ class CRIM_GUI{
       if (window.DatabaseUtils) {
         await window.DatabaseUtils.storeGameInDatabase(
           'CRIS',
-          this.state.fragments[0] ? this.state.fragments[0].getRows() : [],
+          this.initialPartition,
           this.movesSequence,
           winner && winner.charAt(0),
           this.gameStartTime

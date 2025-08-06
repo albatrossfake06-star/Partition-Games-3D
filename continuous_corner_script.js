@@ -535,6 +535,7 @@ class ContinuousCornerGui {
         // Initialize database tracking
         this.movesSequence = [];
         this.gameStartTime = new Date();
+        this.initialPartition = [...rows]; // Store initial partition
         
         // Reset selection state
         this.exitSelectionMode();
@@ -841,7 +842,7 @@ class ContinuousCornerGui {
             // Add final empty state to history
             this.gameHistory.push('[]');
             SoundManager.play('win');
-            const winner = this.game.currentPlayer;
+            const winner = this.game.currentPlayer; // Current player is the winner when game is over
             this.storeGameInDatabase(winner);
             
             if (this.gameOverMessage) {
@@ -1104,7 +1105,7 @@ class ContinuousCornerGui {
             if (window.DatabaseUtils) {
                 await window.DatabaseUtils.storeGameInDatabase(
                     'CCORN',
-                    this.game.board.rows,
+                    this.initialPartition,
                     this.movesSequence,
                     winner && winner.charAt(0),
                     this.gameStartTime
