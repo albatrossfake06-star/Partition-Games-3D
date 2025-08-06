@@ -390,39 +390,71 @@ class GameUI {
     }
 
     initializeElements() {
-        this.boardArea = document.getElementById('board-area');
-        this.statusLabel = document.getElementById('status-label');
-        this.aiThinkingIndicator = document.getElementById('ai-thinking-indicator');
-        
-        this.setupModal = document.getElementById('setup-modal-backdrop');
-        this.gameOverModal = document.getElementById('game-over-modal-backdrop');
-        this.gameOverMessage = document.getElementById('game-over-message');
-        this.helpPopover = document.getElementById('help-popover');
-        
-        this.rowsInput = document.getElementById('rows-input');
-        this.aiSelect = document.getElementById('ai-select');
-        this.difficultySlider = document.getElementById('difficulty-slider');
-        this.difficultyLabel = document.getElementById('difficulty-label');
-        
-        this.gameCard = document.getElementById('game-card');
-        this.themeToggle = document.getElementById('theme-toggle');
-        this.cycleThemeBtn = document.getElementById('cycle-theme-btn');
-        this.undoBtn = document.getElementById('undo-btn');
-        this.downloadBtn = document.getElementById('download-btn');
+        try {
+            this.boardArea = document.getElementById('board-area');
+            this.statusLabel = document.getElementById('status-label');
+            this.aiThinkingIndicator = document.getElementById('ai-thinking-indicator');
+            
+            this.setupModal = document.getElementById('setup-modal-backdrop');
+            this.gameOverModal = document.getElementById('game-over-modal-backdrop');
+            this.gameOverMessage = document.getElementById('game-over-message');
+            this.helpPopover = document.getElementById('help-popover');
+            
+            this.rowsInput = document.getElementById('rows-input');
+            this.aiSelect = document.getElementById('ai-select');
+            this.difficultySlider = document.getElementById('difficulty-slider');
+            this.difficultyLabel = document.getElementById('difficulty-label');
+            
+            this.gameCard = document.getElementById('game-card');
+            this.themeToggle = document.getElementById('theme-toggle');
+            this.undoBtn = document.getElementById('undo-btn');
+            this.downloadBtn = document.getElementById('download-btn');
+            
+            // Set initial status if status label exists
+            if (this.statusLabel) {
+                this.statusLabel.textContent = 'Click "New Game" to start';
+            }
+        } catch (error) {
+            console.error('Error initializing SCC GUI elements:', error);
+            const statusLabel = document.getElementById('status-label');
+            if (statusLabel) {
+                statusLabel.textContent = 'Error loading game. Please refresh the page.';
+            }
+        }
     }
 
     bindEvents() {
         // Game controls
-        document.getElementById('new-game-btn').addEventListener('click', () => this.showSetupModal());
-        document.getElementById('start-game-btn').addEventListener('click', () => this.startGame());
-        document.getElementById('play-again-btn').addEventListener('click', () => this.playAgain());
+        const newGameBtn = document.getElementById('new-game-btn');
+        if (newGameBtn) {
+            newGameBtn.addEventListener('click', () => this.showSetupModal());
+        }
+        
+        const startGameBtn = document.getElementById('start-game-btn');
+        if (startGameBtn) {
+            startGameBtn.addEventListener('click', () => this.startGame());
+        }
+        
+        const playAgainBtn = document.getElementById('play-again-btn');
+        if (playAgainBtn) {
+            playAgainBtn.addEventListener('click', () => this.playAgain());
+        }
         
         // Board interaction
-        this.boardArea.addEventListener('click', (e) => this.handleBoardClick(e));
+        if (this.boardArea) {
+            this.boardArea.addEventListener('click', (e) => this.handleBoardClick(e));
+        }
         
-        // Move controls
-        document.getElementById('confirm-move-btn').addEventListener('click', () => this.confirmMove());
-        document.getElementById('clear-selection-btn').addEventListener('click', () => this.clearSelection());
+        // Selection controls (now inside game card)
+        const confirmSelectionBtn = document.getElementById('confirm-selection-btn');
+        if (confirmSelectionBtn) {
+            confirmSelectionBtn.addEventListener('click', () => this.confirmMove());
+        }
+        
+        const clearSelectionBtn = document.getElementById('clear-selection-btn');
+        if (clearSelectionBtn) {
+            clearSelectionBtn.addEventListener('click', () => this.clearSelection());
+        }
         
         // Undo and download
         if (this.undoBtn) {
@@ -436,20 +468,32 @@ class GameUI {
         if (this.themeToggle) {
             this.themeToggle.addEventListener('click', () => this.toggleDarkMode());
         }
-        if (this.cycleThemeBtn) {
-            this.cycleThemeBtn.addEventListener('click', () => this.cycleTileTheme());
-        }
         
         // Help
-        document.getElementById('help-btn').addEventListener('click', () => this.showHelp());
-        document.getElementById('help-btn-modal').addEventListener('click', () => this.showHelp());
-        document.getElementById('close-help-btn').addEventListener('click', () => this.hideHelp());
+        const helpBtn = document.getElementById('help-btn');
+        const helpBtnModal = document.getElementById('help-btn-modal');
+        const helpPopover = document.getElementById('help-popover');
+        
+        if (helpBtn && helpPopover) {
+            helpBtn.addEventListener('mouseenter', () => this.showHelp());
+            helpBtn.addEventListener('mouseleave', () => this.hideHelp());
+        }
+        
+        if (helpBtnModal && helpPopover) {
+            helpBtnModal.addEventListener('mouseenter', () => this.showHelp());
+            helpBtnModal.addEventListener('mouseleave', () => this.hideHelp());
+        }
         
         // Partition generation
-        document.getElementById('generate-partition-btn').addEventListener('click', () => this.generatePartition());
+        const generatePartitionBtn = document.getElementById('generate-partition-btn');
+        if (generatePartitionBtn) {
+            generatePartitionBtn.addEventListener('click', () => this.generatePartition());
+        }
         
         // Difficulty slider
-        this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
+        if (this.difficultySlider) {
+            this.difficultySlider.addEventListener('input', () => this.updateDifficultyLabel());
+        }
     }
 
     // Theme management
@@ -481,55 +525,71 @@ class GameUI {
     cycleTileTheme() {
         this.currentThemeIndex = (this.currentThemeIndex + 1) % this.tileThemes.length;
         this.applyTileTheme();
-        this.updateThemeButton();
     }
 
     applyTileTheme() {
         const themeName = this.tileThemes[this.currentThemeIndex];
-        this.gameCard.setAttribute('data-tile-theme', themeName);
+        if (this.gameCard) {
+            this.gameCard.setAttribute('data-tile-theme', themeName);
+        }
         localStorage.setItem('strict-continuous-corner-tile-theme', themeName);
-    }
-
-    updateThemeButton() {
-        if (!this.cycleThemeBtn) return;
-        const themeEmojis = { grass: '🌱', water: '🌊', fire: '🔥', stone: '🪨' };
-        const themeName = this.tileThemes[this.currentThemeIndex];
-        this.cycleThemeBtn.textContent = `[tiles: ${themeEmojis[themeName]}]`;
     }
 
     // Modal management
     showSetupModal() {
-        this.setupModal.classList.add('visible');
-        this.updateDifficultyLabel();
+        // Hide game over modal first if it's visible
+        if (this.gameOverModal) {
+            this.gameOverModal.classList.remove('visible');
+        }
+        if (this.setupModal) {
+            this.setupModal.classList.add('visible');
+            this.updateDifficultyLabel();
+        }
     }
 
     hideSetupModal() {
-        this.setupModal.classList.remove('visible');
+        if (this.setupModal) {
+            this.setupModal.classList.remove('visible');
+        }
     }
 
     showGameOverModal(winner) {
-        this.gameOverMessage.textContent = `player ${winner.toLowerCase()} wins!`;
-        this.gameOverModal.classList.add('visible');
+        if (this.gameOverMessage) {
+            this.gameOverMessage.textContent = `Player ${winner.toLowerCase()} wins!`;
+        }
+        if (this.gameOverModal) {
+            this.gameOverModal.classList.add('visible');
+        }
     }
 
     hideGameOverModal() {
-        this.gameOverModal.classList.remove('visible');
+        if (this.gameOverModal) {
+            this.gameOverModal.classList.remove('visible');
+        }
     }
 
     showHelp() {
-        this.helpPopover.style.display = 'block';
+        if (this.helpPopover) {
+            this.helpPopover.classList.add('visible');
+        }
     }
 
     hideHelp() {
-        this.helpPopover.style.display = 'none';
+        if (this.helpPopover) {
+            this.helpPopover.classList.remove('visible');
+        }
     }
 
     playAgain() {
         this.game = null;
         this.selectedPieces = [];
         this.hideGameOverModal();
-        this.boardArea.innerHTML = '';
-        this.statusLabel.textContent = 'loading...';
+        if (this.boardArea) {
+            this.boardArea.innerHTML = '';
+        }
+        if (this.statusLabel) {
+            this.statusLabel.textContent = 'Click "New Game" to start';
+        }
         this.updateButtons();
         this.showSetupModal();
     }
@@ -537,7 +597,9 @@ class GameUI {
     // Game management
     startGame() {
         try {
+            
             const rowsText = this.rowsInput.value.trim();
+            
             const rows = rowsText.split(/\s+/).map(x => parseInt(x)).filter(x => x > 0);
             
             if (rows.length === 0) {
@@ -564,23 +626,26 @@ class GameUI {
                 this.aiTurn();
             }
         } catch (error) {
+            console.error('Error starting SCC game:', error);
             alert('Please enter a valid partition (e.g., "5 4 2 1")');
         }
     }
 
     updateDifficultyLabel() {
+        if (!this.difficultySlider || !this.difficultyLabel) return;
+        
         const value = this.difficultySlider.value;
         let level;
-        if (value <= 33) level = 'easy';
-        else if (value <= 66) level = 'medium';
-        else level = 'hard';
+        if (value <= 33) level = 'Easy';
+        else if (value <= 66) level = 'Medium';
+        else level = 'Hard';
         
         this.difficultyLabel.textContent = `${level} (${value})`;
     }
 
     // Board rendering
     updateBoard() {
-        if (!this.game) return;
+        if (!this.game || !this.boardArea) return;
         
         this.boardArea.innerHTML = '';
         
@@ -592,15 +657,44 @@ class GameUI {
         const maxRow = this.game.board.rows.length;
         const maxCol = Math.max(...this.game.board.rows);
         
+        // Calculate tile size and positioning
+        const CELL_SIZE = 40;
+        const GAP = 2;
+        const MARGIN = 20;
+        
+        // Calculate board dimensions
+        const boardDataWidth = maxCol * CELL_SIZE + (maxCol - 1) * GAP;
+        const boardDataHeight = maxRow * CELL_SIZE + (maxRow - 1) * GAP;
+        let boardWidth = MARGIN * 2 + boardDataWidth;
+        let boardHeight = MARGIN * 2 + boardDataHeight;
+        const minDimension = 480;
+        boardWidth = Math.max(boardWidth, minDimension);
+        boardHeight = Math.max(boardHeight, minDimension);
+        
+        // Calculate horizontal centering offset
+        const actualContentWidth = MARGIN * 2 + boardDataWidth;
+        const centerOffsetX = (boardWidth - actualContentWidth) / 2;
+        
+        // Set board area dimensions
+        this.boardArea.style.width = `${boardWidth}px`;
+        this.boardArea.style.height = `${boardHeight}px`;
+        this.boardArea.style.position = 'relative';
+        
         for (let r = 0; r < maxRow; r++) {
-            const rowDiv = document.createElement('div');
-            rowDiv.style.marginBottom = '1px';
-            
             for (let c = 0; c < maxCol; c++) {
                 const tile = document.createElement('div');
                 tile.className = 'tile';
                 tile.dataset.row = r;
                 tile.dataset.col = c;
+                tile.id = `t-${r}-${c}`;
+                
+                // Set tile dimensions
+                tile.style.width = `${CELL_SIZE}px`;
+                tile.style.height = `${CELL_SIZE}px`;
+                
+                // Position tile
+                tile.style.left = `${centerOffsetX + MARGIN + c * (CELL_SIZE + GAP)}px`;
+                tile.style.top = `${MARGIN + r * (CELL_SIZE + GAP)}px`;
                 
                 if (c < this.game.board.rows[r]) {
                     // Occupied tile
@@ -620,6 +714,7 @@ class GameUI {
                     if (isCorner && !this.game.isAiTurn()) {
                         tile.style.cursor = 'pointer';
                         tile.classList.add('corner-piece');
+                        tile.style.pointerEvents = 'auto';
                     }
                 } else {
                     // Empty space
@@ -627,10 +722,8 @@ class GameUI {
                     tile.style.pointerEvents = 'none';
                 }
                 
-                rowDiv.appendChild(tile);
+                this.boardArea.appendChild(tile);
             }
-            
-            this.boardArea.appendChild(rowDiv);
         }
     }
 
@@ -751,31 +844,36 @@ class GameUI {
 
     // Status updates
     updateStatus() {
+        if (!this.statusLabel) return;
+        
         if (!this.game) {
-            this.statusLabel.textContent = 'loading...';
+            this.statusLabel.textContent = 'Click "New Game" to start';
             return;
         }
         
         const player = this.game.currentPlayer;
         const isAi = this.game.isAiTurn();
-        const playerType = isAi ? 'ai' : 'human';
+        const playerType = isAi ? 'AI' : 'Human';
         
-        this.statusLabel.textContent = `player ${player.toLowerCase()} (${playerType}) to move`;
+        this.statusLabel.textContent = `Player ${player.toLowerCase()} (${playerType}) to move`;
     }
 
     updateButtons() {
         if (!this.game) return;
         
-        // Confirm and clear buttons
-        const confirmBtn = document.getElementById('confirm-move-btn');
-        const clearBtn = document.getElementById('clear-selection-btn');
-        
-        if (confirmBtn) {
-            confirmBtn.style.display = this.selectedPieces.length > 0 && !this.game.isAiTurn() ? 'inline-block' : 'none';
+        // Selection controls
+        const selectionControls = document.getElementById('selection-controls');
+        const confirmSelectionBtn = document.getElementById('confirm-selection-btn');
+        const clearSelectionBtn = document.getElementById('clear-selection-btn');
+        const showSelection = this.selectedPieces.length > 0 && !this.game.isAiTurn();
+        if (selectionControls) {
+            selectionControls.style.display = showSelection ? 'flex' : 'none';
         }
-        
-        if (clearBtn) {
-            clearBtn.style.display = this.selectedPieces.length > 0 && !this.game.isAiTurn() ? 'inline-block' : 'none';
+        if (confirmSelectionBtn) {
+            confirmSelectionBtn.disabled = this.selectedPieces.length === 0;
+        }
+        if (clearSelectionBtn) {
+            clearSelectionBtn.disabled = this.selectedPieces.length === 0;
         }
         
         // Undo button
