@@ -14,10 +14,10 @@ const config = {
     
     // Helper function to get the appropriate server URL
     getServerUrl: function() {
-        // For development, always use localhost unless explicitly on production domain
-        const isProduction = window.location.hostname === 'partitiongames.netlify.app' || 
-                           window.location.hostname === 'www.partitiongames.netlify.app';
-        return isProduction ? this.production.serverUrl : this.development.serverUrl;
+        // Detect production on any Netlify domain variant
+        const host = window.location.hostname || '';
+        const isNetlify = /(^|\.)partition-?games\.netlify\.app$/i.test(host);
+        return isNetlify ? this.production.serverUrl : this.development.serverUrl;
     }
 };
 

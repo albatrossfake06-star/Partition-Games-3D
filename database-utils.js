@@ -45,7 +45,8 @@ async function storeGameInDatabase(gameTypeKey, initialPartition, movesSequence,
             ? window.GameConfig.getServerUrl() 
             : 'http://localhost:3001'; // fallback for local development
 
-        const response = await fetch(`${serverUrl}/api/game-records`, {
+        const url = `${serverUrl.replace(/\/$/, '')}/api/game-records`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,12 +55,13 @@ async function storeGameInDatabase(gameTypeKey, initialPartition, movesSequence,
         });
 
         if (response.ok) {
-            const result = await response.json();
-            console.log(`${gameTypeKey} game successfully stored in database:`, result.record.id);
-            return result.record;
+            const result = await response.json().catch(() => ({}));
+            console.log(`${gameTypeKey} game successfully stored in database:`, result?.record?.id || '(no id)');
+            return result.record || null;
         } else {
-            const error = await response.json();
-            console.warn(`Failed to store ${gameTypeKey} game in database:`, error.error);
+            let errorDetail;
+            try { errorDetail = await response.json(); } catch { errorDetail = await response.text(); }
+            console.warn(`Failed to store ${gameTypeKey} game in database:`, errorDetail);
             return null;
         }
     } catch (error) {
