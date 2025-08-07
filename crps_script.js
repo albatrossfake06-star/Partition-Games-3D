@@ -34,11 +34,13 @@ class Player{
 }  
   
 class Fragment{  
-  constructor(grid,x=0,y=0,serial=0){  
+  constructor(grid,x=0,y=0,serial=0,rowOffset=0,colOffset=0){  
     this.grid=grid;this.rows=grid.length;  
     this.cols=this.rows?grid[0].length:0;  
     this.x=x;this.y=y;  
     this.serial=serial;  
+    this.rowOffset=rowOffset;  
+    this.colOffset=colOffset;  
   }  
   rowsAlive(){const a=[];for(let r=0;r<this.rows;r++)if(this.grid[r].some(v=>v))a.push(r);return a;}  
   colsAlive(){  
@@ -77,19 +79,19 @@ class Fragment{
       }  
     }return frags;  
   }  
-  static _fromCells(cells){  
+  static _fromCells(cells, baseRowOffset=0, baseColOffset=0){  
     const minR=Math.min(...cells.map(v=>v[0])),minC=Math.min(...cells.map(v=>v[1]));  
     const maxR=Math.max(...cells.map(v=>v[0])),maxC=Math.max(...cells.map(v=>v[1]));  
     const h=maxR-minR+1,w=maxC-minC+1;  
     const g=Array.from({length:h},()=>Array(w).fill(false));  
     for(const[r,c]of cells)g[r-minR][c-minC]=true;  
-    return new Fragment(g,0,0,0);  
+    return new Fragment(g,0,0,0, baseRowOffset+minR, baseColOffset+minC);  
   }  
   static fromRowSizes(rowSizes){  
     const rows=rowSizes.length,cols=Math.max(...rowSizes);  
     const g=Array.from({length:rows},()=>Array(cols).fill(false));  
     rowSizes.forEach((len,r)=>{for(let c=0;c<len;c++)g[r][c]=true;});  
-    return new Fragment(g);  
+    return new Fragment(g,0,0,0,0,0);  
   }  
   
   getRows() {
@@ -129,7 +131,13 @@ class GameState{
     const frag=this.fragments[fIdx],originalX=frag.x,originalY=frag.y;  
     const originalSerial=frag.serial; // p_i
     if(kind==='row')frag.deleteRow(lineIdx);else frag.deleteCol(lineIdx);  
-    const newFrags=frag.splitIntoFragments();  
+    // collect absolute coordinates of each live cell before split
+    const cells=[]; for(let r=0;r<frag.rows;r++)for(let c=0;c<frag.cols;c++){ if(frag.grid[r][c]) cells.push([frag.rowOffset+r, frag.colOffset+c]); }
+    // build connected components in absolute space
+    const visited=new Set(); const groups=[]; const inSet=new Set(cells.map(([r,c])=>`${r},${c}`));
+    const nb=(r,c)=>[[1,0],[-1,0],[0,1],[0,-1]].map(([dr,dc])=>[r+dr,c+dc]).filter(([rr,cc])=>inSet.has(`${rr},${cc}`));
+    for(const [r,c] of cells){ const key=`${r},${c}`; if(visited.has(key)) continue; const q=[[r,c]]; visited.add(key); const comp=[]; while(q.length){ const [cr,cc]=q.shift(); comp.push([cr,cc]); for(const [nr,nc] of nb(cr,cc)){ const k=`${nr},${nc}`; if(!visited.has(k)){ visited.add(k); q.push([nr,nc]); } } } groups.push(comp); }
+    const newFrags=groups.map(group=>Fragment._fromCells(group,0,0));  
   
     if(newFrags.length>1){  
       if(kind==='row'){  
@@ -439,24 +447,26 @@ class CRPS_GUI{
   drawFragment(frag,fIdx,x0,y0){  
     // Only draw row labels if current player is RED (Player A)
     if (this.state.player === Player.RED) {
-    frag.rowsAlive().forEach(r=>{  
+      frag.rowsAlive().forEach(r=>{  
         const div=document.createElement('div');div.className='label-cell row-label';  
       div.style.width=`${this.LABEL}px`;div.style.height=`${this.CELL}px`;  
       div.style.left=`${x0-this.LABEL}px`;div.style.top=`${y0+r*this.CELL}px`;  
-      div.textContent=r;const id=`lbl-${++this.idCounter}`;div.id=id;  
-      this.idToAddress.set(id,{frag:fIdx,kind:'row',index:r});  
+        const displayIndex = r + (frag.rowOffset||0);
+        div.textContent=displayIndex;const id=`lbl-${++this.idCounter}`;div.id=id;  
+        this.idToAddress.set(id,{frag:fIdx,kind:'row',index:r,display:displayIndex});  
         div.addEventListener('click',e=>this.handleLabelClick(e));this.boardArea.appendChild(div);  
     });  
     }
     
     // Only draw column labels if current player is BLUE (Player B)
     if (this.state.player === Player.BLUE) {
-    frag.colsAlive().forEach(c=>{  
+      frag.colsAlive().forEach(c=>{  
         const div=document.createElement('div');div.className='label-cell col-label';  
       div.style.width=`${this.CELL}px`;div.style.height=`${this.LABEL}px`;  
       div.style.left=`${x0+c*this.CELL}px`;div.style.top=`${y0-this.LABEL}px`;  
-      div.textContent=c;const id=`lbl-${++this.idCounter}`;div.id=id;  
-      this.idToAddress.set(id,{frag:fIdx,kind:'col',index:c});  
+        const displayIndex = c + (frag.colOffset||0);
+        div.textContent=displayIndex;const id=`lbl-${++this.idCounter}`;div.id=id;  
+        this.idToAddress.set(id,{frag:fIdx,kind:'col',index:c,display:displayIndex});  
         div.addEventListener('click',e=>this.handleLabelClick(e));this.boardArea.appendChild(div);  
     });  
     }
@@ -485,12 +495,32 @@ class CRPS_GUI{
       const fragName = this.state.fragmentNames[info.frag] || '?';
       const frag = this.state.fragments[info.frag];
       const fragRows = frag ? frag.getRows() : [];
-      const moveStr = info.kind === 'row' ? `R${info.index}` : `C${info.index}`;
+      // Compute coordinate of the first filled cell in the chosen row/col (global indices)
+      let globalR = 0, globalC = 0;
+      if (frag) {
+        if (info.kind === 'row') {
+          const r = info.index;
+          let minC = null;
+          for (let c = 0; c < frag.cols; c++) { if (frag.grid[r][c]) { minC = c; break; } }
+          globalR = (frag.rowOffset || 0) + r;
+          globalC = (frag.colOffset || 0) + (minC ?? 0);
+        } else {
+          const c = info.index;
+          let minR = null;
+          for (let r = 0; r < frag.rows; r++) { if (frag.grid[r][c]) { minR = r; break; } }
+          globalR = (frag.rowOffset || 0) + (minR ?? 0);
+          globalC = (frag.colOffset || 0) + c;
+        }
+      }
+      const moveStr = `R${globalR}C${globalC}`;
       this.movesSequence.push(moveStr);
       this.moveContexts.push({
         fragmentName: fragName,
         fragmentRows: fragRows,
-        move: moveStr
+        move: moveStr,
+        kind: info.kind,
+        globalRow: globalR,
+        globalCol: globalC
       });
       
       this.state.performMove(info.frag,info.kind,info.index);  
@@ -555,6 +585,17 @@ class CRPS_GUI{
           gameStartTime: this.gameStartTime,
           moveContexts: this.moveContexts
         };
+        // Preview exactly what will be sent to the server
+        const serverUrl = (window.GameConfig && window.GameConfig.getServerUrl) ? window.GameConfig.getServerUrl() : 'http://localhost:3001';
+        const gameDataPreview = {
+          gameType: 'CRPS',
+          partitionData: Array.isArray(payload.initialPartition) ? payload.initialPartition.join(' ') : payload.initialPartition,
+          timestampPlayed: (payload.gameStartTime && payload.gameStartTime.toISOString) ? payload.gameStartTime.toISOString() : new Date().toISOString(),
+          movesSequence: Array.isArray(payload.movesSequence) ? payload.movesSequence.join(' ') : payload.movesSequence,
+          gameOutcome: payload.winner,
+          moveContexts: payload.moveContexts
+        };
+        console.log('[CRPS] About to save game record to', `${serverUrl}/api/game-records`, gameDataPreview);
         await window.DatabaseUtils.storeGameInDatabase(
           payload.gameTypeKey,
           payload.initialPartition,
