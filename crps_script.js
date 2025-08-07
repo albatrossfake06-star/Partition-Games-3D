@@ -34,10 +34,11 @@ class Player{
 }  
   
 class Fragment{  
-  constructor(grid,x=0,y=0){  
+  constructor(grid,x=0,y=0,serial=0){  
     this.grid=grid;this.rows=grid.length;  
     this.cols=this.rows?grid[0].length:0;  
     this.x=x;this.y=y;  
+    this.serial=serial;  
   }  
   rowsAlive(){const a=[];for(let r=0;r<this.rows;r++)if(this.grid[r].some(v=>v))a.push(r);return a;}  
   colsAlive(){  
@@ -82,7 +83,7 @@ class Fragment{
     const h=maxR-minR+1,w=maxC-minC+1;  
     const g=Array.from({length:h},()=>Array(w).fill(false));  
     for(const[r,c]of cells)g[r-minR][c-minC]=true;  
-    return new Fragment(g);  
+    return new Fragment(g,0,0,0);  
   }  
   static fromRowSizes(rowSizes){  
     const rows=rowSizes.length,cols=Math.max(...rowSizes);  
@@ -112,15 +113,11 @@ class Fragment{
 class GameState{  
   constructor(rowSizes){
     this.fragments=[Fragment.fromRowSizes(rowSizes)];
-    this.fragmentNames=['A'];
-    this.nextNameIndex=1; // next is 'B'
+    this.fragments[0].serial=1; // p1
+    this.nextSerial=1;          // last number used
+    this.fragmentNames=['p_1']; // helper for GUI
     this.player=Player.RED;
   }  
-  _indexToLetters(n){
-    let s='';n = Math.floor(n);
-    while(n>=0){s=String.fromCharCode(65+(n%26))+s;n=Math.floor(n/26)-1;}
-    return s;
-  }
   hasMoves(player = null){
     const targetPlayer = player || this.player;
     return this.fragments.some(f=>f.hasMoves(targetPlayer));
@@ -130,6 +127,7 @@ class GameState{
   }
   performMove(fIdx,kind,lineIdx){  
     const frag=this.fragments[fIdx],originalX=frag.x,originalY=frag.y;  
+    const originalSerial=frag.serial; // p_i
     if(kind==='row')frag.deleteRow(lineIdx);else frag.deleteCol(lineIdx);  
     const newFrags=frag.splitIntoFragments();  
   
@@ -143,16 +141,11 @@ class GameState{
       }  
     }else if(newFrags.length===1){newFrags[0].x=originalX;newFrags[0].y=originalY;}  
 
-    // Update names alongside fragments
-    let newNames=[];
-    if(newFrags.length===1){
-      newNames=[this.fragmentNames[fIdx]];
-    }else{
-      newNames=[this.fragmentNames[fIdx]];
-      for(let i=1;i<newFrags.length;i++){
-        newNames.push(this._indexToLetters(this.nextNameIndex++));
-      }
-    }
+    // Assign serials: first keeps old serial, others get fresh increasing
+    newFrags.forEach((nf,idx)=>{ if(idx===0){ nf.serial=originalSerial; } else { nf.serial=++this.nextSerial; } });
+
+    // Build GUI names from serials
+    const newNames=newFrags.map(f=>`p_${f.serial}`);
   
     this.fragments.splice(fIdx,1,...newFrags);  
     this.fragmentNames.splice(fIdx,1,...newNames);
