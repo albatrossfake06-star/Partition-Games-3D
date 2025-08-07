@@ -217,6 +217,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputArea = document.getElementById('game-states-input');
     const reportContainer = document.getElementById('report-container');
 
+    function loadAndRunReport() {
+        const gameStates = localStorage.getItem('cornerGameStatesForReport');
+        if (gameStates) {
+            inputArea.value = gameStates;
+            localStorage.removeItem('cornerGameStatesForReport'); 
+            generateBtn.click();
+        }
+    }
+
     /**
      * Parses a raw string from a textarea into an array of game state strings.
      * @param {string} rawInput - The string from the textarea.
@@ -254,6 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    loadAndRunReport();
 });
 
 /**

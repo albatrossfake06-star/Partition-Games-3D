@@ -119,8 +119,8 @@ class Board {
  * Performance notes:
  * - Memoization keeps play instant on boards ~40 squares
  * - For larger boards, consider restricting moves to:
- *   a) "remove k pieces where 1 ≤ k ≤ selectable.length"
- *   b) "remove exactly one piece" (original Corner rules)
+ * a) "remove k pieces where 1 ≤ k ≤ selectable.length"
+ * b) "remove exactly one piece" (original Corner rules)
  *
  * Algorithm:
  * 1. allCornerMoves() enumerates all non-empty subsets of selectable pieces
@@ -364,6 +364,7 @@ class ProCornerGui {
     this.helpBtnModal = document.getElementById("help-btn-modal");
     this.helpPopover = document.getElementById("help-popover");
     this.downloadBtnModal = document.getElementById("download-btn-modal");
+    this.reportBtnModal = document.getElementById("report-btn-modal");
 
     // New selection control elements
     this.selectionControls = document.getElementById("selection-controls");
@@ -418,6 +419,12 @@ class ProCornerGui {
         SoundManager.play("click");
         this.downloadGame();
       });
+    }
+    if (this.reportBtnModal) {
+        this.reportBtnModal.addEventListener('click', () => {
+            SoundManager.play('click');
+            this.openGameReport();
+        });
     }
     // Theme select removed - using cycle button instead
 
@@ -756,9 +763,10 @@ class ProCornerGui {
 
     if (finished) {
       SoundManager.play("win");
-      const winner =
+      const winnerName =
         this.game.currentPlayer.toLowerCase() === "a" ? "alice" : "bob";
-      this.gameOverMessage.textContent = `${winner} wins!`;
+      const winnerType = this.game.isAiTurn() ? "computer" : "human";
+      this.gameOverMessage.textContent = `${winnerName} (${winnerType}) wins!`;
       this.gameOverModal.classList.add("visible");
 
       // Save game to database
@@ -1101,6 +1109,28 @@ class ProCornerGui {
       partition = hook(n);
     }
     this.rowsInput.value = partition.join(" ");
+  }
+
+  openGameReport() {
+    if (!this.game) return;
+
+    const allStates = (this.gameHistory || []).map(state => {
+        const mask = state.board && state.board.grid ? state.board.grid : state.board;
+        return mask.join(' ');
+    });
+
+    const finalState = this.game.board.rows.join(' ');
+    if (finalState) {
+        allStates.push(finalState);
+    }
+
+    const uniqueStates = allStates.filter((state, index, self) =>
+        state && (index === 0 || state !== self[index - 1])
+    );
+
+    const statesString = uniqueStates.join('\n');
+    localStorage.setItem('cornerGameStatesForReport', statesString);
+    window.open('public/report generator/corner_report.html', '_blank');
   }
 
   downloadGame() {
