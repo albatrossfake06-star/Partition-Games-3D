@@ -25,7 +25,11 @@ pool.connect((err, client, release) => {
     return console.error('Error acquiring client', err.stack);
   }
   console.log('Successfully connected to the PostgreSQL database!');
-  client.release(); // Release the client back to the pool
+  // Ensure schema updates exist
+  client.query("ALTER TABLE game_records ADD COLUMN IF NOT EXISTS is_misere boolean DEFAULT false;")
+    .then(() => console.log('Ensured column game_records.is_misere exists'))
+    .catch(e => console.warn('Could not ensure is_misere column:', e.message))
+    .finally(() => client.release());
 });
 
 const app = express();
@@ -231,7 +235,7 @@ app.get('/api/games/my-history', authMiddleware, async (req, res) => {
 // Store a new game record
 app.post('/api/game-records', async (req, res) => {
   try {
-    const { gameType, partitionData, timestampPlayed, movesSequence, gameOutcome } = req.body;
+    const { gameType, partitionData, timestampPlayed, movesSequence, gameOutcome, isMisere } = req.body;
     
     // Validate required fields
     if (!gameType || !partitionData) {
@@ -244,15 +248,16 @@ app.post('/api/game-records', async (req, res) => {
     }
     
     const { rows } = await pool.query(`
-      INSERT INTO game_records (game_type, partition_data, timestamp_played, moves_sequence, game_outcome)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO game_records (game_type, partition_data, timestamp_played, moves_sequence, game_outcome, is_misere)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `, [
       gameType,
       partitionData,
       timestampPlayed || new Date(),
       movesSequence || '',
-      gameOutcome || null
+      gameOutcome || null,
+      typeof isMisere === 'boolean' ? isMisere : false
     ]);
     
     res.status(201).json({

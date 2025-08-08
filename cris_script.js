@@ -577,7 +577,8 @@ class CRIM_GUI{
           payload.movesSequence,
           payload.winner,
           payload.gameStartTime,
-          payload.moveContexts
+          payload.moveContexts,
+          !!document.getElementById('misere-toggle')?.checked
         );
       }
     } catch (err) {
