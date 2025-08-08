@@ -663,6 +663,12 @@ class ProLCTRGui {
     showSetupModal() { 
         this.gameOverModal.classList.remove('visible'); 
         
+        // Show analysis toggle again when returning to setup (in case coming from multiplayer)
+        const analysisToggle = document.getElementById('analysis-mode-toggle');
+        if (analysisToggle) {
+            analysisToggle.style.display = 'block';
+        }
+        
         // If we're in multiplayer mode, show the multiplayer modal instead
         if (this.isMultiplayer) {
             this.setupModal.classList.remove('visible');
@@ -853,6 +859,17 @@ class ProLCTRGui {
         this.playerSymbol = playerNumber === 0 ? 'A' : 'B';
         this.isMultiplayer = true;
         
+        // Hide analysis mode during multiplayer
+        const analysisToggle = document.getElementById('analysis-mode-toggle');
+        if (analysisToggle) {
+            analysisToggle.style.display = 'none';
+        }
+        
+        // Disable analysis if it's currently active
+        if (this.analysis && this.analysis.isEnabled) {
+            this.analysis.toggle();
+        }
+        
         // Get socket and roomId from multiplayer auth
         if (window.lctrMultiplayerAuth) {
             this.socket = window.lctrMultiplayerAuth.socket;
@@ -931,6 +948,12 @@ class ProLCTRGui {
     endMultiplayerGame(message) {
         this.statusLabel.textContent = message;
         this.statusLabel.style.color = message.includes('won') ? 'var(--orange)' : 'var(--gray)';
+        
+        // Show analysis toggle again when multiplayer ends
+        const analysisToggle = document.getElementById('analysis-mode-toggle');
+        if (analysisToggle) {
+            analysisToggle.style.display = 'block';
+        }
         
         // Show game over modal
         this.gameOverMessage.textContent = message;

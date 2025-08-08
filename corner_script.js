@@ -345,6 +345,11 @@ class ProCornerGui {
 
     this.analysis = null; //Analysis mode
 
+    // Multiplayer state
+    this.isMultiplayer = false;
+    this.playerNumber = null; // 0 or 1
+    this.turnMessageTimeout = null;
+
     this.getDOMElements();
     this.bindEventListeners();
     this.initTheme();
@@ -376,6 +381,18 @@ class ProCornerGui {
     this.difficultyLabel = document.getElementById("difficulty-label");
     this.startGameBtn = document.getElementById("start-game-btn");
     this.playAgainBtn = document.getElementById("play-again-btn");
+    // Multiplayer elements (added to page)
+    this.multiplayerBtn = document.getElementById('multiplayer-btn');
+    this.multiplayerModal = document.getElementById('multiplayer-modal-backdrop');
+    this.multiplayerBackBtn = document.getElementById('multiplayer-back-btn');
+    this.multiplayerRowsInput = document.getElementById('multiplayer-rows-input');
+    this.multiplayerPartitionTypeSelect = document.getElementById('multiplayer-partition-type-select');
+    this.multiplayerPartitionNumberInput = document.getElementById('multiplayer-partition-number-input');
+    this.multiplayerGeneratePartitionBtn = document.getElementById('multiplayer-generate-partition-btn');
+    this.createGameBtn = document.getElementById('create-game-btn');
+    this.joinGameBtn = document.getElementById('join-game-btn');
+    this.joinRoomInput = document.getElementById('join-room-input');
+    this.roomInfoLabel = document.getElementById('room-info-label');
     this.gameOverMessage = document.getElementById("game-over-message");
 
     this.helpBtn = document.getElementById("help-btn");
@@ -429,6 +446,51 @@ class ProCornerGui {
       this.generatePartitionBtn.addEventListener("click", () =>
         this.generatePartition()
       );
+    }
+
+    if (this.multiplayerBtn) {
+      this.multiplayerBtn.addEventListener('click', () => {
+        SoundManager.play('click');
+        if (this.setupModal) {
+          this.setupModal.classList.remove('visible');
+          this.setupModal.style.opacity = "0";
+          this.setupModal.style.visibility = "hidden";
+        }
+        if (this.multiplayerModal) {
+          this.multiplayerModal.style.display = 'flex';
+          this.multiplayerModal.classList.add('visible');
+          this.multiplayerModal.style.opacity = "1";
+          this.multiplayerModal.style.visibility = "visible";
+        }
+      });
+    }
+    // Multiplayer events
+    if (this.multiplayerBackBtn) {
+      this.multiplayerBackBtn.addEventListener('click', () => {
+        SoundManager.play('click');
+        this.multiplayerModal.classList.remove('visible');
+        this.multiplayerModal.style.opacity = "0";
+        this.multiplayerModal.style.visibility = "hidden";
+        setTimeout(() => {
+          this.multiplayerModal.style.display = 'none';
+        }, 300);
+        this.setupModal.classList.add('visible');
+        this.setupModal.style.opacity = "1";
+        this.setupModal.style.visibility = "visible";
+      });
+    }
+    if (this.multiplayerGeneratePartitionBtn) {
+      this.multiplayerGeneratePartitionBtn.addEventListener('click', () => {
+        const type = this.multiplayerPartitionTypeSelect.value;
+        const n = parseInt(this.multiplayerPartitionNumberInput.value, 10);
+        if (!n || n <= 0) { alert('Please enter a positive number'); return; }
+        let p;
+        if (type === 'random') p = randomPartition(n);
+        else if (type === 'staircase') p = staircase(n);
+        else if (type === 'square') p = square(n);
+        else if (type === 'hook') p = hook(n);
+        this.multiplayerRowsInput.value = p.join(' ');
+      });
     }
     if (this.downloadBtnModal) {
       this.downloadBtnModal.addEventListener("click", () => {
@@ -557,7 +619,7 @@ class ProCornerGui {
     this.exitSelectionMode();
     this.redrawBoard();
     this.updateStatus();
-    if (this.game.isAiTurn()) {
+    if (!this.isMultiplayer && this.game.isAiTurn()) {
       this.aiTurn();
     }
     this.analysis?.onGameStart();
@@ -910,6 +972,11 @@ class ProCornerGui {
     }
 
     if (this.isInSelectionMode) {
+      // In multiplayer, ensure it's my turn; otherwise block selection
+      if (this.isMultiplayer) {
+        const isMyTurn = (this.playerNumber === 0 && this.game.currentIndex === 0) || (this.playerNumber === 1 && this.game.currentIndex === 1);
+        if (!isMyTurn) { this.showTurnMessage('Not your turn!'); return; }
+      }
       const rect = this.boardArea.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
@@ -923,6 +990,11 @@ class ProCornerGui {
         this.handleTileClick(row, col);
       }
     } else {
+      // Before entering selection mode in multiplayer, verify it's my turn
+      if (this.isMultiplayer) {
+        const isMyTurn = (this.playerNumber === 0 && this.game.currentIndex === 0) || (this.playerNumber === 1 && this.game.currentIndex === 1);
+        if (!isMyTurn) { this.showTurnMessage('Not your turn!'); return; }
+      }
       this.enterSelectionMode();
     }
   }
@@ -1009,8 +1081,16 @@ class ProCornerGui {
     if (this.selectedPieces.length === 0) return;
 
     SoundManager.play("click");
-    this.executeWithAnimation(this.selectedPieces);
-    this.exitSelectionMode();
+    if (this.isMultiplayer) {
+      // Send selection to server via auth helper
+      if (window.cornerMultiplayerAuth) {
+        window.cornerMultiplayerAuth.makeMove(this.selectedPieces);
+      }
+      this.exitSelectionMode();
+    } else {
+      this.executeWithAnimation(this.selectedPieces);
+      this.exitSelectionMode();
+    }
   }
 
   clearSelection() {
@@ -1022,13 +1102,25 @@ class ProCornerGui {
     this.analysis?.clearHighlights();
   }
 
+  showTurnMessage(message) {
+    if (!this.statusLabel) return;
+    const originalText = this.statusLabel.textContent;
+    const originalColor = this.statusLabel.style.color;
+    this.statusLabel.textContent = message;
+    this.statusLabel.style.color = 'var(--orange)';
+    if (this.turnMessageTimeout) clearTimeout(this.turnMessageTimeout);
+    this.turnMessageTimeout = setTimeout(() => {
+      this.statusLabel.textContent = originalText;
+      this.statusLabel.style.color = originalColor;
+      this.turnMessageTimeout = null;
+    }, 2000);
+  }
+
   requestMove() {
-    if (
-      !this.isAnimating &&
-      !this.game.isAiTurn() &&
-      !this.game.board.isEmpty()
-    ) {
-      this.executeWithAnimation();
+    if (!this.isAnimating && !this.game.isAiTurn() && !this.game.board.isEmpty()) {
+      if (!this.isMultiplayer) {
+        this.executeWithAnimation();
+      }
     }
   }
 
@@ -1042,6 +1134,12 @@ class ProCornerGui {
     // Theme initialization is handled by global script.js
   }
   showSetupModal() {
+    // Show analysis toggle again when returning to setup (in case coming from multiplayer)
+    const analysisToggle = document.getElementById('analysis-mode-toggle');
+    if (analysisToggle) {
+      analysisToggle.style.display = 'block';
+    }
+    
     if (this.gameOverModal) {
       this.gameOverModal.classList.remove("visible");
     }
@@ -1250,3 +1348,66 @@ window.addEventListener("load", () => {
     window.cornerApp.analysis = new CornerAnalysis(window.cornerApp);
   }
 });
+
+// Multiplayer integration methods for Corner
+ProCornerGui.prototype.initializeMultiplayerGame = function(boardData, playerNumber, currentPlayer) {
+  this.isMultiplayer = true;
+  this.playerNumber = playerNumber;
+  this.game = new Game(new Board(boardData), null, this.gameMode);
+  this.game.currentIndex = currentPlayer;
+  
+  // Hide analysis mode during multiplayer
+  const analysisToggle = document.getElementById('analysis-mode-toggle');
+  if (analysisToggle) {
+    analysisToggle.style.display = 'none';
+  }
+  
+  // Disable analysis if it's currently active
+  if (this.analysis && this.analysis.isEnabled) {
+    this.analysis.toggle();
+  }
+  
+  this.exitSelectionMode();
+  this.redrawBoard();
+  this.updateStatus();
+};
+
+ProCornerGui.prototype.updateMultiplayerStatus = function(text, isMyTurn) {
+  if (this.statusLabel) {
+    this.statusLabel.textContent = text;
+    this.statusLabel.style.color = isMyTurn ? 'var(--orange)' : 'var(--gray)';
+  }
+};
+
+ProCornerGui.prototype.updateBoardFromServer = function(boardData, currentPlayer, gameEnded, winner) {
+  if (!this.isMultiplayer || !this.game) return;
+  this.game.board = new Board(boardData);
+  if (typeof currentPlayer === 'number') this.game.currentIndex = currentPlayer;
+  this.exitSelectionMode();
+  this.redrawBoard();
+  if (gameEnded) {
+    const winnerName = winner === 0 ? 'alice' : 'bob';
+    const winnerType = 'human';
+    this.gameOverMessage.textContent = `${winnerName} (${winnerType}) wins!`;
+    this.gameOverModal.classList.add('visible');
+  } else {
+    this.updateStatus();
+  }
+};
+
+ProCornerGui.prototype.endMultiplayerGame = function(message) {
+  // Show analysis toggle again when multiplayer ends
+  const analysisToggle = document.getElementById('analysis-mode-toggle');
+  if (analysisToggle) {
+    analysisToggle.style.display = 'block';
+  }
+  
+  if (this.statusLabel) {
+    this.statusLabel.textContent = message;
+    this.statusLabel.style.color = message.includes('won') ? 'var(--orange)' : 'var(--gray)';
+  }
+  if (this.gameOverModal) {
+    this.gameOverMessage.textContent = message;
+    this.gameOverModal.classList.add('visible');
+  }
+};

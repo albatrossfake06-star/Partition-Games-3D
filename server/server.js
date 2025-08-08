@@ -80,6 +80,7 @@ function authMiddleware(req, res, next) {
 
 // In-memory storage for active games (will be replaced with database later)
 const activeGames = {};
+const activeCornerGames = {};
 
 // Game logic functions (copied from frontend for server-side validation)
 class Board {
@@ -557,6 +558,155 @@ io.on('connection', (socket) => {
         console.log(`Cleaned up game ${roomId} due to player disconnect`);
         break;
       }
+    }
+
+    // Clean up Corner games
+    for (const [roomId, game] of Object.entries(activeCornerGames)) {
+      if (game.players.includes(socket.id)) {
+        socket.to(roomId).emit('corner:playerDisconnected', {
+          message: 'Your opponent has disconnected'
+        });
+        delete activeCornerGames[roomId];
+        console.log(`Cleaned up Corner game ${roomId} due to player disconnect`);
+        break;
+      }
+    }
+  });
+
+  // ===== CORNER Multiplayer (selection-based) =====
+  class BoardCorner {
+    constructor(rows) {
+      this.rows = [...rows];
+    }
+    isEmpty() {
+      return this.rows.length === 0 || this.rows.every(r => r === 0);
+    }
+    height() { return this.rows.length; }
+    width() { return this.rows.length ? Math.max(...this.rows) : 0; }
+    // Server-side validation: compute selectable last pieces
+    getSelectableLastPieces() {
+      if (this.isEmpty()) return [];
+      const groups = [];
+      if (this.rows.length > 0) {
+        let currentGroup = [0];
+        for (let i = 1; i < this.rows.length; i++) {
+          if (this.rows[i] === this.rows[i - 1]) currentGroup.push(i);
+          else { groups.push(currentGroup); currentGroup = [i]; }
+        }
+        groups.push(currentGroup);
+      }
+      const selectable = [];
+      for (const group of groups) {
+        const lastRow = group[group.length - 1];
+        if (this.rows[lastRow] > 0) selectable.push({ row: lastRow, col: this.rows[lastRow] - 1 });
+      }
+      return selectable;
+    }
+    // Apply a move given an array of {row,col} that must be subset of selectable
+    applySelectionMove(selectedPieces) {
+      if (!Array.isArray(selectedPieces) || selectedPieces.length === 0) return false;
+      const selectable = this.getSelectableLastPieces();
+      const set = new Set(selectable.map(p => `${p.row}:${p.col}`));
+      for (const p of selectedPieces) {
+        if (!set.has(`${p.row}:${p.col}`)) return false; // invalid move
+      }
+      // Apply
+      for (const p of selectedPieces) {
+        if (p.row < this.rows.length && p.col === this.rows[p.row] - 1 && this.rows[p.row] > 0) {
+          this.rows[p.row] -= 1;
+        } else {
+          return false;
+        }
+      }
+      // Remove zeros
+      this.rows = this.rows.filter(r => r > 0);
+      return true;
+    }
+  }
+
+  // Create Corner game
+  socket.on('corner:createGame', (initialBoard) => {
+    try {
+      let roomId;
+      do { roomId = generateRoomId(); } while (activeCornerGames[roomId]);
+      const gameState = {
+        roomId,
+        board: new BoardCorner(initialBoard),
+        players: [socket.id], // Alice
+        currentPlayerIndex: 0,
+        gameStarted: false
+      };
+      activeCornerGames[roomId] = gameState;
+      socket.join(roomId);
+      socket.emit('corner:gameCreated', { roomId });
+    } catch (err) {
+      console.error('Error creating Corner game:', err);
+      socket.emit('corner:error', 'Failed to create game');
+    }
+  });
+
+  // Join Corner game
+  socket.on('corner:joinGame', (roomId) => {
+    try {
+      const game = activeCornerGames[roomId];
+      if (!game) { socket.emit('corner:error', 'Game room not found'); return; }
+      if (game.players.length >= 2) { socket.emit('corner:error', 'Game room is full'); return; }
+      if (game.gameStarted) { socket.emit('corner:error', 'Game has already started'); return; }
+      game.players.push(socket.id);
+      socket.join(roomId);
+      game.gameStarted = true;
+      io.to(roomId).emit('corner:gameStart', {
+        board: game.board.rows,
+        players: game.players,
+        currentPlayer: game.currentPlayerIndex
+      });
+    } catch (err) {
+      console.error('Error joining Corner game:', err);
+      socket.emit('corner:error', 'Failed to join game');
+    }
+  });
+
+  // Make Corner move
+  socket.on('corner:makeMove', async ({ roomId, selectedPieces }) => {
+    try {
+      const game = activeCornerGames[roomId];
+      if (!game) { socket.emit('corner:error', 'Game not found'); return; }
+      if (!game.gameStarted) { socket.emit('corner:error', 'Game has not started'); return; }
+      const currentPlayerSocketId = game.players[game.currentPlayerIndex];
+      if (socket.id !== currentPlayerSocketId) { socket.emit('corner:error', 'Not your turn'); return; }
+
+      // Validate and apply move
+      const ok = game.board.applySelectionMove(selectedPieces);
+      if (!ok) { socket.emit('corner:error', 'Invalid move'); return; }
+
+      const gameEnded = game.board.isEmpty();
+      if (!gameEnded) game.currentPlayerIndex = 1 - game.currentPlayerIndex;
+
+      io.to(roomId).emit('corner:gameStateUpdate', {
+        board: game.board.rows,
+        currentPlayer: game.currentPlayerIndex,
+        gameEnded,
+        winner: gameEnded ? game.currentPlayerIndex : null
+      });
+
+      if (gameEnded) {
+        try {
+          const winnerSocketId = game.players[game.currentPlayerIndex];
+          const loserSocketId = game.players[1 - game.currentPlayerIndex];
+          const winnerSocket = io.sockets.sockets.get(winnerSocketId);
+          const loserSocket = io.sockets.sockets.get(loserSocketId);
+          if (winnerSocket && loserSocket && winnerSocket.userId && loserSocket.userId) {
+            await pool.query(
+              'INSERT INTO games (winner_id, loser_id, game_type) VALUES ($1, $2, $3)',
+              [winnerSocket.userId, loserSocket.userId, 'CORNER']
+            );
+          }
+        } catch (err) { console.error('Error recording Corner game result:', err); }
+        setTimeout(() => { delete activeCornerGames[roomId]; }, 30000);
+      }
+    } catch (err) {
+      console.error('Error making Corner move:', err);
+      socket.emit('corner:error', 'Failed to make move');
     }
   });
 });

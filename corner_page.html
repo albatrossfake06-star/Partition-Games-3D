@@ -160,6 +160,86 @@
     </main>
 
 
+    <div id="multiplayer-modal-backdrop" class="modal-backdrop" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Multiplayer Setup</h2>
+          <button id="multiplayer-back-btn" class="icon-button" aria-label="Back">[←]</button>
+        </div>
+        
+        <!-- Authentication Section -->
+        <div id="auth-section">
+          <p>Please log in or register to play multiplayer</p>
+          
+          <!-- Login Form -->
+          <div id="login-form" style="margin-bottom: 15px;">
+            <div class="input-group">
+              <input type="text" id="login-username" placeholder="Username" style="margin-bottom: 8px;">
+              <input type="password" id="login-password" placeholder="Password" style="margin-bottom: 8px;">
+            </div>
+            <button id="login-btn" class="modal-btn">Login</button>
+            <button id="show-register-btn" class="secondary-button">Register Instead</button>
+          </div>
+          
+          <!-- Register Form -->
+          <div id="register-form" class="hidden" style="margin-bottom: 15px;">
+            <div class="input-group">
+              <input type="text" id="register-username" placeholder="Username" style="margin-bottom: 8px;">
+              <input type="password" id="register-password" placeholder="Password" style="margin-bottom: 8px;">
+              <input type="password" id="register-confirm-password" placeholder="Confirm Password" style="margin-bottom: 8px;">
+            </div>
+            <button id="register-btn" class="modal-btn">Register</button>
+            <button id="show-login-btn" class="secondary-button">Login Instead</button>
+          </div>
+          
+          <div id="auth-message" style="text-align: center; margin: 10px 0; font-weight: bold;"></div>
+        </div>
+        
+        <!-- User Profile & Game Setup Section -->
+        <div id="multiplayer-setup-section" class="hidden">
+          <div id="user-profile-section" style="text-align: center; margin-bottom: 20px; padding: 10px; border: 1px solid var(--gray); border-radius: 8px;">
+            <p><strong>Welcome, <span id="user-display-name"></span>!</strong></p>
+            <div style="display: flex; justify-content: space-around; margin: 10px 0;">
+              <span>Wins: <strong id="user-wins-display">0</strong></span>
+              <span>Losses: <strong id="user-losses-display">0</strong></span>
+              <span>Win Rate: <strong id="user-winrate-display">0%</strong></span>
+            </div>
+            <button id="logout-btn" class="secondary-button" style="font-size: 12px; padding: 4px 8px;">Logout</button>
+          </div>
+          
+          <div id="connection-status" style="text-align: center; padding: 8px; border-radius: 4px; margin: 10px 0; font-weight: bold;">
+            Not connected to server
+          </div>
+          
+          <p>Configure your board and create or join a multiplayer game.</p>
+          
+          <label for="multiplayer-rows-input">Row Lengths</label>
+          <input type="text" id="multiplayer-rows-input" value="5 4 4 2" placeholder="e.g., 5 4 4 2">
+          
+          <hr>
+          <label for="multiplayer-partition-type-select">Or, generate a partition:</label>
+          <div class="input-group">
+            <select id="multiplayer-partition-type-select" class="partition-type-dropdown">
+              <option value="random">random</option>
+              <option value="staircase">staircase</option>
+              <option value="square">square</option>
+              <option value="hook">hook</option>
+            </select>
+            <input type="number" id="multiplayer-partition-number-input" placeholder="e.g., 25">
+            <button id="multiplayer-generate-partition-btn">generate</button>
+          </div>
+          
+          <hr>
+          <label>Game Actions</label>
+          <button id="create-game-btn" class="modal-btn">Create Online Game</button>
+          <div class="input-group">
+            <input type="text" id="join-room-input" placeholder="Enter Game ID">
+            <button id="join-game-btn">Join Game</button>
+          </div>
+          <p id="room-info-label" style="text-align: center; font-weight: bold; color: var(--gray);"></p>
+        </div>
+      </div>
+    </div>
     <div id="setup-modal-backdrop" class="modal-backdrop">
       <div class="modal">
         <div class="modal-header">
@@ -203,6 +283,10 @@
           <option value="normal" selected>Normal (last move wins)</option>
           <option value="misere">Misere (last move loses)</option>
         </select>
+
+        <hr />
+
+        <button id="multiplayer-btn" class="secondary-button">play multiplayer</button>
 
         <hr />
 
@@ -302,5 +386,7 @@
     <script src="database-utils.js"></script>
     <script src="corner_script.js"></script>
     <script src="public/analysis-mode/corner_analysis.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="corner_multiplayer_auth.js"></script>
   </body>
 </html>
