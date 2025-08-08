@@ -605,7 +605,8 @@ class CRPS_GUI{
           payload.winner,
           payload.gameStartTime,
           payload.moveContexts,
-          !!document.getElementById('misere-toggle')?.checked
+          !!document.getElementById('misere-toggle')?.checked,
+          'A'
         );
       }
     } catch (err) {

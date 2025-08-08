@@ -235,7 +235,7 @@ app.get('/api/games/my-history', authMiddleware, async (req, res) => {
 // Store a new game record
 app.post('/api/game-records', async (req, res) => {
   try {
-    const { gameType, partitionData, timestampPlayed, movesSequence, gameOutcome, isMisere } = req.body;
+    const { gameType, partitionData, timestampPlayed, movesSequence, gameOutcome, isMisere, starter } = req.body;
     
     // Validate required fields
     if (!gameType || !partitionData) {
@@ -247,6 +247,22 @@ app.post('/api/game-records', async (req, res) => {
       return res.status(400).json({ error: 'Game outcome must be "A" or "B"' });
     }
     
+    // Compute is_misere using parity if not explicitly boolean
+    // Starter defaults to 'A' (Alice) in our games
+    const startPlayer = (starter === 'B') ? 'B' : 'A';
+    const movesCount = Array.isArray(movesSequence)
+      ? movesSequence.length
+      : (typeof movesSequence === 'string' && movesSequence.trim().length)
+        ? movesSequence.trim().split(/\s+/).length
+        : 0;
+    const expectedNormalWinner = (movesCount % 2 === 1)
+      ? startPlayer
+      : (startPlayer === 'A' ? 'B' : 'A');
+    const computedIsMisere = (gameOutcome === 'A' || gameOutcome === 'B')
+      ? (gameOutcome !== expectedNormalWinner)
+      : false;
+    const isMisereFinal = (typeof isMisere === 'boolean') ? isMisere : computedIsMisere;
+
     const { rows } = await pool.query(`
       INSERT INTO game_records (game_type, partition_data, timestamp_played, moves_sequence, game_outcome, is_misere)
       VALUES ($1, $2, $3, $4, $5, $6)
@@ -255,9 +271,9 @@ app.post('/api/game-records', async (req, res) => {
       gameType,
       partitionData,
       timestampPlayed || new Date(),
-      movesSequence || '',
+      Array.isArray(movesSequence) ? movesSequence.join(' ') : (movesSequence || ''),
       gameOutcome || null,
-      typeof isMisere === 'boolean' ? isMisere : false
+      isMisereFinal
     ]);
     
     res.status(201).json({
