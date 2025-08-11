@@ -1,344 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Developers | Partition Games</title>
-    
+
     <!-- Console-style monospace fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Code+Pro:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-        :root {
-            --orange: #FF6B35;
-            --orange-light: #FF8757;
-            --orange-dark: #E55A2B;
-            --white: #FFFFFF;
-            --off-white: #FAFAFA;
-            --gray-light: #F5F5F5;
-            --gray: #666666;
-            --gray-dark: #333333;
-            --black: #000000;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'JetBrains Mono', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
-            background-color: var(--white);
-            color: var(--gray-dark);
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        /* Header */
-        header {
-            border-bottom: 1px solid var(--gray-light);
-            padding: 20px 0;
-            background-color: var(--white);
-        }
-        
+      :root {
+        --orange: #ff6b35;
+        --orange-light: #ff8757;
+        --orange-dark: #e55a2b;
+        --white: #ffffff;
+        --off-white: #fafafa;
+        --gray-light: #f5f5f5;
+        --gray: #666666;
+        --gray-dark: #333333;
+        --black: #000000;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "JetBrains Mono", "Source Code Pro", "Monaco", "Menlo",
+          monospace;
+        background-color: var(--white);
+        color: var(--gray-dark);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      header {
+        border-bottom: 1px solid var(--gray-light);
+        padding: 20px 0;
+        background-color: var(--white);
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--orange);
+        text-decoration: none;
+      }
+
+      .logo::before {
+        content: "~/";
+        color: var(--gray);
+      }
+
+      .back-link {
+        color: var(--gray-dark);
+        text-decoration: none;
+        font-weight: 400;
+        transition: color 0.2s ease;
+      }
+
+      .back-link:hover {
+        color: var(--orange);
+      }
+
+      .back-link::before {
+        content: "← ";
+        color: var(--gray);
+      }
+
+      /* Main Content */
+      main {
+        padding: 60px 0;
+      }
+
+      .page-title {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .page-title h1 {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--orange);
+        margin-bottom: 10px;
+      }
+
+      .page-title h1::before {
+        content: "# ";
+        color: var(--gray);
+      }
+
+      .page-title p {
+        font-size: 16px;
+        color: var(--gray);
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      /* Developers Grid */
+      .dev-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 40px;
+        margin-top: 50px;
+      }
+
+      .dev-card {
+        border: 1px solid var(--gray-light);
+        background-color: var(--off-white);
+        padding: 30px;
+        text-align: center;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+      }
+
+      .dev-card:hover {
+        border-color: var(--orange-light);
+        background-color: var(--white);
+      }
+
+      .dev-card img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 2px solid var(--gray-light);
+        margin-bottom: 20px;
+        object-fit: cover;
+        align-self: center;
+      }
+
+      .dev-card h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--orange);
+        margin-bottom: 8px;
+      }
+
+      .dev-card h2::before {
+        content: "## ";
+        color: var(--gray);
+      }
+
+      .dev-card .role {
+        font-size: 12px;
+        color: var(--gray);
+        margin-bottom: 15px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .dev-card .bio {
+        color: var(--gray);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        flex-grow: 1;
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .social-links a {
+        color: var(--gray-dark);
+        text-decoration: none;
+        font-size: 12px;
+        padding: 6px 12px;
+        border: 1px solid var(--gray-light);
+        transition: all 0.2s ease;
+      }
+
+      .social-links a:hover {
+        color: var(--orange);
+        border-color: var(--orange);
+        background-color: var(--white);
+      }
+
+      .social-links a::before {
+        content: "→ ";
+        color: var(--gray);
+      }
+
+      /* About Section */
+      .about-section {
+        background-color: var(--gray-light);
+        padding: 40px 0;
+        margin: 60px 0;
+      }
+
+      .about-content {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .about-content h2 {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--gray-dark);
+        margin-bottom: 15px;
+      }
+
+      .about-content h2::before {
+        content: "## ";
+        color: var(--orange);
+      }
+
+      .about-content p {
+        color: var(--gray);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--gray-light);
+        padding: 30px 0;
+        background-color: var(--off-white);
+      }
+
+      .footer-content {
+        text-align: center;
+        font-size: 12px;
+        color: var(--gray);
+      }
+
+      /* Logos Section */
+      .logos {
+        text-align: center;
+        margin: 40px 0;
+      }
+
+      .logos img {
+        max-width: 100%;
+        height: auto;
+        max-height: 120px;
+        object-fit: contain;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
         .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+          flex-direction: column;
+          gap: 20px;
         }
-        
-        .logo {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--orange);
-            text-decoration: none;
-        }
-        
-        .logo::before {
-            content: "~/";
-            color: var(--gray);
-        }
-        
-        .back-link {
-            color: var(--gray-dark);
-            text-decoration: none;
-            font-weight: 400;
-            transition: color 0.2s ease;
-        }
-        
-        .back-link:hover {
-            color: var(--orange);
-        }
-        
-        .back-link::before {
-            content: "← ";
-            color: var(--gray);
-        }
-        
-        /* Main Content */
-        main {
-            padding: 60px 0;
-        }
-        
-        .page-title {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
+
         .page-title h1 {
-            font-size: 32px;
-            font-weight: 600;
-            color: var(--orange);
-            margin-bottom: 10px;
+          font-size: 24px;
         }
-        
-        .page-title h1::before {
-            content: "# ";
-            color: var(--gray);
-        }
-        
-        .page-title p {
-            font-size: 16px;
-            color: var(--gray);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        /* Developers Grid */
+
         .dev-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px;
-            margin-top: 50px;
+          grid-template-columns: 1fr;
+          gap: 30px;
         }
-        
-        .dev-card {
-            border: 1px solid var(--gray-light);
-            background-color: var(--off-white);
-            padding: 30px;
-            text-align: center;
-            transition: border-color 0.2s ease, background-color 0.2s ease;
-        }
-        
-        .dev-card:hover {
-            border-color: var(--orange-light);
-            background-color: var(--white);
-        }
-        
-        .dev-card img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 2px solid var(--gray-light);
-            margin-bottom: 20px;
-            object-fit: cover;
-        }
-        
-        .dev-card h2 {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--orange);
-            margin-bottom: 8px;
-        }
-        
-        .dev-card h2::before {
-            content: "## ";
-            color: var(--gray);
-        }
-        
-        .dev-card .role {
-            font-size: 12px;
-            color: var(--gray);
-            margin-bottom: 15px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .dev-card .bio {
-            color: var(--gray);
-            font-size: 13px;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-        
+
         .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+          flex-direction: column;
+          gap: 10px;
         }
-        
-        .social-links a {
-            color: var(--gray-dark);
-            text-decoration: none;
-            font-size: 12px;
-            padding: 6px 12px;
-            border: 1px solid var(--gray-light);
-            transition: all 0.2s ease;
-        }
-        
-        .social-links a:hover {
-            color: var(--orange);
-            border-color: var(--orange);
-            background-color: var(--white);
-        }
-        
-        .social-links a::before {
-            content: "→ ";
-            color: var(--gray);
-        }
-        
-        /* About Section */
-        .about-section {
-            background-color: var(--gray-light);
-            padding: 40px 0;
-            margin: 60px 0;
-        }
-        
-        .about-content {
-            text-align: center;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        .about-content h2 {
-            font-size: 20px;
-            font-weight: 500;
-            color: var(--gray-dark);
-            margin-bottom: 15px;
-        }
-        
-        .about-content h2::before {
-            content: "## ";
-            color: var(--orange);
-        }
-        
-        .about-content p {
-            color: var(--gray);
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        
-        /* Footer */
-        footer {
-            border-top: 1px solid var(--gray-light);
-            padding: 30px 0;
-            background-color: var(--off-white);
-        }
-        
-        .footer-content {
-            text-align: center;
-            font-size: 12px;
-            color: var(--gray);
-        }
-        
-        /* Logos Section */
-        .logos {
-            text-align: center;
-            margin: 40px 0;
-        }
-        
-        .logos img {
-            max-width: 100%;
-            height: auto;
-            max-height: 120px;
-            object-fit: contain;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 20px;
-            }
-            
-            .page-title h1 {
-                font-size: 24px;
-            }
-            
-            .dev-grid {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-            
-            .social-links {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <div class="container">
-            <div class="header-content">
-                <a href="index.html" class="logo">partition-games</a>
-                <a href="index.html" class="back-link">back to home</a>
-            </div>
+      <div class="container">
+        <div class="header-content">
+          <a href="index.html" class="logo">partition-games</a>
+          <a href="index.html" class="back-link">back to home</a>
         </div>
+      </div>
     </header>
 
     <main>
-        <div class="container">
-            <div class="page-title">
-                <h1>Developers</h1>
-                <p>Meet the team behind Partition Games. Computer science students from Rhodes College working on combinatorial game theory research.</p>
-            </div>
-
-            <div class="dev-grid">
-                <div class="dev-card">
-                    <img src="public/assets/headshots/aayan_headshot_500x500.png" alt="Aayan Pratim Deb">
-                    <h2>Aayan Pratim Deb</h2>
-                    <div class="role">Database Management & Backend Developer</div>
-                    <div class="bio">CompSci Major & Rising Sophomore at Rhodes College; specializing in game development, backend management, and user interface design. Focuses on creating intuitive and engaging gameplay and manages smooth Database Authentication and Deploment.</div>
-                    <div class="social-links">
-                        <a href="debaa-28@rhodes.edu" target="_blank">email</a>
-                        <a href="https://www.linkedin.com/in/aayanpdeb/" target="_blank">linkedin</a>
-                    </div>
-                </div>
-
-                <div class="dev-card">
-                    <img src="public/assets/headshots/dwip_headshot_500x500.png" alt="Soumitro Shovon Dwip">
-                    <h2>Soumitro Shovon Dwip</h2>
-                    <div class="role">Core Mathematical Program Developer & Documentation</div>
-                    <div class="bio">Data Analytics Sophomore at Rhodes College with expertise in algorithm development and mathematical modeling. Handles core game logic, AI implementation, and technical documentation.</div>
-                    <div class="social-links">
-                        <a href="mailto:dwiso-28@rhodes.edu">email</a>
-                        <a href="https://www.linkedin.com/in/soumitro-shovon-dwip-11445b188/" target="_blank">linkedin</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="about-section">
-                <div class="container">
-                    <div class="about-content">
-                        <h2>Project Information</h2>
-                        <p>This project is part of the Rhodes College Summer Fellowship Program '25, developed under the supervision of Professor Gottlieb. Our mission is to make combinatorial game theory accessible through interactive web applications, supporting academic research while providing educational value to the broader community.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="logos">
-                <img src="public/assets/logo/Rhodes_College_logo.png" alt="Rhodes College Logo">
-            </div>
+      <div class="container">
+        <div class="page-title">
+          <h1>Developers</h1>
+          <p>
+            Meet the team behind Partition Games. Computer science students from
+            Rhodes College working on combinatorial game theory research.
+          </p>
         </div>
+
+        <div class="dev-grid">
+          <div class="dev-card">
+            <img
+              src="public/assets/headshots/aayan_headshot_500x500.png"
+              alt="Aayan Pratim Deb"
+            />
+            <h2>Aayan Pratim Deb</h2>
+            <div class="role">Full Stack Developer and Task Management</div>
+            <div class="bio">
+                CompSci Major & Sophomore at Rhodes College; responsible for game development, backend and authentication layers. Plans and manages task distribution, handles testing, deployment and third-party service integration. 
+            </div>
+            <div class="social-links">
+              <a href="debaa-28@rhodes.edu" target="_blank">email</a>
+              <a href="https://www.linkedin.com/in/aayanpdeb/" target="_blank"
+                >linkedin</a
+              >
+            </div>
+          </div>
+
+          <div class="dev-card">
+            <img
+              src="public/assets/headshots/dwip_headshot_500x500.png"
+              alt="Soumitro Shovon Dwip"
+            />
+            <h2>Soumitro Shovon Dwip</h2>
+            <div class="role">
+              Core Mathematical Program Developer & Documentation
+            </div>
+            <div class="bio">
+              Data Analytics Sophomore at Rhodes College with expertise in
+              algorithm development and mathematical modeling. Handles core game
+              logic, AI implementation, and technical documentation.
+            </div>
+            <div class="social-links">
+              <a href="mailto:dwiso-28@rhodes.edu">email</a>
+              <a
+                href="https://www.linkedin.com/in/soumitro-shovon-dwip-11445b188/"
+                target="_blank"
+                >linkedin</a
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="about-section">
+          <div class="container">
+            <div class="about-content">
+              <h2>Project Information</h2>
+              <p>
+                This project is part of the Rhodes College Summer Fellowship
+                Program '25, developed under the supervision of Professor
+                Gottlieb. Our mission is to make combinatorial game theory
+                accessible through interactive web applications, supporting
+                academic research while providing educational value to the
+                broader community.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="logos">
+          <img
+            src="public/assets/logo/Rhodes_College_logo.png"
+            alt="Rhodes College Logo"
+          />
+        </div>
+      </div>
     </main>
 
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                © 2024 Partition Games — Rhodes College
-            </div>
+      <div class="container">
+        <div class="footer-content">
+          © 2024 Partition Games — Rhodes College
         </div>
+      </div>
     </footer>
-</body>
+  </body>
 </html>
