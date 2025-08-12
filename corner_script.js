@@ -890,11 +890,20 @@ class ProCornerGui {
   }
 
   redrawBoard() {
+    console.log('redrawBoard called');
+    console.log('this.game exists:', !!this.game);
+    console.log('this.initialPartition:', this.initialPartition);
+    console.log('this.boardArea exists:', !!this.boardArea);
+    
     this.boardArea.querySelectorAll(".tile, .label-cell").forEach((el) => el.remove());
-    if (!this.game) return;
+    if (!this.game) {
+      console.log('No game, returning early');
+      return;
+    }
 
     const maxWidth = Math.max(0, ...this.initialPartition);
     const maxHeight = this.initialPartition.length;
+    console.log('Board dimensions:', { maxWidth, maxHeight });
 
     const boardDataWidth = maxWidth * this.CELL + (maxWidth - 1) * this.GAP;
     const boardDataHeight = maxHeight * this.CELL + (maxHeight - 1) * this.GAP;
@@ -928,6 +937,8 @@ class ProCornerGui {
       }
     }
 
+    console.log('Creating tiles...');
+    let tileCount = 0;
     for (let r = 0; r < maxHeight; r++) {
       for (let c = 0; c < this.initialPartition[r]; c++) {
         const tile = document.createElement("div");
@@ -940,15 +951,34 @@ class ProCornerGui {
         tile.style.left = `${centerOffset.x + c * (this.CELL + this.GAP)}px`;
         tile.style.top = `${centerOffset.y + r * (this.CELL + this.GAP)}px`;
         this.boardArea.appendChild(tile);
+        tileCount++;
       }
     }
+    console.log(`Created ${tileCount} tiles`);
 
     this.boardArea.style.width = `${boardWidth}px`;
     this.boardArea.style.height = `${boardHeight}px`;
+    console.log('Board area dimensions set:', { boardWidth, boardHeight });
+    console.log('Board area element:', this.boardArea);
   }
 
   updateStatus() {
     if (!this.game) return;
+    
+    // Handle multiplayer mode differently
+    if (this.isMultiplayer) {
+      const isMyTurn = this.playerNumber === this.game.currentIndex;
+      const newText = isMyTurn ? 'Your turn' : 'Opponent\'s turn';
+      if (this.statusLabel.textContent === newText) return;
+      this.statusLabel.classList.add("exiting");
+      setTimeout(() => {
+        this.statusLabel.textContent = newText;
+        this.statusLabel.classList.remove("exiting");
+      }, 200);
+      return;
+    }
+    
+    // Handle single player mode
     const kind = this.game.isAiTurn() ? "computer" : "human";
     const player =
       this.game.currentPlayer.toLowerCase() === "a" ? "alice" : "bob";
@@ -966,7 +996,7 @@ class ProCornerGui {
       !this.game ||
       this.game.board.isEmpty() ||
       this.isAnimating ||
-      this.game.isAiTurn()
+      (!this.isMultiplayer && this.game.isAiTurn())
     ) {
       return;
     }
@@ -1351,10 +1381,15 @@ window.addEventListener("load", () => {
 
 // Multiplayer integration methods for Corner
 ProCornerGui.prototype.initializeMultiplayerGame = function(boardData, playerNumber, currentPlayer) {
+  console.log('initializeMultiplayerGame called with:', { boardData, playerNumber, currentPlayer });
   this.isMultiplayer = true;
   this.playerNumber = playerNumber;
   this.game = new Game(new Board(boardData), null, this.gameMode);
   this.game.currentIndex = currentPlayer;
+  
+  // Set the initial partition for board rendering
+  this.initialPartition = [...boardData];
+  console.log('Set initialPartition:', this.initialPartition);
   
   // Hide analysis mode during multiplayer
   const analysisToggle = document.getElementById('analysis-mode-toggle');
@@ -1368,7 +1403,9 @@ ProCornerGui.prototype.initializeMultiplayerGame = function(boardData, playerNum
   }
   
   this.exitSelectionMode();
+  console.log('About to call redrawBoard...');
   this.redrawBoard();
+  console.log('redrawBoard completed');
   this.updateStatus();
 };
 

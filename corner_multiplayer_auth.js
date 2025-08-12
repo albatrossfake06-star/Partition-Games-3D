@@ -191,8 +191,10 @@ class CornerMultiplayerAuth {
       this.roomId = data.roomId; this.roomInfoLabel.textContent = `Game created! Room ID: ${this.roomId}`; this.roomInfoLabel.style.color = 'var(--orange)';
     });
     this.socket.on('corner:gameStart', (data) => {
+      console.log('corner:gameStart received:', data);
       this.playerNumber = data.players.indexOf(this.socket.id);
       this.currentPlayer = data.currentPlayer;
+      console.log('Player number:', this.playerNumber, 'Current player:', this.currentPlayer);
       this.startMultiplayerGame(data.board);
     });
     this.socket.on('corner:gameStateUpdate', (data) => {
@@ -250,6 +252,7 @@ class CornerMultiplayerAuth {
   parsePartition(input) { return input.split(/\s+/).map(s => parseInt(s, 10)).filter(n => !isNaN(n) && n > 0); }
 
   startMultiplayerGame(boardData) {
+    console.log('startMultiplayerGame called with:', { boardData, playerNumber: this.playerNumber, currentPlayer: this.currentPlayer });
     this.inMultiplayerGame = true;
     const modal = document.getElementById('multiplayer-modal-backdrop');
     if (modal) {
@@ -260,8 +263,21 @@ class CornerMultiplayerAuth {
         modal.style.display = 'none';
       }, 300);
     }
+    console.log('window.cornerApp exists:', !!window.cornerApp);
     if (window.cornerApp) {
+      console.log('Calling initializeMultiplayerGame...');
       window.cornerApp.initializeMultiplayerGame(boardData, this.playerNumber, this.currentPlayer);
+    } else {
+      console.error('window.cornerApp is not available!');
+      // Wait a bit and try again
+      setTimeout(() => {
+        if (window.cornerApp) {
+          console.log('Retrying initializeMultiplayerGame after delay...');
+          window.cornerApp.initializeMultiplayerGame(boardData, this.playerNumber, this.currentPlayer);
+        } else {
+          console.error('cornerApp still not available after delay');
+        }
+      }, 100);
     }
     this.updateGameStatus();
   }
@@ -287,8 +303,22 @@ class CornerMultiplayerAuth {
   endMultiplayerGame() { this.inMultiplayerGame = false; this.roomId = null; this.playerNumber = null; this.gameEnded = false; this.winner = null; this.roomInfoLabel.textContent = 'Game ended. You can create or join a new game.'; this.roomInfoLabel.style.color = 'var(--gray)'; }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  window.cornerMultiplayerAuth = new CornerMultiplayerAuth();
-});
+// Wait for both DOM and window.cornerApp to be ready
+function initializeMultiplayerAuth() {
+  if (window.cornerApp) {
+    window.cornerMultiplayerAuth = new CornerMultiplayerAuth();
+  } else {
+    // If cornerApp isn't ready yet, wait for it
+    window.addEventListener('load', () => {
+      if (window.cornerApp) {
+        window.cornerMultiplayerAuth = new CornerMultiplayerAuth();
+      } else {
+        console.error('cornerApp still not available after load event');
+      }
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initializeMultiplayerAuth);
 
 
