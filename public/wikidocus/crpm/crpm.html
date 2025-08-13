@@ -67,60 +67,28 @@ span.label    { font-weight: bold;}
 <p>CRPM introduces partisan gameplay with player-specific restrictions:</p>  
   
 <ul class="moves">  
+   
   <li>  
-    <span class="label">Player A (Row Player):</span>  
-    <ul>
-        <li>Can only select and remove entire <strong>rows</strong> from the partition</li>
-        <li>Must choose from available rows containing at least one square</li>
-        <li>Cannot perform column operations</li>
-    </ul>
-  </li>  
-  
-  <li>
-    <span class="label">Player B (Column Player):</span>
-    <ul>
-        <li>Can only select and remove entire <strong>columns</strong> from the partition</li>
-        <li>Must choose from available columns containing at least one square</li>
-        <li>Cannot perform row operations</li>
-    </ul>
+    <span class="label"></span>  
+    <figure style="text-align:center;">  
+      <img src="figure1.png" alt="Left column removal" style="width:27%;">  
+    <figcaption>Figure&nbsp;1&nbsp;—&nbsp;Game Board in CRPM</figcaption>  
+    </figure>  
   </li>
   
-  <li>
-    <span class="label">Example Game:</span>
-    Starting with partition $\left(4, 3, 2, 1 \right)$:
-    <ul>
-        <li><strong>Move 1 (Player A):</strong> Removes row 3, changing partition to $\left(4, 3, 1 \right)$</li>
-        <li><strong>Move 2 (Player B):</strong> Removes column 1, changing partition to $\left(3, 2, 1 \right)$</li>
-        <li><strong>Move 3 (Player A):</strong> Removes row 2, changing partition to $\left(3, 1 \right)$</li>
-        <li>...and so forth until one player cannot move</li>
-    </ul>
-  </li>
+  
+  <p>
+    Player A can select any of the R# in their move; whereas Player B, if it's their turn, can choose any C#. After each move, fragments - if there are any - gets merged.
+  </p>
 </ul>  
   
-<h2>Strategic Implications</h2>
 
-<p>The asymmetric nature of CRPM creates several fascinating strategic elements:</p>
-
-<ul>
-    <li><strong>Complementary Constraints:</strong> Players must think about both their own limited options and their opponent's different limitations</li>
-    <li><strong>Zugzwang Potential:</strong> Situations where being forced to move puts a player at a disadvantage</li>
-    <li><strong>Endgame Analysis:</strong> Different winning/losing positions depending on which player moves first in critical positions</li>
-    <li><strong>Evaluation Complexity:</strong> Unlike impartial games, positions must be evaluated separately for each player</li>
-</ul>
-
-<h2>Mathematical Properties</h2>
-
-<p>As a partizan game, CRPM exhibits properties distinct from its impartial cousin CRIM:</p>
-
-<ul>
-    <li><strong>Game Value:</strong> Positions have values relative to each player, not absolute Grundy numbers</li>
-    <li><strong>First-Player Advantage:</strong> The starting player may have inherent advantages in certain partition configurations</li>
-    <li><strong>Strategic Depth:</strong> The constraint asymmetry creates rich tactical possibilities despite simplified move rules</li>
-</ul>
 
 <h2>More</h2>
 
-<p>CRPM represents an exploration into partizan partition games, demonstrating how simple asymmetric constraints can transform the strategic landscape of a familiar game. This variant maintains the elegance of partition manipulation while introducing the complexity and depth characteristic of partizan combinatorial games.</p>
+<p>
+  		Some research are already waiting on publication approval - please contact <a href=https://www.rhodes.edu/bio/eric-gottlieb>Prof. Gottlieb</a> for related queries.
+</p>
 
 </body>  
 </html> 

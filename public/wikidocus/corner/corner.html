@@ -50,12 +50,12 @@ span.label    { font-weight: bold;}
 <h2 style="text-align: center;"> Integer Parition Combinatorial Game </h2>
   
 <div class="gamebox">  
-    Let $[r_1, r_2, r_3, \ldots, r_i]$ be an integer parition of a positive integer $n$ in descending order, where $\forall x \in \left(1, 2, \ldots, i\right), r_x \geq 1$. <b>Corner</b> is designed to be played between two players, where the game board will be a <a href=https://en.wikipedia.org/wiki/Young_tableau>Young diagram</a>, representing a partition with previously documented properties. When it's their turn, the player will remove a <i></i>last cell from each of the row; however, in case of consecutive rows of same length, the player will remove a cell only from the last row with identical length. The player who makes the last move wins.     
+    Let $[r_1, r_2, r_3, \ldots, r_i]$ be an integer parition of a positive integer $n$ in descending order, where $\forall x \in \left(1, 2, \ldots, i\right), r_x \geq 1$. <b>Corner</b> is designed to be played between two players, where the game board will be a <a href=https://en.wikipedia.org/wiki/Young_tableau>Young diagram</a>, representing a partition with previously documented properties. When it's their turn, the player will remove a subset of last cells the rows; however, in case of consecutive rows of same length, the subset may only include the last cell of the final row with such property. The player who makes the last move wins.     
 </div>  
   
   
 <h2 id="moves">Moves</h2>  
-<p>Unlike other partition games, Corner provides almost no freedom to the players;</p>  
+<p>The play, if their turn, can select a subset of the highlighted cells from the diagram;</p>  
   
 <ul class="moves">  
   <li>  
@@ -65,8 +65,8 @@ span.label    { font-weight: bold;}
     <figcaption>Figure&nbsp;1&nbsp;—&nbsp;A move in Corner</figcaption>  
     </figure>  
   </li> 
-  For instance, in Figure 1 - the first move (in fact, all the consecutive moves too) is "fixed (meaning there is technically nothing to choose from)," which changes the partition from $\left(6, 4, 3, 3, 2, 1 \right)$ to $\left( 5, 3, 3, 2 \right)$.  
-  
+  For instance, in Figure 1 - the player may decide to delete all the highlighted cells, and end up with changing the partition from $\left( 6, 4, 3, 3, 2, 1 \right)$ to $\left( 5, 3, 3, 2 \right)$.
+
 </ul>  
   
 <h2>More</h2>  
