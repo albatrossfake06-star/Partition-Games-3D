@@ -274,54 +274,17 @@ main {
     gap: 0;
 }
 
-/* Multiplayer Section */
-.multiplayer-section {
-    background-color: var(--gray-light);
-    padding: 40px 0;
-    margin: 60px 0;
-}
-
-.multiplayer-content {
+/* Multiplayer card styling */
+.multiplayer-card {
     text-align: center;
 }
 
-.multiplayer-content h2 {
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--gray-dark);
-    margin-bottom: 15px;
-}
-
-.multiplayer-content h2::before {
-    content: "## ";
+.multiplayer-card h3 {
     color: var(--orange);
 }
 
-.multiplayer-content p {
-    color: var(--gray);
-    margin-bottom: 25px;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.multiplayer-button {
-    background-color: var(--orange);
-    color: var(--white);
-    text-decoration: none;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-    display: inline-block;
-}
-
-.multiplayer-button:hover {
-    background-color: var(--orange-dark);
-}
-
-.multiplayer-button::before {
-    content: ">> ";
+.multiplayer-card .game-buttons {
+    justify-content: center;
 }
 
 /* Footer */
@@ -444,6 +407,8 @@ footer {
     font-weight: 300;
     font-style: normal;
 }
+
+
 
 /* Responsive */
 @media (max-width: 768px) {
