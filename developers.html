@@ -26,6 +26,18 @@
         --black: #000000;
       }
 
+      [data-theme="dark"] {
+        --orange: #ff8757;
+        --orange-light: #ffb08a;
+        --orange-dark: #ff6b35;
+        --white: #050506;
+        --off-white: #0c0d0f;
+        --gray-light: #18191b;
+        --gray: #b0b3b8;
+        --gray-dark: #e4e6eb;
+        --black: #000000;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -58,6 +70,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 16px;
       }
 
       .logo {
@@ -86,6 +99,32 @@
       .back-link::before {
         content: "← ";
         color: var(--gray);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .theme-toggle-btn {
+        font-family: inherit;
+        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 3px;
+        border: 1px solid var(--gray-light);
+        background-color: transparent;
+        color: var(--gray-dark);
+        cursor: pointer;
+        text-transform: lowercase;
+        transition: background-color 0.2s ease, color 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .theme-toggle-btn:hover {
+        background-color: var(--gray-light);
+        color: var(--orange);
+        border-color: var(--orange);
       }
 
       /* Main Content */
@@ -292,7 +331,17 @@
       <div class="container">
         <div class="header-content">
           <a href="index.html" class="logo">partition-games</a>
-          <a href="index.html" class="back-link">back to home</a>
+          <div class="header-actions">
+            <button
+              id="theme-toggle-btn"
+              class="theme-toggle-btn"
+              type="button"
+              aria-label="Toggle dark mode"
+            >
+              dark mode
+            </button>
+            <a href="index.html" class="back-link">back to home</a>
+          </div>
         </div>
       </div>
     </header>
@@ -383,5 +432,40 @@
         </div>
       </div>
     </footer>
+
+    <script>
+      (function () {
+        const storageKey = "partition-games-theme";
+        const root = document.documentElement;
+        const toggleBtn = document.getElementById("theme-toggle-btn");
+
+        if (!toggleBtn) return;
+
+        const applyTheme = (theme) => {
+          if (theme === "dark") {
+            root.setAttribute("data-theme", "dark");
+            toggleBtn.textContent = "light mode";
+          } else {
+            root.removeAttribute("data-theme");
+            toggleBtn.textContent = "dark mode";
+          }
+        };
+
+        const savedTheme = localStorage.getItem(storageKey);
+        const prefersDark =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
+        applyTheme(initialTheme);
+
+        toggleBtn.addEventListener("click", () => {
+          const isDark = root.getAttribute("data-theme") === "dark";
+          const nextTheme = isDark ? "light" : "dark";
+          applyTheme(nextTheme);
+          localStorage.setItem(storageKey, nextTheme);
+        });
+      })();
+    </script>
   </body>
 </html>
