@@ -1232,7 +1232,7 @@ class ProCornerGui {
     // Persist mode for unified report
     const mode = this.game.gameMode || 'normal';
     localStorage.setItem('cornerReportMode', mode);
-    window.open('public/report generator/report.html', '_blank');
+    window.open('../../reports/generator/report.html', '_blank');
   }
 
   downloadGame() {

@@ -329,10 +329,10 @@ class MultiplayerLanding {
         // Redirect to the appropriate multiplayer game page
         switch (gameType) {
             case 'lctr':
-                window.location.href = 'lctr_page.html';
+                window.location.href = '../games/lctr/lctr_page.html';
                 break;
             case 'corner':
-                window.location.href = 'corner_page.html';
+                window.location.href = '../games/corner/corner_page.html';
                 break;
             default:
                 console.error('Unknown game type:', gameType);

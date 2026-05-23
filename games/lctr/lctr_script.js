@@ -746,7 +746,7 @@ class ProLCTRGui {
         // Persist mode for unified report
         const mode = this.game.gameMode || 'normal';
         localStorage.setItem('lctrReportMode', mode);
-        window.open('public/report generator/report.html', '_blank');
+        window.open('../../reports/generator/report.html', '_blank');
     }
 
     generateGameReplayHTML_LCTR(gameStates, initialPartition) {

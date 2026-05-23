@@ -755,7 +755,7 @@ class ProLCTRGui {
         localStorage.setItem('crimGameStatesForReport', statesString);
         const mode = this.game.gameMode || 'normal';
         localStorage.setItem('crimReportMode', mode);
-        window.open('public/report generator/report.html', '_blank');
+        window.open('../../reports/generator/report.html', '_blank');
     }
 
 
