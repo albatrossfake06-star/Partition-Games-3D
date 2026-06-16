@@ -239,46 +239,67 @@ const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").mat
     scene.add(group);
 
     // ---- build the 3D partition (cubes stacked in a corner) ----
-    const N = 6;                 // extent of the staircase
-    const SIZE = 0.92;           // cube size
-    const STEP = 1.0;            // spacing
+    const N = 6, SIZE = 0.92, STEP = 1.0;
     const box = new THREE.BoxGeometry(SIZE, SIZE, SIZE);
     const edgeGeo = new THREE.EdgesGeometry(box);
-
     const cOrange = new THREE.Color("#FF6B35");
     const cCyan = new THREE.Color("#2DD4BF");
-    let cubeCount = 0;
-    const maxLayer = N;
 
+    const built = [];   // every cube: { mesh, edges }
     for (let i = 0; i < N; i++) {
         for (let j = 0; j < N; j++) {
-            const h = N - i - j;                 // height of this column
+            const h = N - i - j;
             for (let k = 0; k < h; k++) {
-                const t = THREE.MathUtils.clamp((k + (i + j) * 0.18) / maxLayer, 0, 1);
+                const t = THREE.MathUtils.clamp((k + (i + j) * 0.18) / N, 0, 1);
                 const col = cOrange.clone().lerp(cCyan, t * 0.9);
-                const mat = new THREE.MeshStandardMaterial({
+                const mesh = new THREE.Mesh(box, new THREE.MeshStandardMaterial({
                     color: col, metalness: 0.25, roughness: 0.42,
-                    emissive: col.clone().multiplyScalar(0.18),
-                });
-                const cube = new THREE.Mesh(box, mat);
-                cube.position.set(i * STEP, k * STEP, j * STEP);
-                group.add(cube);
-
-                const edges = new THREE.LineSegments(
-                    edgeGeo,
-                    new THREE.LineBasicMaterial({ color: col.clone().lerp(new THREE.Color("#ffffff"), 0.4), transparent: true, opacity: 0.55 })
-                );
-                edges.position.copy(cube.position);
-                group.add(edges);
-                cubeCount++;
+                    emissive: col.clone().multiplyScalar(0.18), transparent: true, opacity: 1,
+                }));
+                mesh.position.set(i * STEP, k * STEP, j * STEP);
+                const edges = new THREE.LineSegments(edgeGeo,
+                    new THREE.LineBasicMaterial({ color: col.clone().lerp(new THREE.Color("#fff"), 0.4), transparent: true, opacity: 0.55 }));
+                edges.position.copy(mesh.position);
+                group.add(mesh); group.add(edges);
+                built.push({ mesh, edges });
             }
         }
     }
-
-    // center the staircase on its bounding box
+    // center on bounding box
     const c = (N - 1) * STEP / 2;
     group.children.forEach(o => o.position.sub(new THREE.Vector3(c, c * 0.5, c)));
-    group.rotation.set(-0.18, -0.9, 0);
+
+    // ---- choose "traveller" blocks that shed into the page on scroll ----
+    // pick the 7 highest cubes (the top of the staircase) — most visible.
+    const sorted = built.slice().sort((a, b) => b.mesh.position.y - a.mesh.position.y);
+    const SHED_SPECS = [
+        { at: 0.10, nx: -0.74, ny: 0.30 },   // → games (left column)
+        { at: 0.15, nx: -0.80, ny: 0.04 },
+        { at: 0.20, nx: -0.72, ny: -0.22 },
+        { at: 0.40, nx: 0.74, ny: 0.28 },    // → head-to-head (right column)
+        { at: 0.45, nx: 0.80, ny: 0.02 },
+        { at: 0.50, nx: 0.72, ny: -0.24 },
+        { at: 0.70, nx: -0.74, ny: -0.30 },  // → research (left)
+    ];
+    const sheds = [];
+    SHED_SPECS.forEach((spec, idx) => {
+        const cubeObj = sorted[idx];
+        if (!cubeObj) return;
+        const home = cubeObj.mesh.position.clone();       // local pos in group space
+        group.remove(cubeObj.mesh); group.remove(cubeObj.edges);
+        const chunk = new THREE.Group();
+        cubeObj.mesh.position.set(0, 0, 0);
+        cubeObj.edges.position.set(0, 0, 0);
+        chunk.add(cubeObj.mesh); chunk.add(cubeObj.edges);
+        chunk.scale.setScalar(1.35);                       // travellers read bigger beside the content
+        scene.add(chunk);
+        sheds.push({ chunk, home, at: spec.at, nx: spec.nx, ny: spec.ny,
+            anchor: new THREE.Vector3(), spin: 0.005 + Math.random() * 0.007, phase: Math.random() * 6.28 });
+    });
+
+    // main-mass materials (for the recede/fade as travellers take over)
+    const mainMats = [];
+    group.traverse(o => { if (o.material) mainMats.push(o.material); });
 
     // ---- lights ----
     scene.add(new THREE.AmbientLight(0xffffff, 0.55));
@@ -286,53 +307,111 @@ const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").mat
     const rimO = new THREE.PointLight(0xff6b35, 60, 60); rimO.position.set(-8, 2, 6); scene.add(rimO);
     const rimC = new THREE.PointLight(0x2dd4bf, 50, 60); rimC.position.set(8, -4, -6); scene.add(rimC);
 
-    // ---- responsive sizing / placement ----
-    const hero = document.getElementById("hero");
-    function resize() {
-        const w = hero.clientWidth, h = hero.clientHeight;
-        renderer.setSize(w, h, false);
-        camera.aspect = w / h;
-        // push model to the right on wide screens, center on narrow
-        const wide = w > 860;
-        group.position.x = wide ? c * 0.0 + 3.4 : 0;
-        group.position.y = wide ? 0.4 : 1.2;
+    // ---- screen→world helper (z=0 plane) for anchoring shed blocks ----
+    function screenToWorld(nx, ny, out) {
+        const vH = 2 * Math.tan((38 * Math.PI / 180) / 2) * camera.position.z;
+        const vW = vH * camera.aspect;
+        return out.set(nx * vW / 2, ny * vH / 2, 1.5);
+    }
+
+    // ---- keyframes for the main mass as you scroll the page ----
+    let wide = true;
+    const KP = { hero: new THREE.Vector3(), games: new THREE.Vector3(), mp: new THREE.Vector3(), end: new THREE.Vector3() };
+    // Guard against environments that report a bogus (0/1) viewport width.
+    function cw() { var w = canvas.clientWidth || window.innerWidth || 0; return w > 2 ? w : 1280; }
+    function ch() { var h = canvas.clientHeight || window.innerHeight || 0; return h > 2 ? h : 800; }
+    function layout() {
+        const w = cw();
+        wide = w > 820;
+        const f = wide ? 1 : 0.45;
+        KP.hero.set(3.4 * f, 0.4, 0);
+        KP.games.set(5.0 * f, 2.4, -2);
+        KP.mp.set(-0.6 * f, 3.4, -4);
+        KP.end.set(0, 4.6, -7);
         camera.position.z = wide ? 17 : 22;
+        camera.aspect = w / ch();
         camera.updateProjectionMatrix();
+        sheds.forEach(s => screenToWorld(wide ? s.nx : s.nx * 0.7, s.ny, s.anchor));
+    }
+    function resize() {
+        // size the drawing buffer to the canvas's actual rendered box (CSS keeps display = viewport)
+        renderer.setSize(cw(), ch(), false);
+        layout();
     }
     resize();
     window.addEventListener("resize", resize);
+    // re-size once the fixed canvas gets its real dimensions from layout
+    if (window.ResizeObserver) { try { new ResizeObserver(resize).observe(canvas); } catch (e) {} }
+    setTimeout(resize, 100);
+    window.addEventListener("load", resize);
 
-    // ---- interaction (pointer parallax) ----
-    const target = { x: -0.9, y: -0.18 };
-    const cur = { x: -0.9, y: -0.18 };
-    if (!prefersReduced) {
-        window.addEventListener("pointermove", (e) => {
-            const nx = (e.clientX / window.innerWidth) * 2 - 1;
-            const ny = (e.clientY / window.innerHeight) * 2 - 1;
-            target.x = -0.9 + nx * 0.5;
-            target.y = -0.18 - ny * 0.35;
-        });
+    // ---- pointer parallax (subtle) ----
+    const ptr = { x: 0, y: 0 }, ptrCur = { x: 0, y: 0 };
+    if (!prefersReduced) window.addEventListener("pointermove", (e) => {
+        ptr.x = (e.clientX / window.innerWidth) * 2 - 1;
+        ptr.y = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    // ---- scroll progress ----
+    let p = 0, pCur = 0;
+    function readProgress() {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        p = max > 0 ? THREE.MathUtils.clamp(window.scrollY / max, 0, 1) : 0;
+    }
+    window.addEventListener("scroll", readProgress, { passive: true });
+    readProgress();
+
+    const ease = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    function massAt(prog, out) {
+        if (prog < 0.33) out.copy(KP.hero).lerp(KP.games, ease(prog / 0.33));
+        else if (prog < 0.66) out.copy(KP.games).lerp(KP.mp, ease((prog - 0.33) / 0.33));
+        else out.copy(KP.mp).lerp(KP.end, ease((prog - 0.66) / 0.34));
+        return out;
     }
 
-    // ---- render loop (pauses off-screen) ----
-    let visible = true;
-    new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0 }).observe(hero);
-
+    // ---- per-frame update (also callable on demand for envs that throttle rAF) ----
     const clock = new THREE.Clock();
-    function tick() {
-        requestAnimationFrame(tick);
-        if (!visible) return;
-        const t = clock.getElapsedTime();
-        if (prefersReduced) {
-            group.rotation.y = -0.9; group.rotation.x = -0.18;
-        } else {
-            cur.x += (target.x - cur.x) * 0.05;
-            cur.y += (target.y - cur.y) * 0.05;
-            group.rotation.y = cur.x + t * 0.12;
-            group.rotation.x = cur.y;
-            group.position.y += Math.sin(t * 0.8) * 0.002;
+    const tmp = new THREE.Vector3(), attached = new THREE.Vector3();
+
+    function frame(prog, time) {
+        // main mass: travel + recede + shrink + spin + fade
+        massAt(prog, tmp);
+        group.position.copy(tmp);
+        group.position.y += Math.sin(time * 0.7) * 0.06;
+        group.scale.setScalar(1 - prog * 0.5);
+        group.rotation.y = -0.9 + prog * Math.PI * 1.25 + (prefersReduced ? 0 : time * 0.07) + ptrCur.x * 0.25;
+        group.rotation.x = -0.18 - ptrCur.y * 0.18;
+        const fade = 1 - prog * 0.78;
+        for (let m = 0; m < mainMats.length; m++) mainMats[m].opacity = (mainMats[m].isLineBasicMaterial ? 0.55 : 1) * fade;
+
+        // travellers: ride the mass, then peel off to their side anchor
+        for (let s = 0; s < sheds.length; s++) {
+            const sh = sheds[s];
+            const released = prog >= sh.at;
+            if (released && !prefersReduced) {
+                tmp.copy(sh.anchor);
+                tmp.y += Math.sin(time * 0.9 + sh.phase) * 0.18;   // gentle bob
+                sh.chunk.position.lerp(tmp, 0.06);
+                sh.chunk.rotation.y += sh.spin;
+                sh.chunk.rotation.x += sh.spin * 0.6;
+            } else {
+                attached.copy(sh.home); group.localToWorld(attached);
+                sh.chunk.position.copy(attached);
+                sh.chunk.quaternion.copy(group.quaternion);
+            }
         }
         renderer.render(scene, camera);
+    }
+
+    let running = true;
+    document.addEventListener("visibilitychange", () => { running = !document.hidden; });
+    function tick() {
+        requestAnimationFrame(tick);
+        if (!running) return;
+        pCur += (p - pCur) * 0.08;
+        ptrCur.x += (ptr.x - ptrCur.x) * 0.05;
+        ptrCur.y += (ptr.y - ptrCur.y) * 0.05;
+        frame(prefersReduced ? 0 : pCur, clock.getElapsedTime());
     }
     tick();
 })();
