@@ -255,7 +255,7 @@
         wireSetup(state, refs, begin);
         openSetup();
 
-        function openSetup() { refs.setup.classList.add("visible"); }
+        function openSetup() { refs.over.classList.remove("visible"); refs.setup.classList.add("visible"); }
 
         function begin(cfg) {
             Object.assign(state, cfg);
