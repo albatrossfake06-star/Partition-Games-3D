@@ -272,14 +272,15 @@ const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").mat
     // ---- choose "traveller" blocks that shed into the page on scroll ----
     // pick the 7 highest cubes (the top of the staircase) — most visible.
     const sorted = built.slice().sort((a, b) => b.mesh.position.y - a.mesh.position.y);
+    // spaced well apart vertically so the cubes never overlap while they spin
     const SHED_SPECS = [
-        { at: 0.10, nx: -0.74, ny: 0.30 },   // → games (left column)
-        { at: 0.15, nx: -0.80, ny: 0.04 },
-        { at: 0.20, nx: -0.72, ny: -0.22 },
-        { at: 0.40, nx: 0.74, ny: 0.28 },    // → head-to-head (right column)
-        { at: 0.45, nx: 0.80, ny: 0.02 },
-        { at: 0.50, nx: 0.72, ny: -0.24 },
-        { at: 0.70, nx: -0.74, ny: -0.30 },  // → research (left)
+        { at: 0.10, nx: -0.78, ny: 0.46 },   // → games (left column)
+        { at: 0.15, nx: -0.84, ny: 0.02 },
+        { at: 0.20, nx: -0.76, ny: -0.42 },
+        { at: 0.40, nx: 0.78, ny: 0.46 },    // → head-to-head (right column)
+        { at: 0.45, nx: 0.84, ny: 0.02 },
+        { at: 0.50, nx: 0.76, ny: -0.42 },
+        { at: 0.70, nx: -0.50, ny: -0.46 },  // → research (left)
     ];
     const sheds = [];
     SHED_SPECS.forEach((spec, idx) => {
@@ -291,10 +292,10 @@ const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").mat
         cubeObj.mesh.position.set(0, 0, 0);
         cubeObj.edges.position.set(0, 0, 0);
         chunk.add(cubeObj.mesh); chunk.add(cubeObj.edges);
-        chunk.scale.setScalar(1.35);                       // travellers read bigger beside the content
+        chunk.scale.setScalar(1.0);                        // same size as a model cube
         scene.add(chunk);
         sheds.push({ chunk, home, at: spec.at, nx: spec.nx, ny: spec.ny,
-            anchor: new THREE.Vector3(), spin: 0.005 + Math.random() * 0.007, phase: Math.random() * 6.28 });
+            anchor: new THREE.Vector3(), spin: 0.004 + Math.random() * 0.005, phase: Math.random() * 6.28 });
     });
 
     // main-mass materials (for the recede/fade as travellers take over)
@@ -371,7 +372,8 @@ const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").mat
 
     // ---- per-frame update (also callable on demand for envs that throttle rAF) ----
     const clock = new THREE.Clock();
-    const tmp = new THREE.Vector3(), attached = new THREE.Vector3();
+    const tmp = new THREE.Vector3(), target = new THREE.Vector3();
+    let booted = false;   // first frame snaps; afterwards everything eases (both scroll directions)
 
     function frame(prog, time) {
         // main mass: travel + recede + shrink + spin + fade
@@ -384,22 +386,27 @@ const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").mat
         const fade = 1 - prog * 0.78;
         for (let m = 0; m < mainMats.length; m++) mainMats[m].opacity = (mainMats[m].isLineBasicMaterial ? 0.55 : 1) * fade;
 
-        // travellers: ride the mass, then peel off to their side anchor
+        // travellers: ride the mass, peel off to their side anchor — and ease BACK on scroll up
         for (let s = 0; s < sheds.length; s++) {
             const sh = sheds[s];
-            const released = prog >= sh.at;
-            if (released && !prefersReduced) {
-                tmp.copy(sh.anchor);
-                tmp.y += Math.sin(time * 0.9 + sh.phase) * 0.18;   // gentle bob
-                sh.chunk.position.lerp(tmp, 0.06);
+            const released = prog >= sh.at && !prefersReduced;
+            if (released) {
+                target.copy(sh.anchor);
+                target.y += Math.sin(time * 0.9 + sh.phase) * 0.18;   // gentle bob
+            } else {
+                target.copy(sh.home); group.localToWorld(target);     // attached position in the model
+            }
+            if (!booted) sh.chunk.position.copy(target);
+            else sh.chunk.position.lerp(target, 0.08);                 // eases in BOTH directions
+
+            if (released) {
                 sh.chunk.rotation.y += sh.spin;
                 sh.chunk.rotation.x += sh.spin * 0.6;
             } else {
-                attached.copy(sh.home); group.localToWorld(attached);
-                sh.chunk.position.copy(attached);
-                sh.chunk.quaternion.copy(group.quaternion);
+                sh.chunk.quaternion.slerp(group.quaternion, booted ? 0.12 : 1); // rotate back smoothly when re-attaching
             }
         }
+        booted = true;
         renderer.render(scene, camera);
     }
 
