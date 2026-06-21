@@ -10,7 +10,7 @@
 
     var PARTNERS = [
         {
-            id: "rhodes", name: "Rhodes College", short: "Rhodes College",
+            id: "rhodes", kind: "partner", name: "Rhodes College", short: "Rhodes College",
             city: "Memphis, Tennessee", country: "United States",
             lat: 35.1175, lng: -89.9711, accent: "orange",
             members: [
@@ -21,11 +21,16 @@
                 { name: "Rubaiya Islam", role: "Developer · Summer ’26", initials: "RI",
                   bio: "Summer ’26 fellow contributing to the GRASP game suite." },
                 { name: "Sahaf Mahmud", role: "Developer · Summer ’26", initials: "SM",
-                  bio: "Summer ’26 fellow contributing to the GRASP game suite." }
+                  bio: "Summer ’26 fellow contributing to the GRASP game suite." },
+                { name: "Aayan Deb", role: "Collaborator", initials: "AD", bio: "Collaborator at Rhodes College." },
+                { name: "Soumitro Dwip", role: "Collaborator", initials: "SD", bio: "Collaborator at Rhodes College." },
+                { name: "Amalia Bay", role: "Collaborator", initials: "AB", bio: "Collaborator at Rhodes College." },
+                { name: "Hannah Meit", role: "Collaborator", initials: "HM", bio: "Collaborator at Rhodes College." },
+                { name: "Ismael Qureshi", role: "Collaborator", initials: "IQ", bio: "Collaborator at Rhodes College." }
             ]
         },
         {
-            id: "rutgers", name: "Rutgers University", short: "Rutgers",
+            id: "rutgers", kind: "partner", name: "Rutgers University", short: "Rutgers",
             city: "Piscataway, New Jersey", country: "United States",
             lat: 40.5204, lng: -74.4645, accent: "cyan",
             members: [
@@ -34,14 +39,33 @@
             ]
         },
         {
-            id: "up", name: "University of Primorska · FAMNIT", short: "UP · FAMNIT",
+            id: "up", kind: "partner", name: "University of Primorska · FAMNIT", short: "UP · FAMNIT",
             city: "Koper / Capodistria", country: "Slovenia",
             lat: 45.5483, lng: 13.7294, accent: "orange",
             members: [
                 { name: "Prof. Matjaž Krnc", role: "Faculty", initials: "MK",
                   bio: "Faculty partner at UP FAMNIT, University of Primorska." },
                 { name: "Prof. Peter Mursic", role: "Faculty", initials: "PM",
-                  bio: "Faculty partner at UP FAMNIT, University of Primorska." }
+                  bio: "Faculty partner at UP FAMNIT, University of Primorska." },
+                { name: "Nino Bašić", role: "Collaborator", initials: "NB", bio: "Collaborator at UP FAMNIT, University of Primorska." },
+                { name: "Nina Chiarelli", role: "Collaborator", initials: "NC", bio: "Collaborator at UP FAMNIT, University of Primorska." },
+                { name: "Jelena Ilič", role: "Collaborator", initials: "JI", bio: "Collaborator at UP FAMNIT, University of Primorska." }
+            ]
+        },
+        {
+            id: "darmstadt", kind: "collaborator", name: "TU Darmstadt", short: "TU Darmstadt",
+            city: "Darmstadt", country: "Germany",
+            lat: 49.8728, lng: 8.6512, accent: "cyan",
+            members: [
+                { name: "Ina Bašić", role: "Collaborator", initials: "IB", bio: "Collaborator at TU Darmstadt." }
+            ]
+        },
+        {
+            id: "minnesota", kind: "collaborator", name: "University of Minnesota", short: "U Minnesota",
+            city: "Minneapolis, Minnesota", country: "United States",
+            lat: 44.9740, lng: -93.2277, accent: "cyan",
+            members: [
+                { name: "Sheila Sundaram", role: "Collaborator", initials: "SS", bio: "Collaborator at the University of Minnesota." }
             ]
         }
     ];
@@ -55,8 +79,8 @@
             '<div class="pt-hero">' +
               '<p class="pt-eyebrow">a three-way partnership</p><h1>Partners</h1>' +
               '<p>GRASP is built together by <strong>Rhodes College</strong>, <strong>Rutgers University</strong>, and the ' +
-              '<strong>University of Primorska (FAMNIT)</strong> — three equal partners across two continents. ' +
-              'Scroll to zoom into a campus and meet the people behind the project.</p>' +
+              '<strong>University of Primorska (FAMNIT)</strong> — three equal partners across two continents — ' +
+              'with collaborators at institutions worldwide. Scroll to zoom into a campus and meet the people behind the project.</p>' +
             '</div>' +
             '<div class="pt-map">' +
               '<div id="pt-leaflet"></div>' +
@@ -64,7 +88,9 @@
               '<button class="pt-reset" id="pt-reset">⤢ world view</button>' +
               '<div class="pt-detail" id="pt-detail"></div>' +
             '</div>' +
-            '<div class="pt-strip" id="pt-strip"></div>';
+            '<div class="pt-strip" id="pt-strip"></div>' +
+            '<h2 class="pt-collabs-title">Collaborators</h2>' +
+            '<div class="pt-collabs" id="pt-collabs"></div>';
 
         var detail = document.getElementById("pt-detail");
         var strip = document.getElementById("pt-strip");
@@ -87,18 +113,20 @@
             var memberLayer = L.layerGroup();
             PARTNERS.forEach(function (p) {
                 var inst = L.divIcon({
-                    className: "pt-divicon " + p.accent, iconSize: [16, 16], iconAnchor: [8, 8],
+                    className: "pt-divicon " + p.accent + " " + (p.kind || "partner"), iconSize: [16, 16], iconAnchor: [8, 8],
                     html: '<span class="pt-mk-pin"></span><span class="pt-mk-label"><b>' + p.short + '</b> · <i>' +
                           p.members.length + (p.members.length === 1 ? " member" : " members") + '</i></span>'
                 });
                 L.marker([p.lat, p.lng], { icon: inst, title: p.name }).addTo(map)
                     .on("click", function () { map.flyTo([p.lat, p.lng], 13, { duration: 1.2 }); });
 
+                var rad = 0.006 + p.members.length * 0.0013;   // wider ring for bigger teams
                 p.members.forEach(function (mem, i) {
-                    var ang = (i / p.members.length) * Math.PI * 2, rad = 0.012;
+                    var ang = (i / p.members.length) * Math.PI * 2;
                     var ll = [p.lat + Math.sin(ang) * rad, p.lng + Math.cos(ang) * rad * 1.4];
+                    var collab = /collaborator/i.test(mem.role);
                     var ic = L.divIcon({
-                        className: "pt-memicon " + p.accent, iconSize: [0, 0],
+                        className: "pt-memicon " + p.accent + (collab ? " collab" : ""), iconSize: [0, 0],
                         html: '<div class="pt-mem"><span class="blk">' + mem.initials + '</span>' +
                               '<span class="nm">' + mem.name.replace(/^Prof\.\s*/, "") + '</span></div>'
                     });
@@ -132,7 +160,7 @@
             document.getElementById("pt-back").addEventListener("click", function () { detail.classList.remove("open"); });
         }
 
-        PARTNERS.forEach(function (p) {
+        PARTNERS.filter(function (p) { return (p.kind || "partner") === "partner"; }).forEach(function (p) {
             var card = document.createElement("div");
             card.className = "pt-card";
             card.innerHTML = '<div class="nm">' + p.name + '</div>' +
@@ -141,6 +169,27 @@
             card.addEventListener("click", function () { if (window.__ptFly) window.__ptFly(p); });
             strip.appendChild(card);
         });
+
+        // full collaborators list (everyone with a Collaborator role, alphabetical by surname)
+        var collabs = document.getElementById("pt-collabs");
+        var list = [];
+        PARTNERS.forEach(function (p) {
+            p.members.forEach(function (mem) {
+                if (/collaborator/i.test(mem.role)) list.push({ p: p, mem: mem });
+            });
+        });
+        list.sort(function (a, b) {
+            var sa = a.mem.name.split(" ").pop(), sb = b.mem.name.split(" ").pop();
+            return sa.localeCompare(sb);
+        });
+        list.forEach(function (it) {
+            var chip = document.createElement("button");
+            chip.className = "pt-collab-chip";
+            chip.innerHTML = '<span class="cn">' + it.mem.name + '</span><span class="ci">' + it.p.name.replace(" · FAMNIT", "") + '</span>';
+            chip.addEventListener("click", function () { if (window.__ptOpen) window.__ptOpen(it.p, it.mem); });
+            collabs.appendChild(chip);
+        });
+        window.__ptOpen = openMember;
     }
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
